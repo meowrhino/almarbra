@@ -39,7 +39,13 @@ a {
   text-decoration: none;
 }
 
-img { max-width: 100%; }
+/* height:auto es imprescindible: los <img> llevan width y height reales
+   para reservar el hueco antes de cargar, y sin esta regla el alto del
+   atributo gana y estira la imagen. */
+img {
+  max-width: 100%;
+  height: auto;
+}
 
 /* ---------- Layout base ---------- */
 
