@@ -10,7 +10,7 @@
 import { existsSync } from 'node:fs';
 import { join as joinPath, dirname, basename, extname } from 'node:path';
 
-const VARIANTS = [800, 1400];
+const VARIANTS = [400, 800, 1400];
 const DEFAULT_WIDTH = 2000;
 
 /** Ruta de una variante: img/foo.webp + 800 -> img/foo-800.webp */

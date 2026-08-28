@@ -43,15 +43,19 @@ img { max-width: 100%; }
 
 /* ---------- Layout base ---------- */
 
+/* La página no lleva padding lateral: en el original el lienzo de las
+   galerías ocupa el ancho completo de la ventana, y los % de posición
+   se calculan contra él. El margen visual se aplica solo donde hay
+   texto (cabecera y pies). */
 .page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 0 var(--pad-x);
 }
 
 .site-header {
   flex: 0 0 auto;
+  padding: 0 var(--pad-x);
 }
 
 .content {
@@ -150,7 +154,6 @@ img { max-width: 100%; }
   align-items: center;
   justify-content: center;
   min-height: 0;
-  margin: 0 calc(var(--pad-x) * -1);
   padding: 24px 0 62px;
 }
 
@@ -299,10 +302,14 @@ img { max-width: 100%; }
 
 .caption {
   margin: 10px 0 0;
+  padding: 0 var(--pad-x);
   font-size: var(--nav-size);
   letter-spacing: 0.02em;
   color: var(--nav-muted);
 }
+
+/* dentro de una columna el margen ya lo pone la propia columna */
+.col .caption { padding: 0; }
 
 /* la página de contacto es una columna de texto */
 [data-page="contact"] .caption {
