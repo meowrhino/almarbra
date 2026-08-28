@@ -76,7 +76,8 @@
                 "src": "img/textile-art-02.webp",
                 "w": 2387,
                 "h": 3600,
-                "href": "corporea.html"
+                "href": "corporea.html",
+                "scale": 32
               },
               {
                 "type": "text",

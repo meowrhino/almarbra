@@ -77,8 +77,15 @@ function montessori(block, context) {
   );
 }
 
+/* Imagen suelta. `scale` es el data-scale de Cargo: el % del ancho de
+   su columna que ocupa la imagen. Sin él se pintaría a ancho completo. */
 function figure(block, context) {
-  return tag('figure', { class: 'figure' }, link(block.href, image(block, context)));
+  const widthPct = block.scale || context.widthPct;
+  return tag(
+    'figure',
+    { class: 'figure', style: block.scale ? `width:${block.scale}%` : null },
+    link(block.href, image(block, { ...context, widthPct }))
+  );
 }
 
 function text(block) {
