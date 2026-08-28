@@ -50,7 +50,7 @@ Todo en `content/`, y luego `npm run build`.
 ```js
 { type: 'gallery', mode: 'slideshow', items: [ { src, w, h } ] }
 { type: 'gallery', mode: 'montessori', height: 268.62, items: [ { src, w, h, x, y, width } ] }
-{ type: 'image', src, w, h, href }
+{ type: 'image', src, w, h, href, scale }   // scale = % del ancho de su columna
 { type: 'text',  text }
 { type: 'row',   cols: [ { span, blocks } ] }        // rejilla de 12
 ```
@@ -78,6 +78,17 @@ antes de publicar nada hay que contar con su permiso y, idealmente, partir de su
 originales. Mientras tanto, todas las páginas llevan `noindex` y `robots.txt` bloquea
 el sitio entero: se controla desde `noindex` en `content/site.json`.
 
+## Notas de fidelidad
+
+La geometría está verificada contra el original a la misma anchura: en Fashion, el
+contenedor mide lo mismo (1052 px) y la galería alcanza el mismo alto (2826 px).
+
+El lienzo va **a sangre**: el padding lateral lo llevan la cabecera y los pies, no la
+página. Si se le pone padding al contenedor, todos los % se descuadran.
+
+El CSS y el JS se enlazan con `?v=<hash>` del contenido, así que un deploy nunca deja
+a nadie con estilos viejos en caché.
+
 ## Diferencias conocidas con el original
 
 - La vista móvil del original usa una rejilla propia de Cargo (2 columnas); aquí, por
@@ -85,3 +96,6 @@ el sitio entero: se controla desde `noindex` en `content/site.json`.
 - El badge de Cargo y su panel de administración no se han replicado.
 - En el original el enlace de Instagram de la home apunta a una cuenta distinta que el
   del resto de páginas; aquí se ha unificado.
+- Cargo recorta a cuadrado la imagen de OVERSEAS en Textile Art; aquí se ve entera.
+- La imagen de CORPÓREA sale un 4% más pequeña que en el original: su `scale` se aplica
+  sobre el área interior de la columna y no sobre el ancho total.
