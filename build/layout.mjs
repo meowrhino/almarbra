@@ -13,7 +13,11 @@ const FONT = 'https://fonts.googleapis.com/css2?family=Karla:wght@200;300;400;70
  * @param {string}  o.header   HTML de la cabecera
  * @param {string}  o.content  HTML del contenido
  */
-export function layout({ site, title, pageId, bodyClass, header, content }) {
+export function layout({ site, title, pageId, bodyClass, header, content, assets = {} }) {
+  // ?v=<hash> para que un deploy no deje a nadie con el CSS viejo en caché
+  const css = `css/style.css${assets.css ? `?v=${assets.css}` : ''}`;
+  const js = `js/slideshow.js${assets.js ? `?v=${assets.js}` : ''}`;
+
   return `<!DOCTYPE html>
 <html lang="${escapeAttr(site.lang || 'es')}" class="no-js">
 <head>
@@ -25,7 +29,7 @@ ${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<scri
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="${FONT}">
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="${css}">
 </head>
 <body data-page="${escapeAttr(pageId)}"${bodyClass ? ` class="${escapeAttr(bodyClass)}"` : ''}>
 
@@ -39,7 +43,7 @@ ${content}
   </main>
 </div>
 
-<script src="js/slideshow.js" defer></script>
+<script src="${js}" defer></script>
 </body>
 </html>
 `;

@@ -3,6 +3,7 @@
    Sin dependencias: `npm run build` o `node build/index.mjs`. */
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { dirname, join, resolve } from 'node:path';
 
@@ -17,6 +18,13 @@ const read = (file) => JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
 
 const site = read('content/site.json');
 const pages = read('content/pages.json');
+
+/** Hash corto del contenido de un archivo, para versionar assets. */
+function hash(file) {
+  return createHash('sha1').update(readFileSync(join(ROOT, file))).digest('hex').slice(0, 8);
+}
+
+const assets = { css: hash('css/style.css'), js: hash('js/slideshow.js') };
 
 /** <title> de cada página: la home lleva solo el nombre. */
 function documentTitle(route) {
@@ -37,6 +45,7 @@ for (const route of site.routes) {
     bodyClass: route.body,
     header: indent(renderHeader(site, route.id), 2),
     content: indent(renderPage(page, { root: ROOT }), 2),
+    assets,
   });
 
   writeFileSync(join(ROOT, route.file), html);
