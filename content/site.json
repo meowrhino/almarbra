@@ -1,0 +1,87 @@
+{
+  "title": "Almudena González",
+  "home": "index.html",
+  "nav": [
+    {
+      "id": "textile-art",
+      "label": "Textile Art",
+      "href": "textile-art.html"
+    },
+    {
+      "id": "fashion",
+      "label": "Fashion",
+      "href": "fashion.html",
+      "muted": true
+    },
+    {
+      "id": "collabs",
+      "label": "Collabs",
+      "href": "collabs.html"
+    },
+    {
+      "id": "personal-works",
+      "label": "Personal&nbsp; works",
+      "href": "personal-works.html",
+      "disabledOn": [
+        "home"
+      ]
+    },
+    {
+      "id": "instagram",
+      "label": "Instagram",
+      "href": "https://www.instagram.com/almarbra_/",
+      "external": true
+    },
+    {
+      "id": "contact",
+      "label": "Contact",
+      "href": "contact.html"
+    }
+  ],
+  "lang": "es",
+  "description": "Portfolio de Almudena González — arte textil, moda y colaboraciones.",
+  "noindex": true,
+  "routes": [
+    {
+      "id": "home",
+      "file": "index.html",
+      "title": null,
+      "body": "homepage"
+    },
+    {
+      "id": "textile-art",
+      "file": "textile-art.html",
+      "title": "Textile Art"
+    },
+    {
+      "id": "fashion",
+      "file": "fashion.html",
+      "title": "Fashion"
+    },
+    {
+      "id": "collabs",
+      "file": "collabs.html",
+      "title": "Collabs"
+    },
+    {
+      "id": "personal-works",
+      "file": "personal-works.html",
+      "title": "Personal works"
+    },
+    {
+      "id": "overseas",
+      "file": "overseas.html",
+      "title": "Overseas"
+    },
+    {
+      "id": "corporea",
+      "file": "corporea.html",
+      "title": "Corpórea"
+    },
+    {
+      "id": "contact",
+      "file": "contact.html",
+      "title": "Contact"
+    }
+  ]
+}

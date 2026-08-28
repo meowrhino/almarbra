@@ -50,6 +50,10 @@ img { max-width: 100%; }
   padding: 0 var(--pad-x);
 }
 
+.site-header {
+  flex: 0 0 auto;
+}
+
 .content {
   flex: 1 1 auto;
   display: flex;
@@ -233,6 +237,31 @@ img { max-width: 100%; }
   color: var(--nav-muted);
   z-index: 3;
 }
+
+/* Sin JS: las diapositivas se apilan en columna y se ven todas.
+   El marcado es el mismo; solo cambia la colocación. */
+.no-js .slideshow__track {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  height: auto;
+  min-height: 0;
+}
+
+.no-js .slide {
+  position: static;
+  opacity: 1;
+  visibility: visible;
+}
+
+.no-js .homepage .content > .slideshow,
+.no-js.homepage .content > .slideshow {
+  display: block;
+  padding-bottom: 80px;
+}
+
+.no-js .slide img { max-width: 100%; }
+.no-js .slide figcaption { position: static; margin-top: 10px; }
 
 /* ---------- Galería montessori ----------
    x / y / width van en % del ANCHO del contenedor: en un elemento

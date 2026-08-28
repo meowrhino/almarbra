@@ -1,96 +1,82 @@
 /* ---------------------------------------------------------------
-   Slideshow: construye el marcado desde datos y lo controla.
-   Autoplay opcional, flechas, teclado, arrastre/swipe, contador y
-   carga perezosa de la siguiente imagen.
+   Controlador de slideshow.
+
+   El HTML ya viene con todas las diapositivas puestas por el build;
+   esto solo añade comportamiento encima: flechas, contador, autoplay,
+   teclado y arrastre. Sin JS las fotos se ven igual, en columna.
+
+   Se activa sobre cualquier [data-slideshow] de la página.
    --------------------------------------------------------------- */
 
-window.APP = window.APP || {};
-
-window.APP.slideshow = (function (dom) {
+(function () {
   'use strict';
 
-  var el = dom.el;
-  var qs = dom.qs;
-  var qsa = dom.qsa;
-
-  var SWIPE_MIN = 40; // px mínimos de arrastre para cambiar de imagen
+  var SWIPE_MIN = 40;        // px de arrastre para pasar de imagen
+  var FADE_MS = 500;         // debe cuadrar con la transición del CSS
 
   var ARROWS = {
-    prev: '21,29 10,18 21,7',
-    next: '15,7 26,18 15,29'
+    prev: { points: '21,29 10,18 21,7', label: 'Anterior' },
+    next: { points: '15,7 26,18 15,29', label: 'Siguiente' }
   };
 
-  function arrow(direction, label) {
+  function el(tag, attrs, html) {
+    var node = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (key) {
+      if (attrs[key] !== null) node.setAttribute(key, attrs[key]);
+    });
+    if (html) node.innerHTML = html;
+    return node;
+  }
+
+  function arrow(direction) {
+    var spec = ARROWS[direction];
     return el('button', {
       type: 'button',
       class: 'slideshow__arrow slideshow__arrow--' + direction,
-      'aria-label': label,
-      html: '<svg viewBox="0 0 36 36" aria-hidden="true"><polyline points="' +
-            ARROWS[direction] + '"/></svg>'
-    });
+      'aria-label': spec.label
+    }, '<svg viewBox="0 0 36 36" aria-hidden="true"><polyline points="' + spec.points + '"/></svg>');
   }
 
-  function slide(item, index) {
-    /* solo la primera se carga de entrada; el resto va en data-src */
-    var img = el('img', {
-      src: index === 0 ? item.src : null,
-      'data-src': index === 0 ? null : item.src,
-      width: item.w || null,
-      height: item.h || null,
-      alt: item.alt || ''
-    });
-
-    return el('figure', { class: 'slide' }, [
-      img,
-      item.caption ? el('figcaption', { text: item.caption }) : null
-    ]);
+  function counter(total) {
+    var node = el('div', { class: 'slideshow__counter', 'aria-hidden': 'true' },
+                  '<span data-current>1</span> / <span data-total>' + total + '</span>');
+    return node;
   }
 
-  function build(mount, items) {
-    var track = el('div', { class: 'slideshow__track' }, items.map(slide));
-
-    var counter = el('div', { class: 'slideshow__counter' }, [
-      el('span', { 'data-current': true, text: '1' }),
-      document.createTextNode(' / '),
-      el('span', { 'data-total': true, text: String(items.length) })
-    ]);
-
-    mount.appendChild(arrow('prev', 'Anterior'));
-    mount.appendChild(track);
-    mount.appendChild(arrow('next', 'Siguiente'));
-    mount.appendChild(counter);
+  function prefersReducedMotion() {
+    return window.matchMedia &&
+           window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  function control(root, options) {
-    var slides = qsa('.slide', root);
-    if (!slides.length) return;
+  function init(root) {
+    var slides = [].slice.call(root.querySelectorAll('.slide'));
+    if (slides.length < 2) return;      // con una sola foto no hay nada que controlar
 
-    var current = qs('[data-current]', root);
-    var delay = options.autoplay || 0;
-    var index = 0;
+    root.appendChild(arrow('prev'));
+    root.appendChild(arrow('next'));
+    root.appendChild(counter(slides.length));
+    root.classList.add('is-interactive');
+
+    var current = root.querySelector('[data-current]');
+    var delay = parseInt(root.getAttribute('data-autoplay'), 10) || 0;
+    if (prefersReducedMotion()) delay = 0;
+
+    var index = slides.findIndex(function (s) { return s.classList.contains('is-active'); });
+    if (index < 0) index = 0;
     var timer = null;
-
-    function preload(position) {
-      var target = slides[(position + slides.length) % slides.length];
-      var img = target && qs('img[data-src]', target);
-      if (!img) return;
-      img.src = img.getAttribute('data-src');
-      img.removeAttribute('data-src');
-    }
 
     function show(next) {
       index = (next + slides.length) % slides.length;
-      slides.forEach(function (node, i) {
-        node.classList.toggle('is-active', i === index);
+      slides.forEach(function (slide, i) {
+        slide.classList.toggle('is-active', i === index);
+        slide.setAttribute('aria-hidden', i === index ? 'false' : 'true');
       });
       if (current) current.textContent = String(index + 1);
-      preload(index + 1);
     }
 
     function restart() {
       clearInterval(timer);
-      if (!delay) return;
-      timer = setInterval(function () { show(index + 1); }, delay);
+      if (delay) timer = setInterval(function () { show(index + 1); }, delay);
     }
 
     function go(step) {
@@ -98,8 +84,8 @@ window.APP.slideshow = (function (dom) {
       restart();
     }
 
-    qs('.slideshow__arrow--prev', root).addEventListener('click', function () { go(-1); });
-    qs('.slideshow__arrow--next', root).addEventListener('click', function () { go(1); });
+    root.querySelector('.slideshow__arrow--prev').addEventListener('click', function () { go(-1); });
+    root.querySelector('.slideshow__arrow--next').addEventListener('click', function () { go(1); });
 
     document.addEventListener('keydown', function (event) {
       if (event.key === 'ArrowLeft') go(-1);
@@ -121,19 +107,20 @@ window.APP.slideshow = (function (dom) {
       else restart();
     });
 
-    show(0);
-    preload(1);
+    show(index);
     restart();
   }
 
-  function render(mount, block) {
-    var items = (block && block.items) || [];
-    if (!items.length) return;
-
-    mount.className = dom.cls('slideshow', block.full && 'slideshow--full');
-    build(mount, items);
-    control(mount, block);
+  function start() {
+    [].forEach.call(document.querySelectorAll('[data-slideshow]'), function (root) {
+      try {
+        init(root);
+      } catch (error) {
+        console.error('[slideshow] no se pudo activar', error);
+      }
+    });
   }
 
-  return { render: render };
-})(window.APP.dom);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
