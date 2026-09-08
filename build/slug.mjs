@@ -4,7 +4,8 @@
 export function slugify(value) {
   return String(value)
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')   // fuera diacríticos
+    // \u0300-\u036f son los diacríticos que NFD deja sueltos
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^A-Za-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .toLowerCase();

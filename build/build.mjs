@@ -2,13 +2,14 @@
 
    Dos plantillas y ya:
 
-     index.html      portada: la foto a pantalla completa con «entrar»
-                     y, debajo, la lista de proyectos
+     index.html          portada: la foto con «entrar» y, debajo, los
+                         proyectos
      <slug>/index.html   ficha técnica y galería en scroll vertical
 
-   El sitio no lleva JavaScript. «Entrar» es un enlace a un ancla y el
-   navegador hace el desplazamiento suave él solo: la foto sube y
-   aparecen los proyectos.
+   El sitio funciona entero sin JavaScript: «entrar» es un enlace a un
+   ancla y el desplazamiento suave lo hace el navegador. El único script,
+   js/scatter.js, solo desperdiga los proyectos de la portada; sin él
+   salen en una lista normal.
 
      node build/build.mjs      (npm run build)
 
@@ -20,8 +21,9 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { WIDTHS, variant } from './formats.mjs';
+
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
-const WIDTHS = [400, 800, 1400];
 
 const read = (file) => JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
 const site = read('content/site.json');
@@ -32,21 +34,18 @@ const home = site.home || {};
 const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const attr = (v) => esc(v).replace(/"/g, '&quot;');
 
-/** El valor en el idioma del sitio, con el primero que haya de reserva.
-    `short` es el nombre corto para la lista de la portada, cuando el
-    título completo no cabe (ver content/overrides.json). */
+/** El valor en el idioma del sitio, con el primero que haya de reserva. */
 const t = (field) => (field ? field[lang] ?? Object.values(field)[0] ?? null : null);
 
 /* ── imágenes ────────────────────────────────────────────────────── */
 
-/* De cada foto hay hasta cuatro anchos en img/ (ver build/ingest.mjs).
-   El srcset lista solo los que existen: de un original pequeño no se
-   genera una variante más ancha que él. */
+/* De cada foto hay varias anchuras en img/ (ver build/ingest.mjs). El
+   srcset lista solo las que existen: de un original pequeño no se genera
+   una variante más ancha que él. */
 function srcset(image, base) {
-  const stem = image.src.replace(/\.webp$/, '');
   const found = WIDTHS
-    .filter((w) => existsSync(join(ROOT, `${stem}-${w}.webp`)))
-    .map((w) => `${base}${stem}-${w}.webp ${w}w`);
+    .filter((w) => existsSync(join(ROOT, variant(image.src, w))))
+    .map((w) => `${base}${variant(image.src, w)} ${w}w`);
   return found.length ? [...found, `${base}${image.src} ${image.w}w`].join(', ') : null;
 }
 
@@ -63,13 +62,20 @@ function img(image, { base = '', sizes = '100vw', eager = false, cap = false } =
 
 /* ── documento ───────────────────────────────────────────────────── */
 
-/* ?v=<hash> para que un deploy no deje a nadie con el CSS viejo en caché. */
-const version = (file) =>
-  existsSync(join(ROOT, file))
-    ? `?v=${createHash('sha1').update(readFileSync(join(ROOT, file))).digest('hex').slice(0, 8)}`
-    : '';
+/* ?v=<hash> para que un deploy no deje a nadie con el CSS o el JS viejos
+   en caché. Se calcula una vez por archivo, no una por página. */
+const hashes = new Map();
+function version(file) {
+  if (!hashes.has(file)) {
+    const path = join(ROOT, file);
+    hashes.set(file, existsSync(path)
+      ? `?v=${createHash('sha1').update(readFileSync(path)).digest('hex').slice(0, 8)}`
+      : '');
+  }
+  return hashes.get(file);
+}
 
-function page({ title, body, base = '', bodyClass = null }) {
+function page({ title, body, base = '', bodyClass = null, scripts = [] }) {
   return `<!DOCTYPE html>
 <html lang="${attr(lang)}">
 <head>
@@ -81,6 +87,7 @@ ${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link
 </head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}>
 ${body}
+${scripts.map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -92,87 +99,19 @@ ${body}
 const coverOf = (project) =>
   project.images.find((i) => i.src === project.cover) || project.images[0];
 
-/* Aleatorio con semilla: la misma semilla da siempre la misma
-   colocación, así que el HTML generado es estable y no hace falta
-   JavaScript en el navegador. Se cambia la semilla en site.json para
-   barajar de nuevo. */
-function random(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let x = Math.imul(a ^ (a >>> 15), 1 | a);
-    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
-    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-/* Coloca `count` cajas al azar dentro del 100 × 100 del contenedor sin
-   que se pisen: se tira una posición y se descarta si toca a alguna de
-   las ya puestas. Si tras muchos intentos no cabe con la separación que
-   se pide, se va cediendo; y si ni pegadas caben, se queda la posición
-   que menos solape de todas las probadas —nunca una a ciegas—.
-
-   Las cajas se colocan por su esquina superior izquierda y no pasan del
-   borde: el rango va de 0 a 100 - ancho. Todo en % del contenedor. */
-function scatter(count, boxW, boxH, rnd) {
-  const TRIES = 500;
-  const GAPS = [4, 2, 1, 0];
-  const placed = [];
-
-  const spanX = Math.max(0, 100 - boxW);
-  const spanY = Math.max(0, 100 - boxH);
-
-  /* Cuánto se solapan dos cajas, en área. 0 = no se tocan. */
-  const overlap = (a, b, gap = 0) => {
-    const dx = Math.min(a.x + boxW + gap, b.x + boxW) - Math.max(a.x - gap, b.x);
-    const dy = Math.min(a.y + boxH + gap, b.y + boxH) - Math.max(a.y - gap, b.y);
-    return dx > 0 && dy > 0 ? dx * dy : 0;
-  };
-
-  const cost = (spot, gap) => placed.reduce((sum, p) => sum + overlap(spot, p, gap), 0);
-
-  for (let i = 0; i < count; i++) {
-    let spot = null;
-    let best = null;
-    let bestCost = Infinity;
-
-    for (const gap of GAPS) {
-      for (let t = 0; t < TRIES; t++) {
-        const candidate = { x: rnd() * spanX, y: rnd() * spanY };
-        const c = cost(candidate, gap);
-        if (c === 0) { spot = candidate; break; }
-        // por si al final no cabe en ningún sitio: guarda la menos mala
-        if (c < bestCost) { bestCost = c; best = candidate; }
-      }
-      if (spot) break;
-    }
-
-    placed.push(spot || best);
-  }
-
-  return placed;
-}
-
 function homePage(projects) {
   /* La foto de portada es una de las ya ingeridas: se busca por su ruta
      para heredar sus medidas y su srcset. */
   const hero = projects.flatMap((p) => p.images).find((i) => i.src === home.hero);
   if (!hero) throw new Error(`La foto de portada no existe en img/: ${home.hero}`);
 
-  /* Dos colocaciones, una por tamaño de pantalla: en el móvil no caben
-     cuatro columnas. Cada una va en sus propias variables CSS y la hoja
-     de estilo elige con una media query. */
-  const rnd = random(home.seed || 1);
-  // el alto reservado va ajustado al que ocupan de verdad, para que
-  // quede sitio de sobra donde repartirlas
-  const wide = scatter(projects.length, 19, 10, rnd);
-  const narrow = scatter(projects.length, 44, 7, rnd);
-
-  const items = projects.map((project, i) => {
+  /* Los proyectos salen en el orden de siempre: js/scatter.js los
+     desperdiga en el navegador, con posiciones nuevas en cada carga.
+     `short` es el nombre corto para la portada, cuando el título entero
+     no cabe (ver content/overrides.json). */
+  const items = projects.map((project) => {
     const cover = coverOf(project);
-    const pos = `--x:${wide[i].x.toFixed(2)}%; --y:${wide[i].y.toFixed(2)}%;`
-      + ` --mx:${narrow[i].x.toFixed(2)}%; --my:${narrow[i].y.toFixed(2)}%`;
-    return `<li style="${pos}"><a href="${attr(project.slug)}/">
+    return `<li><a href="${attr(project.slug)}/">
 ${cover ? img(cover, { sizes: '(max-width: 700px) 25vw, 12vw' }) : ''}
 <span>${esc(t(project.short) || t(project.title) || project.slug)}</span>
 </a></li>`;
@@ -181,6 +120,7 @@ ${cover ? img(cover, { sizes: '(max-width: 700px) 25vw, 12vw' }) : ''}
   return page({
     title: null,
     bodyClass: 'home',
+    scripts: ['js/scatter.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
 
 <section class="hero">
@@ -218,7 +158,8 @@ const synopsis = (text) =>
 
 /** Las fotos por grupo, en el orden del JSON. Sin grupos, una sola tanda. */
 function groups(project) {
-  if (!project.groups?.length) return [[null, project.images]];
+  if (!project.groups?.length) return [{ name: null, images: project.images }];
+
   const names = new Map(project.groups.map((g) => [g.slug, g.name]));
   const buckets = new Map();
   for (const image of project.images) {
@@ -226,13 +167,18 @@ function groups(project) {
     if (!buckets.has(key)) buckets.set(key, []);
     buckets.get(key).push(image);
   }
-  return [...buckets].map(([key, images]) => [key ? names.get(key) || key : null, images]);
+
+  return [...buckets].map(([key, images]) => ({
+    name: key ? names.get(key) || key : null,
+    images,
+  }));
 }
 
 function projectPage(project) {
   const base = '../';   // las páginas cuelgan de <slug>/
 
-  const gallery = groups(project).map(([name, images], g) =>
+  /* La primera foto se carga con prioridad; las demás, según hagan falta. */
+  const gallery = groups(project).map(({ name, images }, g) =>
     `<section class="group">\n${name ? `<h2>${esc(name)}</h2>\n` : ''}`
     + images.map((image, i) =>
         `<figure>${img(image, { base, sizes: '100vw', cap: true, eager: g === 0 && i === 0 })}</figure>`

@@ -4,7 +4,8 @@
         ->  img/<categoría>/<proyecto>/<proyecto>-NN[-400|-800|-1400].webp
         ->  content/projects/<proyecto>.json
 
-   Convierte cada foto a WebP en cuatro anchos, mide sus dimensiones y
+   Convierte cada foto a WebP —el tamaño y la calidad, en formats.mjs—
+   más sus variantes pequeñas para el srcset, mide sus dimensiones y
    escribe un JSON por proyecto con título, sinopsis y créditos en los
    tres idiomas de la ficha, más la lista de imágenes.
 
@@ -18,12 +19,15 @@
    encima del JSON generado: así reingestar no se las lleva por delante. */
 
 import { execFile } from 'node:child_process';
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { basename, extname, join, relative, resolve } from 'node:path';
+import {
+  existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync,
+} from 'node:fs';
+import { join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 import { parseFicha } from './ficha.mjs';
+import { MAX_SIDE, QUALITY, WIDTHS, variant } from './formats.mjs';
 import { slugify, titleize } from './slug.mjs';
 
 const run = promisify(execFile);
@@ -35,16 +39,7 @@ const PROJECTS = join(ROOT, 'content', 'projects');
 const CACHE = join(ROOT, 'content', '.media-cache.json');
 const OVERRIDES = join(ROOT, 'content', 'overrides.json');
 
-/* La conversión es la misma que usamos en meowrhino/imgToWeb, que es la
-   de todos los sitios: calidad 0.85 y el LADO LARGO —no el ancho— topado
-   a 2000 px, manteniendo la proporción. Una foto vertical de 3840×5760
-   sale a 1333×2000, no a 2000×3000.
-
-   WIDTHS son las variantes pequeñas del srcset, esas sí por ancho. */
-const MAX_SIDE = 2000;
-const QUALITY = 85;
-const WIDTHS = [400, 800, 1400];
-const CONCURRENCY = 6;
+const CONCURRENCY = 6;   // conversiones a la vez
 
 const PHOTO = /\.(jpe?g|png)$/i;
 const FORCE = process.argv.includes('--force');
@@ -130,9 +125,28 @@ async function convert(source, dir, name, cache) {
     await toWebp(source, join(dir, `${name}-${width}.webp`), width);
   }
 
-  const image = { src: `${relative(ROOT, base)}`, w: outW, h: outH, source: key };
+  const image = { src: relative(ROOT, base), w: outW, h: outH, source: key };
   cache[key] = { mtimeMs: stat.mtimeMs, size: stat.size, name, image };
   return image;
+}
+
+/* Borra los .webp que la ingesta ya no genera. Sin esto, cambiar el
+   tamaño o quitar una foto del original deja huérfanos en img/ que nadie
+   sirve pero que sí se commitean. */
+function sweep(dir, images) {
+  const keep = new Set();
+  for (const image of images) {
+    const file = join(ROOT, image.src);
+    keep.add(file);
+    for (const w of WIDTHS) keep.add(variant(file, w));
+  }
+
+  let removed = 0;
+  for (const name of readdirSync(dir)) {
+    const file = join(dir, name);
+    if (name.endsWith('.webp') && !keep.has(file)) { rmSync(file); removed += 1; }
+  }
+  return removed;
 }
 
 /** Ejecuta `task` sobre cada elemento con un límite de tareas a la vez. */
@@ -185,10 +199,15 @@ async function ingestProject(categoryDir, categorySlug, name, cache) {
     if (group && !groups.some((g) => g.slug === group.slug)) groups.push(group);
   }
 
+  const clean = images.map(({ cached, ...rest }) => rest);
+  const swept = sweep(outDir, clean);
+
   const ficha = fichaOf(dir);
+  // `raw` es el texto plano de la ficha: útil al depurar, no en el JSON
   const { raw, ...meta } = ficha ? parseFicha(ficha) : { title: {}, synopsis: {}, credits: {} };
 
   return {
+    swept,
     slug,
     category: categorySlug,
     source: relative(ROOT, dir),
@@ -196,7 +215,7 @@ async function ingestProject(categoryDir, categorySlug, name, cache) {
     synopsis: meta.synopsis,
     credits: meta.credits,
     ...(groups.length ? { groups } : {}),
-    images: images.map(({ cached, ...rest }) => rest),
+    images: clean,
   };
 }
 
@@ -210,26 +229,31 @@ async function main() {
   const overrides = readJson(OVERRIDES, {});
   mkdirSync(PROJECTS, { recursive: true });
 
-  const index = [];
+  let projects = 0;
+  let photos = 0;
+
   for (const category of dirs(SOURCE)) {
     const categorySlug = slugify(category);
     const categoryDir = join(SOURCE, category);
 
     for (const name of dirs(categoryDir)) {
-      const project = applyOverride(
+      const { swept, ...project } = applyOverride(
         await ingestProject(categoryDir, categorySlug, name, cache),
         overrides[slugify(name)]
       );
 
       writeFileSync(join(PROJECTS, `${project.slug}.json`), JSON.stringify(project, null, 2) + '\n');
-      index.push({ slug: project.slug, category: project.category, images: project.images.length });
-      console.log(`${project.category}/${project.slug}`.padEnd(34) + `${project.images.length} fotos`);
+      projects += 1;
+      photos += project.images.length;
+
+      console.log(`${project.category}/${project.slug}`.padEnd(34)
+        + `${project.images.length} fotos`
+        + (swept ? `   (${swept} .webp huérfanos borrados)` : ''));
     }
   }
 
   writeFileSync(CACHE, JSON.stringify(cache, null, 0));
-  const total = index.reduce((n, p) => n + p.images, 0);
-  console.log(`\n${index.length} proyectos, ${total} fotos.`);
+  console.log(`\n${projects} proyectos, ${photos} fotos.`);
 }
 
 main().catch((error) => { console.error(error); process.exit(1); });

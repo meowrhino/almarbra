@@ -9,7 +9,7 @@ Dos pantallas:
 - **portada** (`/`): la foto a todo el ancho y sin recortar —se ve entera— con
   «entrar» encima. Debajo, otra pantalla de 100dvh en negro con la firma arriba y
   los proyectos desperdigados. «Entrar» es un ancla y el desplazamiento suave lo
-  hace el navegador: por eso no hace falta JavaScript.
+  hace el navegador.
 - **proyecto** (`/<slug>/`): ficha técnica —título, sinopsis y créditos— y la
   galería en scroll vertical.
 
@@ -32,11 +32,13 @@ content/projects/*.json GENERADO por la ingesta
 
 build/ingest.mjs        originals/ -> img/ + content/projects/
 build/ficha.mjs         lector de las FICHAS .rtf
+build/formats.mjs       tamaño y calidad de los WebP, en un solo sitio
 build/slug.mjs          slugs y nombres legibles
 build/build.mjs         content/ -> *.html
 build/serve.mjs         servidor local
 
 css/style.css           todo el estilo
+js/scatter.js           desperdiga los proyectos de la portada (lo único de navegador)
 img/<categoría>/<slug>/ GENERADO: 825 webp, 133 MB
 index.html              GENERADO — no editar a mano
 <slug>/index.html       GENERADO — no editar a mano
@@ -55,11 +57,14 @@ index.html              GENERADO — no editar a mano
 
 Es idempotente: se apoya en `content/.media-cache.json` y solo reconvierte lo que
 haya cambiado. Sin cambios tarda menos de un segundo. `npm run ingest -- --force`
-rehace todo.
+rehace todo. Al terminar cada proyecto borra los `.webp` que ya no genera, así que
+quitar una foto del original o cambiar el tamaño no deja huérfanos en `img/`.
 
 **La conversión es la de `meowrhino/imgToWeb`**, que es la de todos los sitios:
 calidad **0.85** y el **lado largo** topado a **2000 px**, con la proporción
-intacta. Ojo: el tope es el lado largo, no el ancho — una foto vertical de
+intacta. Está en `build/formats.mjs`, que leen tanto la ingesta —que los escribe—
+como el build —que los busca para el `srcset`—; si no coincidieran, se generarían
+variantes que nadie pide o se pedirían variantes que no existen. Ojo: el tope es el lado largo, no el ancho — una foto vertical de
 3840×5760 sale a 1333×2000, no a 2000×3000. Por eso las verticales rondan los
 1333 px de ancho, y en las galerías cada foto lleva un `max-width` con su ancho
 real para que no se amplíe en pantallas grandes.
@@ -123,8 +128,7 @@ Lo que se cambia sin tocar código, en `content/site.json`:
 ```jsonc
 "home": {
   "enter": "entrar",                                             // la palabra de la portada
-  "hero":  "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp",   // la foto grande
-  "seed":  1                                                     // baraja la colocación
+  "hero":  "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp"    // la foto grande
 },
 "order": ["textil", "editorial-moda"]                            // en qué orden salen
 ```
@@ -132,15 +136,18 @@ Lo que se cambia sin tocar código, en `content/site.json`:
 La ruta de `hero` es la de `img/`: cualquier foto ya ingerida sirve, y cambiarla es
 editar una línea y `npm run build`.
 
-Los proyectos de la segunda pantalla van desperdigados de verdad: el build tira
-posiciones al azar y descarta las que pisan a otro proyecto, aflojando la
-separación que exige si no encuentra hueco. Nunca se solapan ni se salen del
-borde. Hay dos repartos, uno para pantalla ancha y otro para móvil, porque las
-cajas no miden lo mismo; van en `--x/--y` y `--mx/--my` y la hoja de estilo elige
-con una media query.
+## Lo único de navegador: js/scatter.js
 
-La misma `seed` da siempre la misma colocación, así que el HTML es estable y no
-hace falta JavaScript. Para barajar de nuevo, se cambia el número.
+Los proyectos de la segunda pantalla salen **en un sitio distinto cada vez que se
+carga la página**. Eso no se puede hornear en el HTML, así que lo hace el
+navegador: `js/scatter.js` mide de verdad cada proyecto, tira posiciones al azar y
+descarta las que pisan a otro, aflojando la separación que exige si no encuentra
+hueco. Nunca se solapan ni se salen. Vuelve a repartir al girar el móvil o
+cambiar el tamaño de la ventana.
+
+**Sin él la página funciona igual**: el CSS deja los proyectos en una lista
+centrada, que es lo que se ve si el script no llega, falla o está desactivado.
+Es también lo que se ve si la pantalla es demasiado pequeña para repartirlos.
 
 El CSS se enlaza con `?v=<hash>` de su contenido: un deploy nunca deja a nadie con
 estilos viejos en caché.

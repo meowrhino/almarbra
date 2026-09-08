@@ -4,8 +4,10 @@
    mandando. Dos pantallas: la portada (foto + «entrar» + lista de
    proyectos) y la página de un proyecto (ficha + galería).
 
-   Sin JavaScript: «entrar» es un ancla y el desplazamiento suave lo
-   hace el navegador. */
+   La página funciona entera sin JavaScript: «entrar» es un ancla y el
+   desplazamiento suave lo hace el navegador. El único script,
+   js/scatter.js, solo desperdiga los proyectos de la portada; sin él
+   salen en una lista normal. */
 
 :root {
   --bg: #000;
@@ -107,26 +109,33 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   letter-spacing: .02em;
 }
 
-/* Los proyectos se colocan a mano por encima del área: el build les
-   pone --x/--y (pantalla ancha) y --mx/--my (móvil), repartidos por una
-   rejilla invisible con un empujón al azar dentro de cada celda. */
 .projects {
   position: relative;
   padding: var(--pad);
+  overflow-y: auto;   /* por si la lista de reserva no cabe */
 }
 
+/* Por defecto, una lista centrada: es lo que se ve sin JavaScript. */
 .projects ul {
   position: relative;
   height: 100%;
+  display: grid;
+  align-content: center;
+  gap: clamp(.5rem, 2dvh, 1.25rem);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.projects li {
+/* Con JavaScript, js/scatter.js marca la lista y coloca cada proyecto
+   donde le toca —left/top en píxeles, distintos en cada carga—. */
+.projects ul.is-scattered {
+  display: block;
+  overflow: hidden;
+}
+
+.projects ul.is-scattered li {
   position: absolute;
-  left: var(--x);
-  top: var(--y);
   width: 19%;
 }
 
@@ -154,13 +163,9 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .projects a:hover span { text-decoration: underline; text-underline-offset: .25em; }
 }
 
-/* en vertical estrecho: dos columnas y siete filas, y todo más pequeño */
+/* en vertical estrecho hacen falta cajas más anchas y todo más pequeño */
 @media (max-width: 700px) {
-  .projects li {
-    left: var(--mx);
-    top: var(--my);
-    width: 44%;
-  }
+  .projects ul.is-scattered li { width: 44%; }
 
   .projects a { gap: .4rem; }
   .projects img { height: clamp(2rem, 4.5dvh, 3rem); }

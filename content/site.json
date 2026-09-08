@@ -5,8 +5,7 @@
   "noindex": true,
   "home": {
     "enter": "entrar",
-    "hero": "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp",
-    "seed": 1
+    "hero": "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp"
   },
   "order": [
     "textil",
