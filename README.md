@@ -206,10 +206,14 @@ a alguien del equipo —28 personas, 22 uniones— y cada persona tiene su color
 mismo en las tres maquetas. Las tres series textiles no traen ficha de equipo: las
 enhebra la técnica.
 
-- `pruebas/portada.html` — **la que va a la web**: la portada de verdad, con los
-  proyectos desperdigados como ahora y cosidos con hilo. Aquí el hilo *no* significa
-  nada: une lo que queda cerca, de un solo color, y cambia en cada carga como cambia
-  el reparto. Es `js/scatter.js` más un tejido.
+- `pruebas/portada.html` — **la que va a la web**: la portada de verdad con los
+  proyectos cosidos. El hilo *no* significa nada —de un solo color— y la tela cambia
+  en cada carga. Los proyectos ya no caen a lo loco sino en una rejilla torcida (cada
+  columna y cada fila desviadas un poco, y quién cae en qué cruce cambia cada vez), y
+  el hilo corre en horizontal y en vertical: en diagonal salía constelación. Tres
+  maneras de coserlo, con las teclas 1 2 3 — `telar` (hilos de lado a lado que se
+  cruzan por encima y por debajo, con su hueco), `nodos` (conectores y cables curvos)
+  y `mixto` (codos en ángulo recto). La tecla `r` reparte otra vez.
 - `pruebas/cables.html` — nodos y cables, como el editor del vídeo.
 - `pruebas/telar.html` — urdimbre de personas, trama de proyectos.
 - `pruebas/tejido.html` — la tela viva, con física.
