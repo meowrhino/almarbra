@@ -7,11 +7,12 @@ CSS e imágenes. **Cero dependencias y cero JavaScript de navegador.**
 Dos pantallas:
 
 - **portada** (`/`): la foto —un PNG recortado, con el fondo transparente—
-  entera en la primera pantalla y «entrar» encima. Debajo, otra pantalla de 100dvh en negro con la firma arriba y
-  los proyectos desperdigados. «Entrar» es un ancla y el desplazamiento suave lo
-  hace el navegador.
-- **proyecto** (`/<slug>/`): ficha técnica —título, sinopsis y créditos— y la
-  galería en scroll vertical.
+  entera en la primera pantalla y «entrar» encima. Debajo, otra pantalla de
+  100dvh en negro con la firma arriba y los proyectos desperdigados. «Entrar» es
+  un ancla y el desplazamiento suave lo hace el navegador.
+- **proyecto** (`/<slug>/`): una columna de 800 px centrada y con aire alrededor
+  —ficha técnica arriba, galería en scroll vertical debajo—. Nada va a sangre: el
+  negro de los lados es parte de la página.
 
 ```bash
 npm run ingest    # originals/ -> img/*.webp + content/projects/*.json
@@ -142,6 +143,11 @@ Lo que se cambia sin tocar código, en `content/site.json`:
 La foto de la portada no se elige aquí: es la que haya en `originals/PORTADA/`
 (ver *La ingesta*).
 
+El ancho de la columna de un proyecto —800 px— vive en `--col`, en
+`css/style.css`, y `build/build.mjs` lo repite en el `sizes` de cada foto para
+que el navegador no se baje una más grande de la cuenta. Si cambia uno, cambia el
+otro.
+
 ## Lo único de navegador: js/scatter.js
 
 Los proyectos de la segunda pantalla salen **en un sitio distinto cada vez que se
@@ -175,8 +181,9 @@ Laocoonte, Río de la Plata, Virgen) — 116 fotos.
 ### Lo que hay que mirar antes de diseñar
 
 - **Águeda va corta de resolución**: sus 9 fotos están por debajo de 1400 px (la
-  menor, 541). No aguanta un hero a pantalla completa. Habría que pedirle los
-  originales.
+  menor, 541). En la columna de 800 se defiende —las que no llegan se quedan
+  centradas a su ancho real en vez de ampliarse—, pero no aguanta un hero a
+  pantalla completa. Habría que pedirle los originales.
 - **Cuerpo Esquema** mezcla 24 fotos de piezas con 59 capturas de pantalla y
   recursos: son dos cosas distintas y 19 bajan de 1400 px. Hay que decidir qué
   entra en la web.

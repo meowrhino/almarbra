@@ -182,6 +182,11 @@ function groups(project) {
   }));
 }
 
+/* Las fotos del proyecto van en una columna de 800 px como mucho, con
+   aire a los lados; por debajo de ahí ocupan el ancho que quede. El 800
+   sale de `--col` en css/style.css: si cambia allí, cambia aquí. */
+const GALLERY_SIZES = '(min-width: 896px) 800px, 100vw';
+
 function projectPage(project) {
   const base = '../';   // las páginas cuelgan de <slug>/
 
@@ -189,7 +194,7 @@ function projectPage(project) {
   const gallery = groups(project).map(({ name, images }, g) =>
     `<section class="group">\n${name ? `<h2>${esc(name)}</h2>\n` : ''}`
     + images.map((image, i) =>
-        `<figure>${img(image, { base, sizes: '100vw', cap: true, eager: g === 0 && i === 0 })}</figure>`
+        `<figure>${img(image, { base, sizes: GALLERY_SIZES, cap: true, eager: g === 0 && i === 0 })}</figure>`
       ).join('\n')
     + '\n</section>'
   );

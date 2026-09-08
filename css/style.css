@@ -175,20 +175,51 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .projects span { font-size: 11px; }
 }
 
-/* ── página de proyecto ──────────────────────────────────────────── */
+/* ── página de proyecto ──────────────────────────────────────────────
+
+   Una sola columna estrecha —800 px como mucho— centrada y con aire por
+   los cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
+   ancho. Nada va a sangre; el negro alrededor es parte de la página.
+
+   Los 800 también los sabe build/build.mjs, que los pone en el `sizes`
+   de cada foto: si cambian aquí, cambian allí. */
+
+.project { --col: 800px; }
+
+/* La columna: 800 px, o todo el ancho menos el aire de los lados. La
+   firma de arriba y la vuelta de abajo van al ras de ella. */
+.project .bar,
+.project article {
+  width: min(var(--col), 100% - 2 * var(--pad));
+  margin-inline: auto;
+}
+
+.project article {
+  padding-block: clamp(2rem, 7vh, 4.5rem) clamp(3rem, 10vh, 6rem);
+}
 
 .bar {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
   min-height: var(--bar);
-  padding: 1rem var(--pad);
+  padding-block: clamp(1rem, 3vh, 2rem);
+  font-size: .9em;
+  color: var(--dim);
 }
 
-.ficha {
-  max-width: 34rem;
-  margin: clamp(2rem, 10vh, 6rem) auto clamp(3rem, 12vh, 7rem);
-  padding: 0 var(--pad);
+/* Que la página no termine a ras del último enlace. */
+.project footer.bar { padding-bottom: clamp(2rem, 7vh, 4.5rem); }
+
+@media (hover: hover) {
+  .bar a:hover { color: var(--ink); }
 }
+
+.ficha { margin: 0 0 clamp(2.5rem, 9vh, 5.5rem); }
+
+/* El texto, más estrecho que la columna: una línea de 800 px se lee
+   mal. Las fotos sí la ocupan entera. */
+.ficha h1,
+.ficha p { max-width: 34rem; }
 
 .ficha h1 {
   margin: 0 0 1.5rem;
@@ -216,19 +247,17 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .group h2 {
   margin: 0 0 1.5rem;
-  padding: 0 var(--pad);
   font-size: .9em;
   font-weight: 400;
   letter-spacing: .12em;
   color: var(--dim);
 }
 
-/* A sangre: la foto ocupa todo el ancho que da de sí, y no más. El
-   `max-width` de cada una lo pone el build con su ancho real, para no
-   ampliarlas. */
-.group figure {
-  margin: 0 0 clamp(.5rem, 2dvh, 1.5rem);
-}
+/* Cada foto ocupa la columna entera... salvo las que de origen son más
+   estrechas: el `max-width` que les pone el build con su ancho real las
+   frena, y entonces se quedan centradas antes que ampliarse y verse
+   blandas. */
+.group figure { margin: 0 0 clamp(.75rem, 3vh, 2rem); }
 
 .group figure img { width: 100%; margin: 0 auto; }
 
