@@ -221,7 +221,6 @@ async function main() {
   }
 
   writeFileSync(CACHE, JSON.stringify(cache, null, 0));
-  writeFileSync(join(PROJECTS, 'index.json'), JSON.stringify(index, null, 2) + '\n');
   const total = index.reduce((n, p) => n + p.images, 0);
   console.log(`\n${index.length} proyectos, ${total} fotos.`);
 }
