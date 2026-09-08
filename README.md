@@ -207,13 +207,13 @@ mismo en las tres maquetas. Las tres series textiles no traen ficha de equipo: l
 enhebra la técnica.
 
 - `pruebas/portada.html` — **la que va a la web**: la portada de verdad con los
-  proyectos cosidos. El hilo *no* significa nada —de un solo color— y la tela cambia
-  en cada carga. Los proyectos ya no caen a lo loco sino en una rejilla torcida (cada
-  columna y cada fila desviadas un poco, y quién cae en qué cruce cambia cada vez), y
-  el hilo corre en horizontal y en vertical: en diagonal salía constelación. Tres
-  maneras de coserlo, con las teclas 1 2 3 — `telar` (hilos de lado a lado que se
-  cruzan por encima y por debajo, con su hueco), `nodos` (conectores y cables curvos)
-  y `mixto` (codos en ángulo recto). La tecla `r` reparte otra vez.
+  proyectos cableados. Siguen cayendo al azar en cada carga —el reparto es el de
+  `js/scatter.js`, sin tocar— y se cablean los que quedan cerca: se ordenan todas las
+  distancias y se corta donde salen ~1,3 cables por proyecto, más el vecino más cercano
+  de quien se hubiera quedado solo. Lo que lo separa de una constelación no es dónde
+  caen, es el cable: cada ficha lleva un conector a cada costado y el cable sale en
+  horizontal, entra en horizontal y da la vuelta si el destino le queda detrás. Un solo
+  color, sin significados. La tecla `r` reparte otra vez.
 - `pruebas/cables.html` — nodos y cables, como el editor del vídeo.
 - `pruebas/telar.html` — urdimbre de personas, trama de proyectos.
 - `pruebas/tejido.html` — la tela viva, con física.

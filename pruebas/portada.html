@@ -7,13 +7,14 @@
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="../css/style.css">
 <style>
-  /* La portada de verdad con los proyectos cosidos. Lo que cambió: ya no
-     se desperdigan a lo loco —eso salía constelación— sino en una rejilla
-     torcida, como una urdimbre montada a mano. Y el hilo no va en
-     diagonal: corre en horizontal y en vertical, que es como corre un
-     hilo en un telar y como sale un cable de un nodo.
+  /* La portada de verdad. Los proyectos siguen cayendo donde les da la
+     gana en cada carga —eso es lo bueno y no se toca—; lo que cambia es
+     el hilo: ya no es una raya de punto a punto, es un cable. Sale por
+     un conector de la derecha, entra por uno de la izquierda y si el
+     otro le queda detrás, da la vuelta. Eso es lo que separa un mapa de
+     nodos de una constelación.
 
-     Tres maneras de coser lo mismo, con las teclas 1 2 3. */
+     Se cablean los que quedan cerca, y ya está. */
 
   .projects .hilos {
     position: absolute;
@@ -26,64 +27,56 @@
 
   .projects .hilos path {
     fill: none;
-    stroke: rgba(255, 255, 255, .26);
-    stroke-width: 1;
-    stroke-linecap: butt;
-    transition: stroke .3s, stroke-width .3s;
+    stroke: rgba(255, 255, 255, .3);
+    stroke-width: 1.1;
+    stroke-linecap: round;
+    transition: stroke .25s, stroke-width .25s;
   }
 
   .projects .hilos path.vivo {
     stroke: rgba(255, 255, 255, .9);
-    stroke-width: 1.5;
+    stroke-width: 1.6;
   }
 
-  .projects ul.is-scattered li { z-index: 1; }
+  /* los proyectos, por encima del cable. Y cada ficha del ancho de lo
+     que lleva dentro, no del 19% fijo: así el conector queda pegado al
+     nombre y no a media pantalla de distancia. */
+  .projects ul.is-scattered li { z-index: 1; width: auto; max-width: 24%; }
+  /* el nombre, de una línea: una ficha de nodo no parte palabras */
+  .projects ul.is-scattered span { white-space: nowrap; }
 
-  /* los conectores, solo en el modo nodos */
-  .modo-nodos .projects ul.is-scattered a { position: relative; }
-  .modo-nodos .projects ul.is-scattered a::before,
-  .modo-nodos .projects ul.is-scattered a::after {
+  /* los conectores: un punto a cada lado, de donde sale el cable */
+  .projects ul.is-scattered a { position: relative; }
+  .projects ul.is-scattered a::before,
+  .projects ul.is-scattered a::after {
     content: "";
     position: absolute;
     top: 50%;
-    width: 6px; height: 6px;
-    margin-top: -3px;
-    border: 1px solid rgba(255, 255, 255, .45);
+    width: 5px; height: 5px;
+    margin-top: -2.5px;
+    border: 1px solid rgba(255, 255, 255, .4);
     background: var(--bg);
     border-radius: 50%;
+    transition: border-color .25s;
   }
-  .modo-nodos .projects ul.is-scattered a::before { left: -9px; }
-  .modo-nodos .projects ul.is-scattered a::after { right: -9px; }
+  .projects ul.is-scattered a::before { left: -8px; }
+  .projects ul.is-scattered a::after { right: -8px; }
+  .projects ul.is-scattered li:hover a::before,
+  .projects ul.is-scattered li:hover a::after { border-color: rgba(255, 255, 255, .9); }
 
-  /* el mando de la prueba, discreto */
-  .mando {
+  .volver {
     position: fixed;
     top: .9rem; right: 1.2rem;
     z-index: 5;
-    display: flex;
-    gap: .9rem;
     font-size: 11px;
     color: rgba(255, 255, 255, .3);
   }
-  .mando button {
-    all: unset;
-    cursor: pointer;
-    color: inherit;
-    text-transform: lowercase;
-  }
-  .mando button[aria-pressed="true"] { color: #fff; }
-  .mando a:hover, .mando button:hover { color: #fff; }
+  .volver:hover { color: #fff; }
 </style>
 </head>
-<body class="home modo-telar">
+<body class="home">
 <h1 class="sr-only">almudena gonzalez</h1>
-
-<div class="mando">
-  <button data-modo="telar" aria-pressed="true">telar</button>
-  <button data-modo="nodos" aria-pressed="false">nodos</button>
-  <button data-modo="mixto" aria-pressed="false">mixto</button>
-  <a href="index.html">pruebas</a>
-</div>
+<a class="volver" href="index.html">pruebas</a>
 
 <section class="hero">
   <img src="../img/portada/portada.webp"
@@ -102,14 +95,16 @@
 
 <script src="datos.js"></script>
 <script>
+/* El reparto es el de js/scatter.js, tal cual: medir, tirar posiciones y
+   descartar las que pisan a otro. Encima, el cableado. Aquí la lista se
+   pinta desde datos.js porque es una prueba; en el sitio ya viene hecha
+   en el HTML. */
 (() => {
   const { proyectos } = window.TEJIDO;
   const list = document.querySelector('.projects ul');
   const svg = document.querySelector('.projects .hilos');
   const NS = 'http://www.w3.org/2000/svg';
 
-  /* La lista se pinta desde datos.js porque esto es una prueba; en el
-     sitio ya viene hecha en el HTML. */
   list.innerHTML = proyectos.map((p) => `
     <li><a href="../${p.slug}/">
       <img src="../${p.mini}" alt="" loading="lazy" decoding="async">
@@ -117,212 +112,89 @@
     </a></li>`).join('');
 
   const items = [...list.children];
-  const revuelto = (a) => a.map((v) => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(([, v]) => v);
 
-  let modo = 'telar';
-  let tela = null;   // lo último que se colocó, para poder recoser sin recolocar
+  /* ── el reparto (js/scatter.js) ─────────────────────────────────── */
+  const TRIES = 500;
+  const GAPS = [24, 12, 6, 0];
 
-  /* ── la urdimbre: una rejilla torcida ──────────────────────────────
-     Columnas y filas repartidas por la superficie, pero ninguna donde
-     tocaría exactamente: cada una se desvía un poco, como cuando se
-     monta la urdimbre a mano. Cambian en cada carga. */
-  function montar(area, cajas) {
-    const anchoItem = Math.max(...cajas.map((c) => c.w));
-    const cols = Math.max(2, Math.min(5, Math.floor(area.w / (anchoItem * 1.22))));
-    const filas = Math.ceil(cajas.length / cols);
-
-    const anchoCol = area.w / cols;
-    const altoFila = area.h / filas;
-    const torcer = (paso) => (Math.random() - .5) * paso * .22;
-
-    const equis = Array.from({ length: cols }, (_, c) => anchoCol * (c + .5) + torcer(anchoCol));
-    const yes = Array.from({ length: filas }, (_, f) => altoFila * (f + .5) + torcer(altoFila));
-
-    /* qué proyecto cae en qué cruce, distinto en cada carga */
-    const cruces = revuelto(
-      Array.from({ length: cols * filas }, (_, i) => ({ c: i % cols, f: Math.floor(i / cols) }))
-    ).slice(0, cajas.length);
-
-    const nudos = cajas.map((caja, i) => {
-      const { c, f } = cruces[i];
-      const x = Math.min(area.w - caja.w / 2 - 4, Math.max(caja.w / 2 + 4, equis[c]));
-      const y = Math.min(area.h - caja.h / 2 - 4, Math.max(caja.h / 2 + 4, yes[f]));
-      return { i, c, f, x, y, w: caja.w, h: caja.h };
-    });
-
-    return { area, cols, filas, equis, yes, nudos };
+  function overlap(a, b, gap) {
+    const dx = Math.min(a.x + a.w + gap, b.x + b.w) - Math.max(a.x - gap, b.x);
+    const dy = Math.min(a.y + a.h + gap, b.y + b.h) - Math.max(a.y - gap, b.y);
+    return dx > 0 && dy > 0 ? dx * dy : 0;
   }
 
-  /* ── coser 1: el telar ─────────────────────────────────────────────
-     Los hilos no van de un proyecto a otro: atraviesan la tela de lado
-     a lado. Y en cada cruce uno pasa por encima del otro —a cuadros,
-     como en un tafetán—, así que el de abajo lleva su hueco. */
-  function coserTelar({ area, equis, yes, sangre }) {
-    const HUECO = 5;
-    const hilos = [];
+  /* se deja un dedo de aire en los bordes: los conectores asoman por
+     fuera de la ficha y si no se cortan contra el borde */
+  const AIRE = 10;
 
-    /* los hilos no acaban en el borde de la caja: se salen de la
-       pantalla, como la tela se sale del telar */
-    yes.forEach((y, f) => {
-      const cortes = equis.filter((x, c) => (f + c) % 2 === 1);   // aquí manda la vertical
-      hilos.push({
-        d: tramos(-sangre, area.w + sangre, cortes, HUECO).map((t) => `M${t[0]},${y} L${t[1]},${y}`).join(' '),
-        fila: f,
-      });
-    });
-
-    equis.forEach((x, c) => {
-      const cortes = yes.filter((y, f) => (f + c) % 2 === 0);     // aquí manda la horizontal
-      hilos.push({
-        d: tramos(-sangre, area.h + sangre, cortes, HUECO).map((t) => `M${x},${t[0]} L${x},${t[1]}`).join(' '),
-        col: c,
-      });
-    });
-
-    return hilos;
-  }
-
-  /** Un hilo entero menos los huecos donde pasa por debajo. */
-  function tramos(desde, hasta, cortes, hueco) {
-    const trozos = [];
-    let a = desde;
-    for (const corte of [...cortes].sort((x, y) => x - y)) {
-      if (corte - hueco > a) trozos.push([a, corte - hueco]);
-      a = corte + hueco;
-    }
-    if (hasta > a) trozos.push([a, hasta]);
-    return trozos;
-  }
-
-  /* ── vecinos ───────────────────────────────────────────────────────
-     Para los dos modos de cable: cada uno se une a los dos que tiene
-     más cerca, y después se juntan las islas sueltas hasta que la tela
-     es una sola pieza. */
-  function vecinos(nudos) {
-    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
-    const clave = (i, j) => (i < j ? `${i}-${j}` : `${j}-${i}`);
-    const pares = new Map();
-
-    nudos.forEach((p, i) => {
-      nudos.map((q, j) => ({ j, d: dist(p, q) }))
-        .filter((v) => v.j !== i)
-        .sort((a, b) => a.d - b.d)
-        .slice(0, 2)
-        .forEach((v) => pares.set(clave(i, v.j), [i, v.j]));
-    });
-
-    const isla = nudos.map((_, i) => i);
-    const unir = (a, b) => {
-      const [x, y] = [isla[a], isla[b]];
-      if (x !== y) isla.forEach((v, i) => { if (v === y) isla[i] = x; });
-    };
-    for (const [a, b] of pares.values()) unir(a, b);
-
-    while (new Set(isla).size > 1) {
-      let mejor = null;
-      for (let i = 0; i < nudos.length; i++) {
-        for (let j = i + 1; j < nudos.length; j++) {
-          if (isla[i] === isla[j]) continue;
-          const d = dist(nudos[i], nudos[j]);
-          if (!mejor || d < mejor.d) mejor = { i, j, d };
+  function place(boxes, area) {
+    const placed = [];
+    for (const box of boxes) {
+      const spanX = Math.max(0, area.w - box.w - AIRE * 2);
+      const spanY = Math.max(0, area.h - box.h - AIRE * 2);
+      let spot = null, best = null, bestCost = Infinity;
+      for (const gap of GAPS) {
+        for (let t = 0; t < TRIES; t++) {
+          const c = { x: AIRE + Math.random() * spanX, y: AIRE + Math.random() * spanY, w: box.w, h: box.h };
+          const cost = placed.reduce((s, p) => s + overlap(c, p, gap), 0);
+          if (cost === 0) { spot = c; break; }
+          if (cost < bestCost) { bestCost = cost; best = c; }
         }
+        if (spot) break;
       }
-      pares.set(clave(mejor.i, mejor.j), [mejor.i, mejor.j]);
-      unir(mejor.i, mejor.j);
+      placed.push(spot || best);
     }
-
-    return [...pares.values()];
+    return placed;
   }
 
-  /* ── coser 2: nodos ────────────────────────────────────────────────
-     El cable sale por el conector de la derecha y entra por el de la
-     izquierda, siempre en horizontal, como en un editor de nodos. */
-  function coserNodos(tela) {
-    return vecinos(tela.nudos).map(([i, j]) => {
-      const [a, b] = tela.nudos[i].x <= tela.nudos[j].x ? [tela.nudos[i], tela.nudos[j]] : [tela.nudos[j], tela.nudos[i]];
-      const x1 = a.x + a.w / 2 + 9, y1 = a.y;
-      const x2 = b.x - b.w / 2 - 9, y2 = b.y;
-      /* si el de destino queda detrás —uno encima del otro, por
-         ejemplo— el cable sale igual por la derecha y vuelve dando la
-         vuelta, que es lo que hace un editor de nodos de verdad */
-      const tira = Math.max(55, Math.abs(x2 - x1) * .55, (x1 - x2) * .9);
-      return { d: `M${x1},${y1} C${x1 + tira},${y1} ${x2 - tira},${y2} ${x2},${y2}`, de: i, a: j };
-    });
-  }
+  /* ── quién se cablea con quién ─────────────────────────────────────
+     Por proximidad y nada más: se cablean los pares que quedan cerca.
+     «Cerca» no puede ser una medida fija —en una ventana grande todo
+     queda lejos y en una pequeña todo cerca—, así que se mide en cada
+     reparto: se ordenan todas las distancias y se corta donde salen
+     unos dos cables y medio por proyecto. Ni una maraña ni cuatro
+     islas. */
+  const CABLES_POR_NUDO = 1.3;
 
-  /* ── coser 3: mixto ────────────────────────────────────────────────
-     Ni diagonal ni curva: sale en horizontal, gira en ángulo redondo,
-     baja en vertical y entra en horizontal. Circuito y tejido a la vez. */
-  function coserMixto(tela) {
-    const R = 12;
-    /* Un codo redondo entre dos puntos: recto, giro, recto. */
-    const codo = (x1, y1, x2, y2, porX) => {
-      const r = Math.min(R, Math.abs(x2 - x1) / 2, Math.abs(y2 - y1) / 2);
-      if (r < 2) return `M${x1},${y1} L${x2},${y2}`;
-      const sx = Math.sign(x2 - x1), sy = Math.sign(y2 - y1);
-      return porX
-        ? `M${x1},${y1} L${x2 - sx * r},${y1} Q${x2},${y1} ${x2},${y1 + sy * r} L${x2},${y2}`
-        : `M${x1},${y1} L${x1},${y2 - sy * r} Q${x1},${y2} ${x1 + sx * r},${y2} L${x2},${y2}`;
-    };
-
-    return vecinos(tela.nudos).map(([i, j]) => {
-      const p = tela.nudos[i], q = tela.nudos[j];
-      const dx = Math.abs(q.x - p.x), dy = Math.abs(q.y - p.y);
-
-      /* El hilo manda: si están más de lado, sale por el costado; si
-         están más uno encima de otro, sale por arriba o por abajo. Nunca
-         en diagonal. */
-      if (dx > dy) {
-        const [a, b] = p.x <= q.x ? [p, q] : [q, p];
-        const x1 = a.x + a.w / 2 + 9, x2 = b.x - b.w / 2 - 9;
-        const mx = (x1 + x2) / 2;
-        if (Math.abs(a.y - b.y) < 2 || x2 - x1 < R * 2) {
-          return { d: `M${x1},${a.y} L${x2},${b.y}`, de: i, a: j };
-        }
-        const r = Math.min(R, Math.abs(b.y - a.y) / 2, (x2 - x1) / 2);
-        const s = Math.sign(b.y - a.y);
-        return {
-          d: `M${x1},${a.y} L${mx - r},${a.y} Q${mx},${a.y} ${mx},${a.y + s * r}` +
-             ` L${mx},${b.y - s * r} Q${mx},${b.y} ${mx + r},${b.y} L${x2},${b.y}`,
-          de: i, a: j,
-        };
+  function cerca(nudos) {
+    const pares = [];
+    for (let i = 0; i < nudos.length; i++) {
+      for (let j = i + 1; j < nudos.length; j++) {
+        pares.push({ i, j, d: Math.hypot(nudos[i].x - nudos[j].x, nudos[i].y - nudos[j].y) });
       }
+    }
+    pares.sort((a, b) => a.d - b.d);
+    const cuantos = Math.min(pares.length, Math.round(nudos.length * CABLES_POR_NUDO));
+    const umbral = pares[cuantos - 1].d;
+    const elegidos = new Map(pares.filter((p) => p.d <= umbral).map((p) => [`${p.i}-${p.j}`, p]));
 
-      const [a, b] = p.y <= q.y ? [p, q] : [q, p];
-      const y1 = a.y + a.h / 2 + 4, y2 = b.y - b.h / 2 - 4;
-      if (Math.abs(a.x - b.x) < 2) return { d: `M${a.x},${y1} L${b.x},${y2}`, de: i, a: j };
-      const my = (y1 + y2) / 2;
-      const r = Math.min(R, Math.abs(b.x - a.x) / 2, Math.max(1, (y2 - y1) / 2));
-      const s = Math.sign(b.x - a.x);
-      return {
-        d: `M${a.x},${y1} L${a.x},${my - r} Q${a.x},${my} ${a.x + s * r},${my}` +
-           ` L${b.x - s * r},${my} Q${b.x},${my} ${b.x},${my + r} L${b.x},${y2}`,
-        de: i, a: j,
-      };
+    /* y que no se quede nadie solo: quien no haya pillado cable por
+       cercanía se cablea igual con el que tenga más a mano */
+    nudos.forEach((_, i) => {
+      if ([...elegidos.values()].some((p) => p.i === i || p.j === i)) return;
+      const mano = pares.find((p) => p.i === i || p.j === i);
+      if (mano) elegidos.set(`${mano.i}-${mano.j}`, mano);
     });
+
+    return [...elegidos.values()];
   }
 
-  /* ── pintar ────────────────────────────────────────────────────── */
-  function coser() {
-    if (!tela) return;
-    const hilos = modo === 'telar' ? coserTelar(tela)
-                : modo === 'nodos' ? coserNodos(tela)
-                : coserMixto(tela);
-
-    svg.replaceChildren();
-    for (const h of hilos) {
-      const path = document.createElementNS(NS, 'path');
-      path.setAttribute('d', h.d);
-      for (const k of ['de', 'a', 'fila', 'col']) if (h[k] !== undefined) path.dataset[k] = h[k];
-      svg.appendChild(path);
-    }
+  /* El cable sale por el conector de la derecha y entra por el de la
+     izquierda, siempre en horizontal. Si el otro le queda detrás, sale
+     igual y da la vuelta: eso es lo que hace un editor de nodos y lo
+     que una constelación no hace nunca. */
+  function cable(a, b) {
+    const [de, hacia] = a.x <= b.x ? [a, b] : [b, a];
+    const x1 = de.x + de.w / 2 + 8, y1 = de.y;
+    const x2 = hacia.x - hacia.w / 2 - 8, y2 = hacia.y;
+    const tira = Math.min(150, Math.max(45, (x2 - x1) * .5, (x1 - x2) * .5));
+    return `M${x1},${y1} C${x1 + tira},${y1} ${x2 - tira},${y2} ${x2},${y2}`;
   }
 
   function reset() {
     list.classList.remove('is-scattered');
     for (const item of items) { item.style.left = ''; item.style.top = ''; }
     svg.replaceChildren();
-    tela = null;
   }
 
   function repartir() {
@@ -335,18 +207,26 @@
       return { w: r.width, h: r.height };
     });
 
-    /* si no hay superficie que repartir, la lista de siempre */
-    const cabe = cajas.every((c) => c.w > 0 && c.h > 0 && c.w * 2.2 <= area.width && c.h * 3 <= area.height);
+    /* sin superficie que repartir, la lista de siempre */
+    const cabe = cajas.every((c) => c.w > 0 && c.h > 0 && c.w <= area.width && c.h <= area.height);
     if (!cabe) { reset(); return; }
 
-    tela = montar({ w: area.width, h: area.height }, cajas);
-    /* lo que hay del borde de la lista al borde de la pantalla */
-    tela.sangre = parseFloat(getComputedStyle(document.querySelector('.projects')).paddingLeft) || 0;
-    tela.nudos.forEach((n) => {
-      items[n.i].style.left = `${n.x - n.w / 2}px`;
-      items[n.i].style.top = `${n.y - n.h / 2}px`;
+    const sitios = place(cajas, { w: area.width, h: area.height });
+    sitios.forEach((s, i) => {
+      items[i].style.left = `${s.x}px`;
+      items[i].style.top = `${s.y}px`;
     });
-    coser();
+
+    /* el cable entra y sale por el centro de los lados */
+    const nudos = sitios.map((s) => ({ x: s.x + s.w / 2, y: s.y + s.h / 2, w: s.w, h: s.h }));
+    svg.replaceChildren();
+    for (const { i, j } of cerca(nudos)) {
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', cable(nudos[i], nudos[j]));
+      path.dataset.de = i;
+      path.dataset.a = j;
+      svg.appendChild(path);
+    }
   }
 
   repartir();
@@ -358,37 +238,20 @@
     pendiente = setTimeout(repartir, 150);
   });
 
-  /* Al pasar por un proyecto se enciende de lo que cuelga: en el telar,
-     su hilo de urdimbre y su pasada; en los otros, sus cables. */
+  /* Al pasar por un proyecto se encienden sus cables. */
   list.addEventListener('pointerover', (e) => {
     const li = e.target.closest('li');
     const i = li ? items.indexOf(li) : -1;
-    const nudo = i >= 0 && tela ? tela.nudos.find((n) => n.i === i) : null;
     for (const path of svg.children) {
-      const suyo = nudo && (modo === 'telar'
-        ? +path.dataset.fila === nudo.f || +path.dataset.col === nudo.c
-        : +path.dataset.de === i || +path.dataset.a === i);
-      path.classList.toggle('vivo', !!suyo);
+      path.classList.toggle('vivo', i >= 0 && (+path.dataset.de === i || +path.dataset.a === i));
     }
   });
   list.addEventListener('pointerleave', () => {
     for (const path of svg.children) path.classList.remove('vivo');
   });
 
-  /* el mando: telar, nodos, mixto */
-  const botones = [...document.querySelectorAll('.mando button')];
-  const cambiar = (nuevo) => {
-    modo = nuevo;
-    document.body.className = `home modo-${modo}`;
-    for (const b of botones) b.setAttribute('aria-pressed', String(b.dataset.modo === modo));
-    coser();
-  };
-  for (const b of botones) b.addEventListener('click', () => cambiar(b.dataset.modo));
-  addEventListener('keydown', (e) => {
-    const cual = { 1: 'telar', 2: 'nodos', 3: 'mixto' }[e.key];
-    if (cual) cambiar(cual);
-    if (e.key === 'r') repartir();   // otro reparto, sin recargar
-  });
+  /* la tecla r reparte otra vez, para mirar cómo sale */
+  addEventListener('keydown', (e) => { if (e.key === 'r') repartir(); });
 })();
 </script>
 </body>
