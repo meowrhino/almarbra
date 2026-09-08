@@ -127,7 +127,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   position: absolute;
   left: var(--x);
   top: var(--y);
-  width: 20%;
+  width: 19%;
 }
 
 .projects a {
@@ -159,7 +159,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .projects li {
     left: var(--mx);
     top: var(--my);
-    width: 42%;
+    width: 44%;
   }
 
   .projects a { gap: .4rem; }

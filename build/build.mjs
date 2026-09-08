@@ -106,26 +106,51 @@ function random(seed) {
   };
 }
 
-/* Reparte `count` cajas por una rejilla de cols × rows y las mueve un
-   poco dentro de su celda. Así quedan desordenadas pero sin pisarse ni
-   salirse: cada una cae en su celda y nada más. Devuelve la esquina
-   superior izquierda de cada caja, en % del contenedor. */
-function scatter(count, cols, rows, boxW, boxH, rnd) {
-  const cells = [...Array(cols * rows).keys()];
-  for (let i = cells.length - 1; i > 0; i--) {        // baraja las celdas
-    const j = Math.floor(rnd() * (i + 1));
-    [cells[i], cells[j]] = [cells[j], cells[i]];
+/* Coloca `count` cajas al azar dentro del 100 × 100 del contenedor sin
+   que se pisen: se tira una posición y se descarta si toca a alguna de
+   las ya puestas. Si tras muchos intentos no cabe con la separación que
+   se pide, se va cediendo; y si ni pegadas caben, se queda la posición
+   que menos solape de todas las probadas —nunca una a ciegas—.
+
+   Las cajas se colocan por su esquina superior izquierda y no pasan del
+   borde: el rango va de 0 a 100 - ancho. Todo en % del contenedor. */
+function scatter(count, boxW, boxH, rnd) {
+  const TRIES = 500;
+  const GAPS = [4, 2, 1, 0];
+  const placed = [];
+
+  const spanX = Math.max(0, 100 - boxW);
+  const spanY = Math.max(0, 100 - boxH);
+
+  /* Cuánto se solapan dos cajas, en área. 0 = no se tocan. */
+  const overlap = (a, b, gap = 0) => {
+    const dx = Math.min(a.x + boxW + gap, b.x + boxW) - Math.max(a.x - gap, b.x);
+    const dy = Math.min(a.y + boxH + gap, b.y + boxH) - Math.max(a.y - gap, b.y);
+    return dx > 0 && dy > 0 ? dx * dy : 0;
+  };
+
+  const cost = (spot, gap) => placed.reduce((sum, p) => sum + overlap(spot, p, gap), 0);
+
+  for (let i = 0; i < count; i++) {
+    let spot = null;
+    let best = null;
+    let bestCost = Infinity;
+
+    for (const gap of GAPS) {
+      for (let t = 0; t < TRIES; t++) {
+        const candidate = { x: rnd() * spanX, y: rnd() * spanY };
+        const c = cost(candidate, gap);
+        if (c === 0) { spot = candidate; break; }
+        // por si al final no cabe en ningún sitio: guarda la menos mala
+        if (c < bestCost) { bestCost = c; best = candidate; }
+      }
+      if (spot) break;
+    }
+
+    placed.push(spot || best);
   }
 
-  const cellW = 100 / cols;
-  const cellH = 100 / rows;
-  const freeW = Math.max(0, cellW - boxW);            // hueco que sobra
-  const freeH = Math.max(0, cellH - boxH);
-
-  return cells.slice(0, count).map((cell) => ({
-    x: (cell % cols) * cellW + rnd() * freeW,
-    y: Math.floor(cell / cols) * cellH + rnd() * freeH,
-  }));
+  return placed;
 }
 
 function homePage(projects) {
@@ -138,8 +163,10 @@ function homePage(projects) {
      cuatro columnas. Cada una va en sus propias variables CSS y la hoja
      de estilo elige con una media query. */
   const rnd = random(home.seed || 1);
-  const wide = scatter(projects.length, 4, 4, 20, 18, rnd);
-  const narrow = scatter(projects.length, 2, 7, 42, 12, rnd);
+  // el alto reservado va ajustado al que ocupan de verdad, para que
+  // quede sitio de sobra donde repartirlas
+  const wide = scatter(projects.length, 19, 10, rnd);
+  const narrow = scatter(projects.length, 44, 7, rnd);
 
   const items = projects.map((project, i) => {
     const cover = coverOf(project);

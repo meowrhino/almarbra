@@ -132,11 +132,15 @@ Lo que se cambia sin tocar código, en `content/site.json`:
 La ruta de `hero` es la de `img/`: cualquier foto ya ingerida sirve, y cambiarla es
 editar una línea y `npm run build`.
 
-Los proyectos de la segunda pantalla van desperdigados. No es azar de verdad: el
-build reparte las cajas por una rejilla invisible —4×4 en pantalla ancha, 2×7 en
-móvil— y las mueve un poco dentro de su celda, así que quedan desordenadas sin
-pisarse ni salirse. La misma `seed` da siempre la misma colocación, de modo que el
-HTML es estable; para barajar de nuevo, se cambia el número.
+Los proyectos de la segunda pantalla van desperdigados de verdad: el build tira
+posiciones al azar y descarta las que pisan a otro proyecto, aflojando la
+separación que exige si no encuentra hueco. Nunca se solapan ni se salen del
+borde. Hay dos repartos, uno para pantalla ancha y otro para móvil, porque las
+cajas no miden lo mismo; van en `--x/--y` y `--mx/--my` y la hoja de estilo elige
+con una media query.
+
+La misma `seed` da siempre la misma colocación, así que el HTML es estable y no
+hace falta JavaScript. Para barajar de nuevo, se cambia el número.
 
 El CSS se enlaza con `?v=<hash>` de su contenido: un deploy nunca deja a nadie con
 estilos viejos en caché.
