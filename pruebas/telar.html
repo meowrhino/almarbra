@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>prueba · telar</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="comun.css">
+<style>
+  /* Un tejido de verdad: urdimbre vertical —una persona por hilo— y
+     trama horizontal —un proyecto por pasada—. Donde la persona trabajó
+     en el proyecto, el hilo pasa por encima. */
+  body { overflow: auto; }
+
+  #telar {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 3.5rem 1rem 4.5rem;
+  }
+
+  /* la tela entera en una pantalla: se encoge hasta caber */
+  svg {
+    width: 100%;
+    max-width: 1100px;
+    max-height: calc(100dvh - 9rem);
+    height: auto;
+    overflow: visible;
+  }
+
+  .urdimbre { transition: opacity .25s; }
+  .pasada rect { fill: #0c0c0c; stroke: var(--line); transition: fill .2s, stroke .2s; }
+  .pasada text { fill: var(--ink); font-size: 12px; letter-spacing: .02em; }
+  .pasada .cuenta { fill: var(--dim); font-size: 10px; }
+  .pasada { cursor: pointer; transition: opacity .25s; }
+  .pasada:hover rect { fill: #161616; stroke: rgba(255, 255, 255, .5); }
+
+  .nombre { font-size: 10px; fill: var(--dim); transition: fill .2s; cursor: default; }
+  .nombre.vivo { fill: var(--ink); }
+
+  .nudo { transition: opacity .25s, stroke-width .2s; }
+
+  .apagado { opacity: .12; }
+
+  /* el hilo que se está mirando, contado abajo */
+  #cuenta {
+    position: fixed;
+    left: 1.2rem; bottom: 4.6rem;
+    font-size: 12px;
+    color: var(--dim);
+  }
+  #cuenta b { font-weight: 400; color: var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="barra">
+  <span class="firma">almudena gonzalez · pruebas de tejido</span>
+  <nav>
+    <a href="cables.html">nodos</a>
+    <a href="telar.html" aria-current="page">telar</a>
+    <a href="tejido.html">tejido</a>
+  </nav>
+</div>
+
+<div id="telar"><svg id="tela"></svg></div>
+
+<p id="cuenta"></p>
+<p class="pie">
+  la urdimbre son las personas —un hilo cada una— y cada pasada de trama es un proyecto.
+  donde el hilo pasa por encima, esa persona trabajó ahí. pasa por encima de un hilo o de
+  una pasada para seguirlo; clic para entrar.
+</p>
+
+<script src="datos.js"></script>
+<script>
+(() => {
+  const { proyectos, gente } = window.TEJIDO;
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = (n, attrs = {}) => {
+    const e = document.createElementNS(NS, n);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  };
+
+  /* Las series textiles no tienen ficha de equipo: las cose la técnica.
+     Se les pone un hilo propio —el telar— para que no queden sueltas. */
+  const telar = {
+    name: 'telar',
+    roles: ['telar de 24 lizos'],
+    proyectos: proyectos.filter((p) => p.categoria === 'textil').map((p) => p.slug),
+  };
+
+  /* Los hilos que más se repiten, al centro: la tela sale más tupida en
+     medio y se deshilacha por los bordes, como una pieza de telar. */
+  const orden = [];
+  [telar, ...gente].forEach((g, i) => (i % 2 ? orden.push(g) : orden.unshift(g)));
+
+  const color = new Map(gente.map((g, i) => [
+    g.name,
+    `hsl(${(i * 137.5) % 360} 45% ${58 + (i % 3) * 6}%)`,
+  ]));
+  color.set('telar', 'rgba(255,255,255,.75)');
+
+  const IZQ = 230, ARRIBA = 165, COL = 26, FILA = 46, MINI = 34;
+  const W = IZQ + orden.length * COL + 20;
+  const H = ARRIBA + proyectos.length * FILA + 30;
+
+  const svg = document.getElementById('tela');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  const cuenta = document.getElementById('cuenta');
+  const equisDe = (i) => IZQ + i * COL + COL / 2;
+  const yDe = (i) => ARRIBA + i * FILA;
+
+  /* ── 1. la urdimbre entera, tendida y floja ─────────────────────── */
+  const hilos = orden.map((g, i) => {
+    const x = equisDe(i);
+    const linea = el('line', {
+      class: 'urdimbre', x1: x, y1: ARRIBA - 12, x2: x, y2: H - 18,
+      stroke: color.get(g.name), 'stroke-width': 1, opacity: .35,
+    });
+    svg.appendChild(linea);
+    return { ...g, x, linea, nombre: null, nudos: [] };
+  });
+
+  /* ── 2. los nombres de arriba, de canto ─────────────────────────── */
+  hilos.forEach((h) => {
+    const t = el('text', {
+      class: 'nombre', x: h.x, y: ARRIBA - 20,
+      transform: `rotate(-60 ${h.x} ${ARRIBA - 20})`,
+    });
+    t.textContent = h.name.toLowerCase();
+    svg.appendChild(t);
+    h.nombre = t;
+  });
+
+  /* ── 3. las pasadas de trama: un proyecto cada una ──────────────── */
+  const pasadas = proyectos.map((p, i) => {
+    const y = yDe(i);
+    const g = el('a', { class: 'pasada', href: `../${p.slug}/` });
+
+    g.appendChild(el('rect', { x: 8, y: y + 4, width: W - 26, height: FILA - 12 }));
+
+    const img = el('image', {
+      href: `../${p.mini}`, x: 14, y: y + 8, width: MINI, height: FILA - 20,
+      preserveAspectRatio: 'xMidYMid slice',
+    });
+    g.appendChild(img);
+
+    const t = el('text', { x: 14 + MINI + 10, y: y + FILA / 2 - 1 });
+    t.textContent = p.corto.toLowerCase();
+    g.appendChild(t);
+
+    const c = el('text', { class: 'cuenta', x: 14 + MINI + 10, y: y + FILA / 2 + 12 });
+    c.textContent = `${p.categoria.replace('-', ' ')} · ${p.fotos} fotos`;
+    g.appendChild(c);
+
+    svg.appendChild(g);
+    return { ...p, y, g };
+  });
+
+  /* ── 4. donde el hilo pasa por encima ───────────────────────────── */
+  const nudos = [];
+  hilos.forEach((h) => {
+    pasadas.forEach((p) => {
+      if (!h.proyectos.includes(p.slug)) return;
+      const linea = el('line', {
+        class: 'nudo', x1: h.x, y1: p.y + 1, x2: h.x, y2: p.y + FILA - 9,
+        stroke: color.get(h.name), 'stroke-width': 2.5, 'stroke-linecap': 'round',
+      });
+      svg.appendChild(linea);
+      const nudo = { hilo: h, pasada: p, linea };
+      h.nudos.push(nudo);
+      nudos.push(nudo);
+    });
+  });
+
+  /* ── mirar un hilo o una pasada ─────────────────────────────────── */
+  function limpiar() {
+    for (const h of hilos) { h.linea.classList.remove('apagado'); h.nombre.classList.remove('vivo'); h.nombre.classList.remove('apagado'); }
+    for (const p of pasadas) p.g.classList.remove('apagado');
+    for (const n of nudos) { n.linea.classList.remove('apagado'); n.linea.setAttribute('stroke-width', 2.5); }
+    cuenta.textContent = '';
+  }
+
+  function mirarHilo(h) {
+    limpiar();
+    for (const o of hilos) if (o !== h) { o.linea.classList.add('apagado'); o.nombre.classList.add('apagado'); }
+    h.nombre.classList.add('vivo');
+    h.linea.setAttribute('opacity', .8);
+    for (const n of nudos) {
+      const suyo = n.hilo === h;
+      n.linea.classList.toggle('apagado', !suyo);
+      if (suyo) n.linea.setAttribute('stroke-width', 4);
+    }
+    for (const p of pasadas) p.g.classList.toggle('apagado', !h.proyectos.includes(p.slug));
+    const n = h.proyectos.length;
+    cuenta.innerHTML = `<b>${h.name.toLowerCase()}</b> · ${h.roles.join(', ').toLowerCase()} · ${n} proyecto${n > 1 ? 's' : ''}`;
+  }
+
+  function mirarPasada(p) {
+    limpiar();
+    for (const o of pasadas) if (o !== p) o.g.classList.add('apagado');
+    const suyos = new Set(nudos.filter((n) => n.pasada === p).map((n) => n.hilo));
+    for (const h of hilos) if (!suyos.has(h)) { h.linea.classList.add('apagado'); h.nombre.classList.add('apagado'); }
+    for (const h of suyos) h.nombre.classList.add('vivo');
+    for (const n of nudos) {
+      const suyo = n.pasada === p;
+      n.linea.classList.toggle('apagado', !suyo);
+      if (suyo) n.linea.setAttribute('stroke-width', 4);
+    }
+    cuenta.innerHTML = `<b>${p.titulo.toLowerCase()}</b>` +
+      (suyos.size ? ` · ${[...suyos].map((h) => h.name.toLowerCase()).join(' · ')}` : ' · serie de telar');
+  }
+
+  /* Ratón por toda la tela: la columna manda arriba, la fila abajo. */
+  svg.addEventListener('pointermove', (e) => {
+    const caja = svg.getBoundingClientRect();
+    const escala = W / caja.width;
+    const x = (e.clientX - caja.left) * escala;
+    const y = (e.clientY - caja.top) * escala;
+
+    const i = Math.round((x - IZQ - COL / 2) / COL);
+    const hilo = hilos[i];
+    /* justo encima del hilo, es el hilo; entre dos hilos, la pasada */
+    const encima = hilo && Math.abs(x - hilo.x) < 6;
+
+    const j = Math.floor((y - ARRIBA) / FILA);
+    const pasada = y >= ARRIBA ? pasadas[j] : null;
+
+    if (encima && (y < ARRIBA || !pasada)) return mirarHilo(hilo);
+    if (encima && pasada && hilo.proyectos.includes(pasada.slug)) return mirarHilo(hilo);
+    if (pasada) return mirarPasada(pasada);
+    if (hilo && Math.abs(x - hilo.x) < COL / 2 && y < ARRIBA) return mirarHilo(hilo);
+    limpiar();
+  });
+  svg.addEventListener('pointerleave', limpiar);
+})();
+</script>
+</body>
+</html>

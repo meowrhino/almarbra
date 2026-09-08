@@ -194,6 +194,24 @@ Laocoonte, Río de la Plata, Virgen) — 116 fotos.
 - Las diez editoriales de moda salen con la primera foto de portada. Si alguna no
   es la buena, se cambia con `cover` en `content/overrides.json`.
 
+## pruebas/ — el visualizador de nodos
+
+Fuera del sitio y fuera del build: `pruebas/` son tres maquetas para enseñarle a la
+clienta, que pidió «algo como un visualizador de nodos» donde los proyectos formen
+un tejido. `node pruebas/datos.mjs` saca de `content/` lo que necesitan y lo deja en
+`pruebas/datos.js` (un global, para que abran también con doble clic).
+
+El hilo no es decorativo: sale de las fichas. Dos proyectos van unidos si comparten
+a alguien del equipo —28 personas, 22 uniones— y cada persona tiene su color, el
+mismo en las tres maquetas. Las tres series textiles no traen ficha de equipo: las
+enhebra la técnica.
+
+- `pruebas/cables.html` — nodos y cables, como el editor del vídeo.
+- `pruebas/telar.html` — urdimbre de personas, trama de proyectos.
+- `pruebas/tejido.html` — la tela viva, con física.
+
+Cuando se decida una, se rehace en serio; esto se borra.
+
 ## Historia
 
 Antes de esto el repo era un clon de **amargor.es**, el Cargo.site viejo, hecho

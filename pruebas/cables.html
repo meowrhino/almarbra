@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>prueba · nodos y cables</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="comun.css">
+<style>
+  /* El lienzo se arrastra y se hace zoom; dentro, un mundo que se mueve
+     entero (translate + scale) con los nodos y los cables. */
+  #lienzo { position: fixed; inset: 0; cursor: grab; touch-action: none; }
+  #lienzo.arrastrando { cursor: grabbing; }
+
+  #mundo { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+
+  #hilos { position: absolute; top: 0; left: 0; overflow: visible; pointer-events: none; }
+  #hilos path { fill: none; stroke-linecap: round; transition: opacity .2s, stroke-width .2s; }
+
+  .nodo {
+    position: absolute;
+    width: 150px;
+    padding: 6px;
+    background: #0b0b0b;
+    border: 1px solid var(--line);
+    display: grid;
+    gap: 6px;
+    cursor: grab;
+    transition: border-color .2s, opacity .2s;
+  }
+  .nodo:active { cursor: grabbing; }
+  .nodo img { display: block; width: 100%; height: 84px; object-fit: cover; }
+  .nodo b { font-weight: 400; font-size: 11px; letter-spacing: .02em; }
+  .nodo small { color: var(--dim); font-size: 10px; }
+
+  /* los conectores de los lados, como en un editor de nodos */
+  .nodo::before, .nodo::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 7px; height: 7px;
+    margin-top: -3.5px;
+    border: 1px solid var(--line);
+    background: #0b0b0b;
+    border-radius: 50%;
+  }
+  .nodo::before { left: -4px; }
+  .nodo::after { right: -4px; }
+
+  .nodo.apagado { opacity: .18; }
+  .nodo.vivo { border-color: rgba(255, 255, 255, .5); }
+
+  /* la ficha que sale al pasar por encima: quién enhebra con quién */
+  #ficha {
+    position: fixed;
+    z-index: 20;
+    max-width: 20rem;
+    padding: .6rem .7rem;
+    background: #0b0b0b;
+    border: 1px solid var(--line);
+    font-size: 11px;
+    line-height: 1.5;
+    pointer-events: none;
+    display: none;
+  }
+  #ficha b { display: block; font-weight: 400; margin-bottom: .35rem; }
+  #ficha span { color: var(--dim); }
+  #ficha i { font-style: normal; }
+</style>
+</head>
+<body>
+
+<div class="barra">
+  <span class="firma">almudena gonzalez · pruebas de tejido</span>
+  <nav>
+    <a href="cables.html" aria-current="page">nodos</a>
+    <a href="telar.html">telar</a>
+    <a href="tejido.html">tejido</a>
+  </nav>
+</div>
+
+<div id="lienzo"><div id="mundo"><svg id="hilos"></svg></div></div>
+<div id="ficha"></div>
+
+<p class="pie">
+  cada proyecto es un nodo; cada cable, una persona que se repite de un trabajo a otro
+  —el mismo color es la misma persona—. arrastra los nodos y el fondo, rueda para el zoom,
+  clic para entrar.
+</p>
+
+<script src="datos.js"></script>
+<script>
+(() => {
+  const { proyectos, gente, enlaces } = window.TEJIDO;
+
+  /* Un color por persona: el mismo hilo cruza toda la obra. Tonos de
+     tinte, nada saturado, para que no compitan con las fotos. */
+  const color = new Map(gente.map((g, i) => [
+    g.name,
+    `hsl(${(i * 137.5) % 360} 45% ${58 + (i % 3) * 6}%)`,
+  ]));
+  const colorTelar = 'rgba(255,255,255,.3)';
+
+  const NODO_W = 150, NODO_H = 132;
+
+  /* ── colocación ────────────────────────────────────────────────────
+     Un reparto de fuerzas de andar por casa: los enlazados se atraen,
+     todos se repelen, y un empujón suave hacia el centro. Se resuelve
+     antes de pintar (no hay animación), y luego se arrastra a mano. */
+  const nodos = proyectos.map((p, i) => ({
+    ...p,
+    x: Math.cos(i / proyectos.length * Math.PI * 2) * 320 + (Math.random() - .5) * 40,
+    y: Math.sin(i / proyectos.length * Math.PI * 2) * 260 + (Math.random() - .5) * 40,
+  }));
+  const porSlug = new Map(nodos.map((n) => [n.slug, n]));
+
+  for (let paso = 0; paso < 600; paso++) {
+    for (const a of nodos) {
+      for (const b of nodos) {
+        if (a === b) continue;
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d = Math.hypot(dx, dy) || 1;
+        const f = 26000 / (d * d);
+        a.x += dx / d * f; a.y += dy / d * f;
+      }
+      a.x -= a.x * 0.004; a.y -= a.y * 0.004;
+    }
+    for (const e of enlaces) {
+      const a = porSlug.get(e.a), b = porSlug.get(e.b);
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const f = (d - 330) * 0.012 * e.por.length;
+      a.x += dx / d * f; a.y += dy / d * f;
+      b.x -= dx / d * f; b.y -= dy / d * f;
+    }
+  }
+
+  /* Un último repaso: dos fichas no pueden pisarse aunque las fuerzas
+     digan que sí. Se separan por el lado que menos las mueve. */
+  for (let paso = 0; paso < 80; paso++) {
+    for (let i = 0; i < nodos.length; i++) {
+      for (let j = i + 1; j < nodos.length; j++) {
+        const a = nodos[i], b = nodos[j];
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const pisaX = NODO_W + 30 - Math.abs(dx);
+        const pisaY = NODO_H + 30 - Math.abs(dy);
+        if (pisaX <= 0 || pisaY <= 0) continue;
+        if (pisaX < pisaY) { const s = (dx < 0 ? -1 : 1) * pisaX / 2; a.x -= s; b.x += s; }
+        else { const s = (dy < 0 ? -1 : 1) * pisaY / 2; a.y -= s; b.y += s; }
+      }
+    }
+  }
+
+  /* ── pintar ──────────────────────────────────────────────────────── */
+  const mundo = document.getElementById('mundo');
+  const svg = document.getElementById('hilos');
+  const ficha = document.getElementById('ficha');
+
+  /* Un cable por persona compartida, no uno por pareja: dos proyectos
+     con cuatro personas en común van unidos por cuatro hilos, como una
+     madeja. */
+  const hebras = enlaces.flatMap((e) =>
+    e.por.map((quien, i) => ({
+      a: porSlug.get(e.a),
+      b: porSlug.get(e.b),
+      quien,
+      tipo: e.tipo,
+      /* separación entre las hebras del mismo par */
+      sep: (i - (e.por.length - 1) / 2) * 5,
+      el: null,
+    }))
+  );
+
+  for (const h of hebras) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('stroke', h.tipo === 'telar' ? colorTelar : color.get(h.quien));
+    path.setAttribute('stroke-width', h.tipo === 'telar' ? 1 : 1.4);
+    if (h.tipo === 'telar') path.setAttribute('stroke-dasharray', '3 5');
+    svg.appendChild(path);
+    h.el = path;
+  }
+
+  for (const n of nodos) {
+    const el = document.createElement('a');
+    el.className = 'nodo';
+    el.href = `../${n.slug}/`;
+    el.innerHTML =
+      `<img src="../${n.mini}" alt="" loading="lazy">` +
+      `<b>${n.corto}</b><small>${n.categoria.replace('-', ' ')} · ${n.fotos} fotos</small>`;
+    mundo.appendChild(el);
+    n.el = el;
+  }
+
+  /* El cable cuelga: los tiradores del bezier salen en horizontal —como
+     en un editor de nodos— y además pesa un poco hacia abajo, que es lo
+     que hace un hilo de verdad. */
+  function curva(h) {
+    const izq = h.a.x < h.b.x ? h.a : h.b;
+    const der = h.a.x < h.b.x ? h.b : h.a;
+    const x1 = izq.x + NODO_W, y1 = izq.y + NODO_H / 2 + h.sep;
+    const x2 = der.x, y2 = der.y + NODO_H / 2 + h.sep;
+    const tira = Math.max(60, Math.abs(x2 - x1) * 0.5);
+    const peso = Math.min(70, Math.hypot(x2 - x1, y2 - y1) * 0.14);
+    return `M${x1},${y1} C${x1 + tira},${y1 + peso} ${x2 - tira},${y2 + peso} ${x2},${y2}`;
+  }
+
+  function pintar() {
+    for (const n of nodos) n.el.style.transform = `translate(${n.x}px, ${n.y}px)`;
+    for (const h of hebras) h.el.setAttribute('d', curva(h));
+  }
+
+  /* ── resaltar ─────────────────────────────────────────────────────
+     Al pasar por un nodo se apaga todo lo que no cuelga de él. */
+  function resaltar(nodo) {
+    if (!nodo) {
+      for (const n of nodos) n.el.classList.remove('apagado', 'vivo');
+      for (const h of hebras) { h.el.style.opacity = ''; h.el.style.strokeWidth = ''; }
+      ficha.style.display = 'none';
+      return;
+    }
+    const vecinos = new Set([nodo.slug]);
+    for (const h of hebras) if (h.a === nodo || h.b === nodo) { vecinos.add(h.a.slug); vecinos.add(h.b.slug); }
+    for (const n of nodos) {
+      n.el.classList.toggle('apagado', !vecinos.has(n.slug));
+      n.el.classList.toggle('vivo', n === nodo);
+    }
+    for (const h of hebras) {
+      const suyo = h.a === nodo || h.b === nodo;
+      h.el.style.opacity = suyo ? 1 : .1;
+      h.el.style.strokeWidth = suyo ? 2.4 : 1;
+    }
+
+    const equipo = nodo.equipo.filter((c) => gente.some((g) => g.name === c.name));
+    ficha.innerHTML =
+      `<b>${nodo.titulo}</b>` +
+      (equipo.length
+        ? equipo.map((c) =>
+            `<i style="color:${color.get(c.name)}">${c.name}</i> <span>· ${c.rol}</span>`).join('<br>')
+        : '<span>serie de telar, sin ficha de equipo</span>');
+    ficha.style.display = 'block';
+  }
+
+  /* ── arrastrar, zoom ──────────────────────────────────────────────── */
+  const lienzo = document.getElementById('lienzo');
+  let vista = { x: 0, y: 0, z: 1 };
+  const aplicarVista = () =>
+    (mundo.style.transform = `translate(${vista.x}px, ${vista.y}px) scale(${vista.z})`);
+
+  /* Al abrir, todo el tejido cabe en la ventana: se mide lo que ocupa y
+     se ajusta el zoom, con aire para la barra y el pie. */
+  function encajar() {
+    const x1 = Math.min(...nodos.map((n) => n.x)), x2 = Math.max(...nodos.map((n) => n.x + NODO_W));
+    const y1 = Math.min(...nodos.map((n) => n.y)), y2 = Math.max(...nodos.map((n) => n.y + NODO_H));
+    const aire = 60;
+    vista.z = Math.min(1.2, (innerWidth - aire * 2) / (x2 - x1), (innerHeight - 150) / (y2 - y1));
+    vista.x = innerWidth / 2 - ((x1 + x2) / 2) * vista.z;
+    vista.y = innerHeight / 2 - ((y1 + y2) / 2) * vista.z;
+    aplicarVista();
+  }
+
+  let arrastre = null;
+  let movido = 0;
+
+  lienzo.addEventListener('pointerdown', (e) => {
+    const el = e.target.closest('.nodo');
+    const nodo = el && nodos.find((n) => n.el === el);
+    arrastre = { nodo, px: e.clientX, py: e.clientY };
+    movido = 0;
+    lienzo.setPointerCapture(e.pointerId);
+    if (!nodo) lienzo.classList.add('arrastrando');
+  });
+
+  lienzo.addEventListener('pointermove', (e) => {
+    if (arrastre) {
+      const dx = e.clientX - arrastre.px, dy = e.clientY - arrastre.py;
+      arrastre.px = e.clientX; arrastre.py = e.clientY;
+      movido += Math.abs(dx) + Math.abs(dy);
+      if (arrastre.nodo) { arrastre.nodo.x += dx / vista.z; arrastre.nodo.y += dy / vista.z; }
+      else { vista.x += dx; vista.y += dy; aplicarVista(); }
+      pintar();
+      return;
+    }
+    const el = e.target.closest('.nodo');
+    const nodo = el && nodos.find((n) => n.el === el);
+    resaltar(nodo || null);
+    if (nodo) {
+      ficha.style.left = `${Math.min(e.clientX + 16, innerWidth - 340)}px`;
+      ficha.style.top = `${Math.min(e.clientY + 16, innerHeight - 160)}px`;
+    }
+  });
+
+  const soltar = () => { arrastre = null; lienzo.classList.remove('arrastrando'); };
+  lienzo.addEventListener('pointerup', soltar);
+  lienzo.addEventListener('pointercancel', soltar);
+  lienzo.addEventListener('pointerleave', () => resaltar(null));
+
+  /* Arrastrar un nodo no debe abrir el proyecto; un clic limpio, sí. */
+  lienzo.addEventListener('click', (e) => { if (movido > 6) e.preventDefault(); });
+
+  lienzo.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const antes = vista.z;
+    vista.z = Math.min(2.4, Math.max(.25, vista.z * (e.deltaY < 0 ? 1.1 : 1 / 1.1)));
+    /* el zoom se hace hacia el puntero, no hacia la esquina */
+    vista.x = e.clientX - (e.clientX - vista.x) * (vista.z / antes);
+    vista.y = e.clientY - (e.clientY - vista.y) * (vista.z / antes);
+    aplicarVista();
+  }, { passive: false });
+
+  pintar();
+  encajar();
+  addEventListener('resize', encajar);
+})();
+</script>
+</body>
+</html>

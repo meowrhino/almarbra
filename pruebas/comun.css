@@ -1,0 +1,58 @@
+/* Lo compartido por las tres pruebas: fondo negro, palo seco en
+   minúscula y la barra de arriba para saltar de una a otra.
+   Material de prueba: no lo enlaza el sitio. */
+
+:root {
+  --bg: #000;
+  --ink: #fff;
+  --dim: rgba(255, 255, 255, .45);
+  --line: rgba(255, 255, 255, .14);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 14px/1.45 "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  text-transform: lowercase;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+a { color: inherit; text-decoration: none; }
+
+/* barra de arriba: firma a la izquierda, las tres pruebas a la derecha */
+.barra {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 10;
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  padding: .9rem 1.2rem;
+  font-size: 12px;
+  letter-spacing: .02em;
+  pointer-events: none;
+}
+
+.barra > * { pointer-events: auto; }
+.barra .firma { margin-right: auto; }
+.barra nav { display: flex; gap: 1rem; }
+.barra nav a { color: var(--dim); }
+.barra nav a:hover, .barra nav a[aria-current] { color: var(--ink); }
+
+/* pie: la explicación de qué se está mirando */
+.pie {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 10;
+  padding: .9rem 1.2rem;
+  font-size: 12px;
+  color: var(--dim);
+  pointer-events: none;
+  max-width: 46rem;
+}
