@@ -1,4 +1,201 @@
-/* Vacío a propósito: el diseño se empieza de cero aquí.
+/* almudena gonzalez
 
-   El HTML que genera build/build.mjs es plano y semántico —header, h1,
-   article, section, figure, dl.credits— para no condicionar nada. */
+   Fondo negro, tipografía de palo seco en minúscula y las fotos
+   mandando. Dos pantallas: la portada (foto + «entrar» + lista de
+   proyectos) y la página de un proyecto (ficha + galería).
+
+   Sin JavaScript: «entrar» es un ancla y el desplazamiento suave lo
+   hace el navegador. */
+
+:root {
+  --bg: #000;
+  --ink: #fff;
+  --dim: rgba(255, 255, 255, .55);
+  --bar: 3rem;                 /* alto de la firma de abajo */
+  --pad: clamp(1rem, 4vw, 3rem);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+body {
+  margin: 0;
+  font: 400 clamp(15px, 1.6vw, 17px)/1.45 "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  text-transform: lowercase;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+/* solo para lectores de pantalla */
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── portada: la foto ────────────────────────────────────────────── */
+
+.hero {
+  position: relative;
+  height: 100svh;
+  overflow: hidden;
+}
+
+.hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* «entrar» centrado sobre la foto */
+.enter {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding-bottom: var(--bar);
+  font-size: clamp(4rem, 21vw, 13rem);
+  font-weight: 700;
+  letter-spacing: -.03em;
+  line-height: 1;
+  text-shadow: 0 0 2rem rgba(0, 0, 0, .35);
+}
+
+/* ── portada: los proyectos ──────────────────────────────────────── */
+
+.projects {
+  position: relative;
+  min-height: 100svh;
+  padding: clamp(3rem, 12vh, 7rem) var(--pad) calc(var(--bar) + 3rem);
+  /* la foto de textura la pone el build en el atributo style */
+  background: var(--bg) center / cover;
+  isolation: isolate;
+}
+
+/* velo negro encima de la textura, para que el texto se lea */
+.projects::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: rgba(0, 0, 0, .55);
+}
+
+.projects ul {
+  display: grid;
+  gap: clamp(1.25rem, 4vh, 2.5rem);
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0;
+  list-style: none;
+}
+
+.projects a {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(1rem, 4vw, 2.5rem);
+  align-items: center;
+}
+
+.projects img {
+  justify-self: end;
+  height: clamp(3.25rem, 9vh, 5.5rem);
+  width: auto;
+  max-width: 100%;
+  object-fit: cover;
+}
+
+.projects span { letter-spacing: .01em; }
+
+@media (hover: hover) {
+  .projects a:hover span { text-decoration: underline; text-underline-offset: .25em; }
+}
+
+/* ── la firma, siempre abajo ─────────────────────────────────────── */
+
+.signature {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--bar);
+  display: grid;
+  place-items: center;
+  background: var(--bg);
+  letter-spacing: .02em;
+}
+
+/* ── página de proyecto ──────────────────────────────────────────── */
+
+.bar {
+  display: grid;
+  place-items: center;
+  min-height: var(--bar);
+  padding: 1rem var(--pad);
+}
+
+.ficha {
+  max-width: 34rem;
+  margin: clamp(2rem, 10vh, 6rem) auto clamp(3rem, 12vh, 7rem);
+  padding: 0 var(--pad);
+}
+
+.ficha h1 {
+  margin: 0 0 1.5rem;
+  font-size: clamp(1.75rem, 6vw, 3rem);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.05;
+}
+
+.ficha p { margin: 0 0 1rem; color: var(--dim); }
+
+.credits {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .35rem 1.5rem;
+  margin: 2.5rem 0 0;
+  font-size: .9em;
+}
+
+.credits dt { color: var(--dim); }
+.credits dd { margin: 0; }
+.credits a { border-bottom: 1px solid var(--dim); }
+
+.group { margin: 0 0 clamp(2rem, 8vh, 5rem); }
+
+.group h2 {
+  margin: 0 0 1.5rem;
+  padding: 0 var(--pad);
+  font-size: .9em;
+  font-weight: 400;
+  letter-spacing: .12em;
+  color: var(--dim);
+}
+
+.group figure {
+  margin: 0 auto clamp(1rem, 4vh, 2.5rem);
+  max-width: 70rem;
+  padding: 0 var(--pad);
+}
+
+@media (max-width: 700px) {
+  .credits { grid-template-columns: 1fr; gap: 0 }
+  .credits dt { margin-top: .75rem }
+}

@@ -1,14 +1,18 @@
 {
-  "_": "Correcciones a mano sobre lo que sale de las fichas. Se aplican encima del JSON generado, así que reingestar no se las lleva. Cada clave es el slug del proyecto.",
-
+  "_": "Correcciones a mano sobre lo que sale de las fichas. Se aplican encima del JSON generado, así que reingestar no se las lleva. Cada clave es el slug del proyecto. `cover` elige la imagen del proyecto en la portada; sin ella se usa la primera. `short` es el nombre corto para la lista de la portada.",
   "roma": {
     "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
     "title": {
       "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN",
       "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION"
+    },
+    "cover": "img/textil/roma/roma-12.webp",
+    "short": {
+      "es": "roma",
+      "en": "rome",
+      "ca": "roma"
     }
   },
-
   "sicky-magazine-02": {
     "_nota": "La ficha repite el título de la primera; se distingue aquí.",
     "title": {
@@ -16,5 +20,12 @@
       "en": "SICKY MAGAZINE (II)",
       "ca": "SICKY MAGAZINE (II)"
     }
+  },
+  "cuerpo-esquema": {
+    "cover": "img/textil/cuerpo-esquema/cuerpo-esquema-76.webp",
+    "_nota": "La primera imagen es una captura de pantalla; de portada va una pieza."
+  },
+  "corporea": {
+    "cover": "img/textil/corporea/corporea-04.webp"
   }
 }

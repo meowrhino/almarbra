@@ -4,7 +4,14 @@ Portfolio de **Almudena González**. Sitio estático de verdad: el contenido viv
 JSON, un script escupe un `.html` por proyecto, y el navegador solo recibe HTML,
 CSS e imágenes. **Cero dependencias y cero JavaScript de navegador.**
 
-El diseño está por hacer: `css/style.css` está vacío a propósito.
+Dos pantallas:
+
+- **portada** (`/`): la foto a pantalla completa con «entrar». Al pulsarlo la foto
+  sube y aparecen los proyectos, cada uno con su imagen y su nombre. «Entrar» es
+  un ancla y el desplazamiento suave lo hace el navegador: por eso no hace falta
+  JavaScript.
+- **proyecto** (`/<slug>/`): ficha técnica —título, sinopsis y créditos— y la
+  galería en scroll vertical.
 
 ```bash
 npm run ingest    # originals/ -> img/*.webp + content/projects/*.json
@@ -29,9 +36,10 @@ build/slug.mjs          slugs y nombres legibles
 build/build.mjs         content/ -> *.html
 build/serve.mjs         servidor local
 
-css/style.css           VACÍO — aquí empieza el diseño
+css/style.css           todo el estilo
 img/<categoría>/<slug>/ GENERADO: 903 webp
-*.html                  GENERADOS — no editar a mano
+index.html              GENERADO — no editar a mano
+<slug>/index.html       GENERADO — no editar a mano
 ```
 
 ## La ingesta
@@ -79,18 +87,42 @@ mano no sirve de nada. Las correcciones van aquí, indexadas por slug, y se apli
 encima del JSON recién generado:
 
 ```jsonc
-{ "roma": { "title": { "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN" } } }
+{
+  "roma": {
+    "title": { "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN" },
+    "short": { "es": "roma" },                     // nombre corto para la portada
+    "cover": "img/textil/roma/roma-12.webp"        // la foto que lo representa
+  }
+}
 ```
 
-Hay dos puestas: en la ficha de ROMA los títulos es/en venían intercambiados, y las
-dos SICKY se llamaban igual. Las claves que empiezan por `_` son notas, no contenido.
+`cover` y `short` son solo para la portada; sin `cover` se usa la primera foto del
+proyecto, y sin `short`, el título entero. Las claves que empiezan por `_` son
+notas, no contenido.
+
+Ahora mismo hay cinco correcciones: los títulos es/en de ROMA venían intercambiados
+en la ficha, las dos SICKY se llamaban igual, y las tres series textiles llevan
+portada elegida a mano (la primera foto de Cuerpo Esquema es una captura de
+pantalla).
 
 ## El build
 
-`build/build.mjs` genera `index.html` y un `<slug>.html` por proyecto, en la raíz.
-HTML plano y semántico, sin una sola clase de más —`header`, `h1`, `article`,
-`section`, `figure`, `dl.credits`— para no condicionar el diseño. Los ganchos de
-CSS se ponen cuando se sepa qué se quiere.
+`build/build.mjs` genera `index.html` y un `<slug>/index.html` por proyecto, así
+que las direcciones quedan `/roma/`, `/sicky-magazine/`… Son dos plantillas y ya.
+
+Lo que se cambia sin tocar código, en `content/site.json`:
+
+```jsonc
+"home": {
+  "enter":   "entrar",                                      // la palabra de la portada
+  "hero":    "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp",  // la foto grande
+  "texture": "img/textil/cuerpo-esquema/cuerpo-esquema-60.webp"   // el fondo de la lista
+},
+"order": ["textil", "editorial-moda"]                       // en qué orden salen
+```
+
+Las rutas de `hero` y `texture` son las de `img/`: cualquier foto ya ingerida
+sirve, y cambiarlas es editar una línea y `npm run build`.
 
 El CSS se enlaza con `?v=<hash>` de su contenido: un deploy nunca deja a nadie con
 estilos viejos en caché.
@@ -121,6 +153,8 @@ Laocoonte, Río de la Plata, Virgen) — 116 fotos.
   `site.json`); los otros dos están en el JSON, esperando a que el diseño diga si
   hay selector.
 - Ninguna imagen tiene `alt`. El campo está vacío en las 259, listo para escribirlo.
+- Las diez editoriales de moda salen con la primera foto de portada. Si alguna no
+  es la buena, se cambia con `cover` en `content/overrides.json`.
 
 ## Historia
 

@@ -154,5 +154,11 @@
       "alt": "",
       "group": "virgen"
     }
-  ]
+  ],
+  "cover": "img/textil/roma/roma-12.webp",
+  "short": {
+    "es": "roma",
+    "en": "rome",
+    "ca": "roma"
+  }
 }

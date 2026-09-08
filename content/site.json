@@ -1,6 +1,14 @@
 {
-  "title": "Almudena González",
+  "title": "almudena gonzalez",
   "lang": "es",
   "description": "Portfolio de Almudena González — arte textil y fotografía de moda.",
-  "noindex": true
+  "noindex": true,
+
+  "home": {
+    "enter": "entrar",
+    "hero": "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp",
+    "texture": "img/textil/cuerpo-esquema/cuerpo-esquema-60.webp"
+  },
+
+  "order": ["textil", "editorial-moda"]
 }
