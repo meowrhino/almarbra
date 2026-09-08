@@ -206,6 +206,10 @@ a alguien del equipo —28 personas, 22 uniones— y cada persona tiene su color
 mismo en las tres maquetas. Las tres series textiles no traen ficha de equipo: las
 enhebra la técnica.
 
+- `pruebas/portada.html` — **la que va a la web**: la portada de verdad, con los
+  proyectos desperdigados como ahora y cosidos con hilo. Aquí el hilo *no* significa
+  nada: une lo que queda cerca, de un solo color, y cambia en cada carga como cambia
+  el reparto. Es `js/scatter.js` más un tejido.
 - `pruebas/cables.html` — nodos y cables, como el editor del vídeo.
 - `pruebas/telar.html` — urdimbre de personas, trama de proyectos.
 - `pruebas/tejido.html` — la tela viva, con física.

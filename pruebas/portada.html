@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>prueba · la portada tejida</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="../css/style.css">
+<style>
+  /* La portada de verdad, con una sola cosa nueva: los proyectos, que ya
+     salen desperdigados en cada carga, ahora van cosidos con hilo.
+
+     El hilo no significa nada —ni equipos ni categorías—: une lo que
+     queda cerca. Un solo color. Al recargar, otro reparto y otra tela. */
+
+  .projects .hilos {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .projects .hilos path {
+    fill: none;
+    stroke: rgba(255, 255, 255, .28);
+    stroke-width: 1;
+    stroke-linecap: round;
+    transition: stroke .3s, stroke-width .3s;
+  }
+
+  .projects .hilos path.vivo {
+    stroke: rgba(255, 255, 255, .85);
+    stroke-width: 1.4;
+  }
+
+  /* los proyectos, por encima del hilo */
+  .projects ul.is-scattered li { z-index: 1; }
+
+  /* el sitio de la prueba, discreto */
+  .volver {
+    position: fixed;
+    top: .9rem; right: 1.2rem;
+    z-index: 5;
+    font-size: 11px;
+    color: rgba(255, 255, 255, .35);
+  }
+  .volver:hover { color: #fff; }
+</style>
+</head>
+<body class="home">
+<h1 class="sr-only">almudena gonzalez</h1>
+<a class="volver" href="index.html">pruebas</a>
+
+<section class="hero">
+  <img src="../img/portada/portada.webp"
+       srcset="../img/portada/portada-400.webp 400w, ../img/portada/portada-800.webp 800w, ../img/portada/portada.webp 1333w"
+       sizes="100vw" width="1333" height="2000" alt="" fetchpriority="high" decoding="async">
+  <a class="enter" href="#proyectos">entrar</a>
+</section>
+
+<div id="proyectos">
+  <p class="signature">almudena gonzalez</p>
+  <nav class="projects">
+    <svg class="hilos"></svg>
+    <ul></ul>
+  </nav>
+</div>
+
+<script src="datos.js"></script>
+<script>
+/* Lo mismo que js/scatter.js —medir, tirar posiciones, descartar las que
+   pisan— y encima el tejido: cada proyecto se cose a los que le quedan
+   más cerca. Aquí la lista se pinta desde datos.js porque es una prueba;
+   en el sitio ya viene hecha en el HTML. */
+(() => {
+  const { proyectos } = window.TEJIDO;
+  const list = document.querySelector('.projects ul');
+  const svg = document.querySelector('.projects .hilos');
+
+  list.innerHTML = proyectos.map((p) => `
+    <li><a href="../${p.slug}/">
+      <img src="../${p.mini}" alt="" loading="lazy" decoding="async">
+      <span>${p.corto}</span>
+    </a></li>`).join('');
+
+  const items = [...list.children];
+
+  const TRIES = 500;
+  const GAPS = [24, 12, 6, 0];
+
+  function overlap(a, b, gap) {
+    const dx = Math.min(a.x + a.w + gap, b.x + b.w) - Math.max(a.x - gap, b.x);
+    const dy = Math.min(a.y + a.h + gap, b.y + b.h) - Math.max(a.y - gap, b.y);
+    return dx > 0 && dy > 0 ? dx * dy : 0;
+  }
+
+  function place(boxes, area) {
+    const placed = [];
+    for (const box of boxes) {
+      const spanX = Math.max(0, area.w - box.w);
+      const spanY = Math.max(0, area.h - box.h);
+      let spot = null, best = null, bestCost = Infinity;
+      for (const gap of GAPS) {
+        for (let t = 0; t < TRIES; t++) {
+          const c = { x: Math.random() * spanX, y: Math.random() * spanY, w: box.w, h: box.h };
+          const cost = placed.reduce((s, p) => s + overlap(c, p, gap), 0);
+          if (cost === 0) { spot = c; break; }
+          if (cost < bestCost) { bestCost = cost; best = c; }
+        }
+        if (spot) break;
+      }
+      placed.push(spot || best);
+    }
+    return placed;
+  }
+
+  /* ── el tejido ─────────────────────────────────────────────────────
+     Cada proyecto se cose a los dos que tiene más cerca. Eso deja
+     islas sueltas, así que después se van uniendo las islas por su
+     pareja más próxima hasta que la tela es una sola pieza. */
+  const VECINOS = 2;
+
+  function coser(puntos) {
+    const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+    const clave = (i, j) => (i < j ? `${i}-${j}` : `${j}-${i}`);
+    const hilos = new Map();
+
+    puntos.forEach((p, i) => {
+      puntos
+        .map((q, j) => ({ j, d: dist(p, q) }))
+        .filter((v) => v.j !== i)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, VECINOS)
+        .forEach((v) => hilos.set(clave(i, v.j), [i, v.j]));
+    });
+
+    /* de qué isla es cada uno */
+    const isla = puntos.map((_, i) => i);
+    const unir = (a, b) => {
+      const [x, y] = [isla[a], isla[b]];
+      if (x === y) return;
+      isla.forEach((v, i) => { if (v === y) isla[i] = x; });
+    };
+    for (const [a, b] of hilos.values()) unir(a, b);
+
+    while (new Set(isla).size > 1) {
+      let mejor = null;
+      for (let i = 0; i < puntos.length; i++) {
+        for (let j = i + 1; j < puntos.length; j++) {
+          if (isla[i] === isla[j]) continue;
+          const d = dist(puntos[i], puntos[j]);
+          if (!mejor || d < mejor.d) mejor = { i, j, d };
+        }
+      }
+      hilos.set(clave(mejor.i, mejor.j), [mejor.i, mejor.j]);
+      unir(mejor.i, mejor.j);
+    }
+
+    return [...hilos.values()];
+  }
+
+  /* El hilo no va tirante: cuelga un poco, como si tuviera peso. */
+  function curva(a, b) {
+    const d = Math.hypot(b.x - a.x, b.y - a.y);
+    const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2 + Math.min(26, d * .09);
+    return `M${a.x},${a.y} Q${mx},${my} ${b.x},${b.y}`;
+  }
+
+  function reset() {
+    list.classList.remove('is-scattered');
+    for (const item of items) { item.style.left = ''; item.style.top = ''; }
+    svg.replaceChildren();
+  }
+
+  function scatter() {
+    list.classList.add('is-scattered');
+    for (const item of items) { item.style.left = ''; item.style.top = ''; }
+
+    const area = list.getBoundingClientRect();
+    const boxes = items.map((item) => {
+      const r = item.getBoundingClientRect();
+      return { w: r.width, h: r.height };
+    });
+
+    const cabe = boxes.every((b) => b.w > 0 && b.h > 0 && b.w <= area.width && b.h <= area.height);
+    if (!cabe) { reset(); return; }
+
+    const sitios = place(boxes, { w: area.width, h: area.height });
+    sitios.forEach((spot, i) => {
+      items[i].style.left = `${spot.x}px`;
+      items[i].style.top = `${spot.y}px`;
+    });
+
+    /* el hilo entra y sale por el centro de cada proyecto */
+    const centros = sitios.map((s) => ({ x: s.x + s.w / 2, y: s.y + s.h / 2 }));
+    svg.replaceChildren();
+    for (const [i, j] of coser(centros)) {
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', curva(centros[i], centros[j]));
+      path.dataset.de = i;
+      path.dataset.a = j;
+      svg.appendChild(path);
+    }
+  }
+
+  scatter();
+  addEventListener('load', scatter, { once: true });
+
+  let pending;
+  addEventListener('resize', () => {
+    clearTimeout(pending);
+    pending = setTimeout(scatter, 150);
+  });
+
+  /* Al pasar por un proyecto se encienden sus hilos: se ve de qué está
+     colgado sin tener que explicar nada. */
+  list.addEventListener('pointerover', (e) => {
+    const li = e.target.closest('li');
+    const i = li ? items.indexOf(li) : -1;
+    for (const path of svg.children) {
+      path.classList.toggle('vivo', i >= 0 && (+path.dataset.de === i || +path.dataset.a === i));
+    }
+  });
+  list.addEventListener('pointerleave', () => {
+    for (const path of svg.children) path.classList.remove('vivo');
+  });
+})();
+</script>
+</body>
+</html>
