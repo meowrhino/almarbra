@@ -100,14 +100,6 @@ ${scripts.map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></scrip
 
 /* ── portada ─────────────────────────────────────────────────────── */
 
-/* La foto de la portada cabe entera en la pantalla (ver .hero en
-   css/style.css): en una ventana apaisada la limita el alto y ocupa
-   `proporción` × 100dvh de ancho; en una vertical, los 100vw. */
-const heroSizes = (image) => {
-  const vh = Math.round((image.w / image.h) * 100);
-  return `(min-aspect-ratio: ${image.w}/${image.h}) ${vh}vh, 100vw`;
-};
-
 /** La imagen que representa a un proyecto: `cover`, o la primera. */
 const coverOf = (project) =>
   project.images.find((i) => i.src === project.cover) || project.images[0];
@@ -132,7 +124,7 @@ ${cover ? img(cover, { sizes: '(max-width: 700px) 25vw, 12vw' }) : ''}
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
 
 <section class="hero">
-${img(hero, { eager: true, sizes: heroSizes(hero) })}
+${img(hero, { eager: true })}
 <a class="enter" href="#proyectos">${esc(home.enter || 'entrar')}</a>
 </section>
 
