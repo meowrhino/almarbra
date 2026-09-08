@@ -1,0 +1,158 @@
+{
+  "slug": "roma",
+  "category": "textil",
+  "source": "originals/TEXTIL/ROMA",
+  "title": {
+    "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN",
+    "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION"
+  },
+  "synopsis": {
+    "es": "Ruinas, base para construir nuevas formas.\nCada parte encontrada, guardada y atesorada hace a su vez de cimiento y viga.\nDerrumbamientos e inundaciones. Aludes de barro cubren por completo la ciudad, sirven de bálsamo y manto después de ver la tierra arder.\nBarro, de naturaleza dócil y blanda, moldea la propia liberación.\n\ntrabajo de investigación de texturas y ligamentos de raso desarrollado en Telar digital Jacquard TC2.",
+    "en": "City in ruins, identity under construction.\nRuins, the base to build the new.\nEvery piece found, stored and treasured becomes a foundation, a beam.\nLandslides and floods. Avalanches of mud cloaks the city,\na salve for the scorched earth, for those who watched it burn.\nMud, docile and soft in nature, molds one’s own liberation.\n\nworking variations of satins and textures, entirely developed on a Jacquard TC2 digital loom."
+  },
+  "credits": {},
+  "groups": [
+    {
+      "slug": "laocoonte",
+      "name": "Laocoonte"
+    },
+    {
+      "slug": "rio-de-la-plata",
+      "name": "Rio de la Plata"
+    },
+    {
+      "slug": "virgen",
+      "name": "Virgen"
+    }
+  ],
+  "images": [
+    {
+      "src": "img/textil/roma/roma-01.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/LAOCOONTE/7047 - 2025.07.03 - Almudena González Martín - Kodak Ultramax 400 -3.jpg",
+      "alt": "",
+      "group": "laocoonte"
+    },
+    {
+      "src": "img/textil/roma/roma-02.webp",
+      "w": 1272,
+      "h": 1772,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/LAOCOONTE/Captura de pantalla 2024-08-29 a las 13.06.02.png",
+      "alt": "",
+      "group": "laocoonte"
+    },
+    {
+      "src": "img/textil/roma/roma-03.webp",
+      "w": 1074,
+      "h": 1510,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/LAOCOONTE/Captura de pantalla 2026-09-08 a las 12.37.36.png",
+      "alt": "",
+      "group": "laocoonte"
+    },
+    {
+      "src": "img/textil/roma/roma-04.webp",
+      "w": 1406,
+      "h": 1520,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/LAOCOONTE/Captura de pantalla 2026-09-08 a las 12.38.02.png",
+      "alt": "",
+      "group": "laocoonte"
+    },
+    {
+      "src": "img/textil/roma/roma-05.webp",
+      "w": 2000,
+      "h": 1326,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/RIO DE LA PLATA/7046 - 2025.07.03 - Almudena González Martín - Kodak Ultramax 400 -37.jpg",
+      "alt": "",
+      "group": "rio-de-la-plata"
+    },
+    {
+      "src": "img/textil/roma/roma-06.webp",
+      "w": 1278,
+      "h": 1762,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/RIO DE LA PLATA/Captura de pantalla 2024-08-29 a las 13.06.52.png",
+      "alt": "",
+      "group": "rio-de-la-plata"
+    },
+    {
+      "src": "img/textil/roma/roma-07.webp",
+      "w": 1072,
+      "h": 1518,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/RIO DE LA PLATA/Captura de pantalla 2026-09-08 a las 12.36.48.png",
+      "alt": "",
+      "group": "rio-de-la-plata"
+    },
+    {
+      "src": "img/textil/roma/roma-08.webp",
+      "w": 1074,
+      "h": 1518,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/RIO DE LA PLATA/Captura de pantalla 2026-09-08 a las 12.37.00.png",
+      "alt": "",
+      "group": "rio-de-la-plata"
+    },
+    {
+      "src": "img/textil/roma/roma-09.webp",
+      "w": 1200,
+      "h": 1600,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/RIO DE LA PLATA/WhatsApp Image 2025-06-12 at 15.49.39.jpeg",
+      "alt": "",
+      "group": "rio-de-la-plata"
+    },
+    {
+      "src": "img/textil/roma/roma-10.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/6447 - 2025.06.18 - Almudena González Martín - Kodak Ultramax 400-8.jpg",
+      "alt": "",
+      "group": "virgen"
+    },
+    {
+      "src": "img/textil/roma/roma-11.webp",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/6447 - 2025.06.18 - Almudena González Martín - Kodak Ultramax 400-10.jpg",
+      "alt": "",
+      "group": "virgen"
+    },
+    {
+      "src": "img/textil/roma/roma-12.webp",
+      "w": 2000,
+      "h": 1326,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/7046 - 2025.07.03 - Almudena González Martín - Kodak Ultramax 400 -29.jpg",
+      "alt": "",
+      "group": "virgen"
+    },
+    {
+      "src": "img/textil/roma/roma-13.webp",
+      "w": 2000,
+      "h": 1326,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/7046 - 2025.07.03 - Almudena González Martín - Kodak Ultramax 400 -39.jpg",
+      "alt": "",
+      "group": "virgen"
+    },
+    {
+      "src": "img/textil/roma/roma-14.webp",
+      "w": 1250,
+      "h": 1784,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/Captura de pantalla 2024-08-29 a las 13.06.34.png",
+      "alt": "",
+      "group": "virgen"
+    },
+    {
+      "src": "img/textil/roma/roma-15.webp",
+      "w": 1074,
+      "h": 1520,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/Captura de pantalla 2026-09-08 a las 12.35.27.png",
+      "alt": "",
+      "group": "virgen"
+    },
+    {
+      "src": "img/textil/roma/roma-16.webp",
+      "w": 880,
+      "h": 1225,
+      "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/virgen_13colores.jpg",
+      "alt": "",
+      "group": "virgen"
+    }
+  ]
+}

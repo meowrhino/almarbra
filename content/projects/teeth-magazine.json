@@ -1,0 +1,195 @@
+{
+  "slug": "teeth-magazine",
+  "category": "editorial-moda",
+  "source": "originals/EDITORIAL MODA/TEETH MAGAZINE",
+  "title": {
+    "es": "TEETH MAGAZINE",
+    "en": "TEETH MAGAZINE",
+    "ca": "TEETH MAGAZINE"
+  },
+  "synopsis": {},
+  "credits": {
+    "es": [
+      {
+        "role": "Fotografía",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Asistente de fotografía",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "Estilismo",
+        "name": "Paloma Monago",
+        "url": "https://www.instagram.com/palomamonago/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Barbara Mattel",
+        "url": "https://www.instagram.com/barbaramattel/"
+      },
+      {
+        "role": "Asistente Make up & hair",
+        "name": "Xina Rodriguez",
+        "url": "https://www.instagram.com/xinaarodriguez/"
+      },
+      {
+        "role": "Modelo",
+        "name": "Timi Adisa",
+        "url": "https://www.instagram.com/timiadisa/"
+      }
+    ],
+    "en": [
+      {
+        "role": "Photography",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Photo assistant",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "styling",
+        "name": "Paloma Monago",
+        "url": "https://www.instagram.com/palomamonago/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Barbara Mattel",
+        "url": "https://www.instagram.com/barbaramattel/"
+      },
+      {
+        "role": "Make up & hair assistant",
+        "name": "Xina Rodriguez",
+        "url": "https://www.instagram.com/xinaarodriguez/"
+      },
+      {
+        "role": "Model",
+        "name": "Timi Adisa",
+        "url": "https://www.instagram.com/timiadisa/"
+      }
+    ],
+    "ca": [
+      {
+        "role": "Fotografia",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Photo assistant",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "Estilisme",
+        "name": "Paloma Monago",
+        "url": "https://www.instagram.com/palomamonago/"
+      },
+      {
+        "role": "Maquillatge i Perruqueria",
+        "name": "Barbara Mattel",
+        "url": "https://www.instagram.com/barbaramattel/"
+      },
+      {
+        "role": "Assistent Maquillatge i Perruqueria",
+        "name": "Xina Rodriguez",
+        "url": "https://www.instagram.com/xinaarodriguez/"
+      },
+      {
+        "role": "Model",
+        "name": "Timi Adisa",
+        "url": "https://www.instagram.com/timiadisa/"
+      }
+    ]
+  },
+  "images": [
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-01.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/01-3.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-02.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/01-12.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-03.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/01-17.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-04.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/01-23.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-05.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/01-32.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-06.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/02-9.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-07.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/02-28_02.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-08.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/02-2222.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-09.webp",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/03-16.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-10.webp",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/03-23.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-11.webp",
+      "w": 2000,
+      "h": 2985,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/03-36.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/teeth-magazine/teeth-magazine-12.webp",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/EDITORIAL MODA/TEETH MAGAZINE/FOTOS/03-232.jpg",
+      "alt": ""
+    }
+  ]
+}

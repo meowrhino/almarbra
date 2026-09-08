@@ -1,0 +1,137 @@
+{
+  "slug": "corporea",
+  "category": "textil",
+  "source": "originals/TEXTIL/CORPÓREA",
+  "title": {
+    "es": "CORPÓREA",
+    "en": "CORPOREAL",
+    "ca": "Corpòria"
+  },
+  "synopsis": {
+    "es": "Corpórea surge de esa necesidad de apropiarse de une misme, necesidad de habitar los cuerpos como propios, de construirse y deconstruirse tantas veces como haga falta.\n\nCorpórea pretende ser una serie en desarrollo constante , experimentando nuevas técnicas, nuevos materiales, nuevas formas de entender los cuerpos.\nPiezas realizadas en Telar Magic Dobby Louët 24 lizos, compuestas en su totalidad de algodón y lana.",
+    "en": "Corporeal emerges from the need to reclaim oneself, the need to inhabit bodies as our own, to construct and deconstruct ourselves as many times as necessary.\n\nCorporeal aims to be an ever-evolving series, experimenting with new techniques, new materials, and new ways of understanding bodies.\nNeutral mercerized cotton and two-ply twisted wool pieces collection developed in Magic Dobby Louët 24 shafts Loom",
+    "ca": "Corpòria sorgeix d'aquesta necessitat d'apropiar-se d'une mateixe, necessitat d'habitar els cossos com a propis, de construir-se i deconstruir-se tantes vegades com calgui.\n\nCorpòria pretén ser una sèrie en desenvolupament constant, experimentant noves tècniques, nous materials, noves maneres d'entendre els cossos.\n\nPiezas realizadas en Telar Magic Dobby Louët 24 lizos, compuestas en su totalidad de algodón y lana."
+  },
+  "credits": {},
+  "images": [
+    {
+      "src": "img/textil/corporea/corporea-01.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/01.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-02.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/02.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-03.webp",
+      "w": 2000,
+      "h": 3000,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/03.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-04.webp",
+      "w": 2000,
+      "h": 3000,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/04.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-05.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/05.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-06.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/06.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-07.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/07.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-08.webp",
+      "w": 2000,
+      "h": 3000,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/08.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-09.webp",
+      "w": 2000,
+      "h": 1333,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/09.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-10.webp",
+      "w": 2000,
+      "h": 1333,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/10.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-11.webp",
+      "w": 2000,
+      "h": 3000,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/11.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-12.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/12.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-13.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/0013 - 2024.8.29 - Almudena González Martín - Kodak Gold 200-8.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-14.webp",
+      "w": 2000,
+      "h": 3016,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/0013 - 2024.8.292 - Almudena González Martín - Kodak Gold 200-6.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-15.webp",
+      "w": 2000,
+      "h": 3000,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/13.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-16.webp",
+      "w": 2000,
+      "h": 1508,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/14.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/textil/corporea/corporea-17.webp",
+      "w": 2000,
+      "h": 2963,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/15.jpg",
+      "alt": ""
+    }
+  ]
+}

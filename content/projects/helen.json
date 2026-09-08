@@ -1,0 +1,115 @@
+{
+  "slug": "helen",
+  "category": "editorial-moda",
+  "source": "originals/EDITORIAL MODA/HELEN",
+  "title": {
+    "es": "Helen",
+    "en": "Helen",
+    "ca": "Helen"
+  },
+  "synopsis": {},
+  "credits": {
+    "es": [
+      {
+        "role": "Fotografía",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Melissa Morena",
+        "url": "https://www.instagram.com/bissamorena/"
+      },
+      {
+        "role": "Modelo",
+        "name": "Helen Mariana Vanín",
+        "url": "https://www.instagram.com/helenmarianavanin/"
+      }
+    ],
+    "en": [
+      {
+        "role": "Photography",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Melissa Morena",
+        "url": "https://www.instagram.com/bissamorena/"
+      },
+      {
+        "role": "Model",
+        "name": "Helen Mariana Vanín",
+        "url": "https://www.instagram.com/helenmarianavanin/"
+      }
+    ],
+    "ca": [
+      {
+        "role": "Fotografia",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Melissa Morena",
+        "url": "https://www.instagram.com/bissamorena/"
+      },
+      {
+        "role": "Model",
+        "name": "Helen Mariana Vanín",
+        "url": "https://www.instagram.com/helenmarianavanin/"
+      }
+    ]
+  },
+  "images": [
+    {
+      "src": "img/editorial-moda/helen/helen-01.webp",
+      "w": 2000,
+      "h": 1309,
+      "source": "originals/EDITORIAL MODA/HELEN/FOTOS/000002.JPG",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/helen/helen-02.webp",
+      "w": 2000,
+      "h": 1309,
+      "source": "originals/EDITORIAL MODA/HELEN/FOTOS/000010.JPG",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/helen/helen-03.webp",
+      "w": 2000,
+      "h": 1309,
+      "source": "originals/EDITORIAL MODA/HELEN/FOTOS/000014.JPG",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/helen/helen-04.webp",
+      "w": 2000,
+      "h": 1309,
+      "source": "originals/EDITORIAL MODA/HELEN/FOTOS/000018.JPG",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/helen/helen-05.webp",
+      "w": 2000,
+      "h": 1333,
+      "source": "originals/EDITORIAL MODA/HELEN/FOTOS/AD1A3582.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/helen/helen-06.webp",
+      "w": 2000,
+      "h": 3000,
+      "source": "originals/EDITORIAL MODA/HELEN/FOTOS/AD1A3607.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/helen/helen-07.webp",
+      "w": 2000,
+      "h": 3000,
+      "source": "originals/EDITORIAL MODA/HELEN/FOTOS/AD1A362023.jpg",
+      "alt": ""
+    }
+  ]
+}

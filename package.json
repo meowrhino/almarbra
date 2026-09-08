@@ -2,11 +2,12 @@
   "name": "almarbra",
   "version": "1.0.0",
   "private": true,
-  "description": "Clon de amargor.es en HTML/CSS/JS vainilla, generado estáticamente",
+  "description": "Portfolio de Almudena González: contenido en JSON, HTML estático generado, imágenes en WebP",
   "type": "module",
   "scripts": {
+    "ingest": "node build/ingest.mjs",
     "build": "node build/index.mjs",
-    "serve": "python3 -m http.server 8000",
+    "serve": "node build/serve.mjs",
     "dev": "npm run build && npm run serve"
   }
 }

@@ -1,0 +1,20 @@
+{
+  "_": "Correcciones a mano sobre lo que sale de las fichas. Se aplican encima del JSON generado, así que reingestar no se las lleva. Cada clave es el slug del proyecto.",
+
+  "roma": {
+    "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
+    "title": {
+      "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN",
+      "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION"
+    }
+  },
+
+  "sicky-magazine-02": {
+    "_nota": "La ficha repite el título de la primera; se distingue aquí.",
+    "title": {
+      "es": "SICKY MAGAZINE (II)",
+      "en": "SICKY MAGAZINE (II)",
+      "ca": "SICKY MAGAZINE (II)"
+    }
+  }
+}

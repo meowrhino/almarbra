@@ -12,11 +12,19 @@ const FONT = 'https://fonts.googleapis.com/css2?family=Karla:wght@200;300;400;70
  * @param {string}  o.bodyClass clase extra del <body>
  * @param {string}  o.header   HTML de la cabecera
  * @param {string}  o.content  HTML del contenido
+ * @param {number}  o.depth    carpetas de profundidad respecto a la raíz
+ * @param {string[]} o.styles  hojas de estilo (rutas desde la raíz)
+ * @param {string[]} o.scripts scripts (rutas desde la raíz)
  */
-export function layout({ site, title, pageId, bodyClass, header, content, assets = {} }) {
+export function layout({
+  site, title, pageId, bodyClass, header, content, assets = {}, depth = 0,
+  styles = ['css/style.css'], scripts = ['js/slideshow.js'],
+}) {
   // ?v=<hash> para que un deploy no deje a nadie con el CSS viejo en caché
-  const css = `css/style.css${assets.css ? `?v=${assets.css}` : ''}`;
-  const js = `js/slideshow.js${assets.js ? `?v=${assets.js}` : ''}`;
+  const base = '../'.repeat(depth);
+  const versioned = (path) => `${base}${path}${assets[path] ? `?v=${assets[path]}` : ''}`;
+  const links = styles.map((s) => `<link rel="stylesheet" href="${versioned(s)}">`).join('\n');
+  const tags = scripts.map((s) => `<script src="${versioned(s)}" defer></script>`).join('\n');
 
   return `<!DOCTYPE html>
 <html lang="${escapeAttr(site.lang || 'es')}" class="no-js">
@@ -29,7 +37,7 @@ ${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<scri
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="${FONT}">
-<link rel="stylesheet" href="${css}">
+${links}
 </head>
 <body data-page="${escapeAttr(pageId)}"${bodyClass ? ` class="${escapeAttr(bodyClass)}"` : ''}>
 
@@ -43,7 +51,7 @@ ${content}
   </main>
 </div>
 
-<script src="${js}" defer></script>
+${tags}
 </body>
 </html>
 `;

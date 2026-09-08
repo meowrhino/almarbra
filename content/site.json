@@ -39,6 +39,7 @@
     }
   ],
   "lang": "es",
+  "defaultLang": "es",
   "description": "Portfolio de Almudena González — arte textil, moda y colaboraciones.",
   "noindex": true,
   "routes": [

@@ -1,0 +1,144 @@
+{
+  "slug": "agueda",
+  "category": "editorial-moda",
+  "source": "originals/EDITORIAL MODA/ÁGUEDA",
+  "title": {
+    "es": "ÁGUEDA",
+    "en": "ÁGUEDA",
+    "ca": "ÁGUEDA"
+  },
+  "synopsis": {},
+  "credits": {
+    "es": [
+      {
+        "role": "Fotografía",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Melissa Morena",
+        "url": "https://www.instagram.com/bissamorena/"
+      },
+      {
+        "role": "Estilismo",
+        "name": "Jhonson Camilo",
+        "url": "https://www.instagram.com/papitaa_criolla/"
+      },
+      {
+        "role": "Modelo",
+        "name": "Helen Mariana Vanín",
+        "url": "https://www.instagram.com/helenmarianavanin/"
+      }
+    ],
+    "en": [
+      {
+        "role": "Photography",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Melissa Morena",
+        "url": "https://www.instagram.com/bissamorena/"
+      },
+      {
+        "role": "Styling",
+        "name": "Jhonson Camilo",
+        "url": "https://www.instagram.com/papitaa_criolla/"
+      },
+      {
+        "role": "Model",
+        "name": "Helen Mariana Vanín",
+        "url": "https://www.instagram.com/helenmarianavanin/"
+      }
+    ],
+    "ca": [
+      {
+        "role": "Fotografia",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Melissa Morena",
+        "url": "https://www.instagram.com/bissamorena/"
+      },
+      {
+        "role": "Estilisme",
+        "name": "Jhonson Camilo",
+        "url": "https://www.instagram.com/papitaa_criolla/"
+      },
+      {
+        "role": "Model",
+        "name": "Helen Mariana Vanín",
+        "url": "https://www.instagram.com/helenmarianavanin/"
+      }
+    ]
+  },
+  "images": [
+    {
+      "src": "img/editorial-moda/agueda/agueda-01.webp",
+      "w": 527,
+      "h": 757,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/04-3w8.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-02.webp",
+      "w": 575,
+      "h": 859,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/04-25.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-03.webp",
+      "w": 575,
+      "h": 780,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/04-31 copia.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-04.webp",
+      "w": 450,
+      "h": 541,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-1 copia.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-05.webp",
+      "w": 859,
+      "h": 575,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-7 copia.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-06.webp",
+      "w": 575,
+      "h": 859,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-10 copia.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-07.webp",
+      "w": 575,
+      "h": 859,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-14 copia.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-08.webp",
+      "w": 575,
+      "h": 859,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-16 copia.jpg",
+      "alt": ""
+    },
+    {
+      "src": "img/editorial-moda/agueda/agueda-09.webp",
+      "w": 575,
+      "h": 859,
+      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-34.jpg",
+      "alt": ""
+    }
+  ]
+}

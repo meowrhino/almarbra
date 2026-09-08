@@ -1,0 +1,67 @@
+[
+  {
+    "slug": "agueda",
+    "category": "editorial-moda",
+    "images": 9
+  },
+  {
+    "slug": "cap-magazine",
+    "category": "editorial-moda",
+    "images": 21
+  },
+  {
+    "slug": "helen",
+    "category": "editorial-moda",
+    "images": 7
+  },
+  {
+    "slug": "herdes-magazine",
+    "category": "editorial-moda",
+    "images": 8
+  },
+  {
+    "slug": "kaltbult-magazine",
+    "category": "editorial-moda",
+    "images": 19
+  },
+  {
+    "slug": "lula-japan-magazine",
+    "category": "editorial-moda",
+    "images": 11
+  },
+  {
+    "slug": "sicky-magazine",
+    "category": "editorial-moda",
+    "images": 20
+  },
+  {
+    "slug": "sicky-magazine-02",
+    "category": "editorial-moda",
+    "images": 20
+  },
+  {
+    "slug": "teeth-magazine",
+    "category": "editorial-moda",
+    "images": 12
+  },
+  {
+    "slug": "vein-magazine",
+    "category": "editorial-moda",
+    "images": 16
+  },
+  {
+    "slug": "corporea",
+    "category": "textil",
+    "images": 17
+  },
+  {
+    "slug": "cuerpo-esquema",
+    "category": "textil",
+    "images": 83
+  },
+  {
+    "slug": "roma",
+    "category": "textil",
+    "images": 16
+  }
+]

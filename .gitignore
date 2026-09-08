@@ -1,1 +1,11 @@
 .DS_Store
+
+# Material original de la clienta (946 MB). Vive fuera de git: de aquí
+# sale img/ con `npm run ingest`. Copia de seguridad aparte, por favor.
+originals/
+
+# Entrega anterior, ya superada por originals/
+CONTENIDO/
+
+# Caché de la ingesta: se regenera sola
+content/.media-cache.json

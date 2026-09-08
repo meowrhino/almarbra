@@ -1,0 +1,115 @@
+/* Maqueta de trabajo de proyectos/.
+
+   Deliberadamente sosa: sirve para ver todo el material mientras se
+   decide el diseño. Cuando haya diseño, esto se tira y se reescribe;
+   el contenido vive en content/projects/, no aquí. */
+
+:root {
+  --ink: #111;
+  --muted: #777;
+  --line: #e3e3e3;
+  --gap: 2rem;
+  --measure: 34rem;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font: 300 15px/1.5 Karla, system-ui, sans-serif;
+  color: var(--ink);
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { display: block; width: 100%; height: auto; background: #f4f4f4; }
+a { color: inherit; }
+
+.page { padding: 1.5rem clamp(1rem, 4vw, 3rem) 6rem; }
+
+/* cabecera */
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2rem;
+  align-items: baseline;
+  padding-bottom: 1rem;
+  margin-bottom: 2.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.site-title { margin: 0; font-size: 1rem; font-weight: 400; letter-spacing: .02em; }
+.site-nav ul { display: flex; gap: 1.25rem; margin: 0; padding: 0; list-style: none; }
+.site-nav .is-current { color: var(--muted); }
+
+/* índice */
+
+.note {
+  margin: 0 0 2.5rem;
+  padding: .6rem .8rem;
+  max-width: var(--measure);
+  color: var(--muted);
+  border: 1px dashed var(--line);
+}
+
+.catalogue { margin-bottom: 3.5rem; }
+.catalogue h2 {
+  margin: 0 0 1rem;
+  font-size: .8rem;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.card a { display: grid; gap: .5rem; text-decoration: none; }
+.card img { aspect-ratio: 3 / 4; object-fit: cover; }
+.card span { font-size: .85rem; letter-spacing: .02em; }
+
+/* proyecto */
+
+.project__intro { max-width: var(--measure); margin-bottom: 3rem; }
+.project__intro h1 { margin: 0 0 .35rem; font-size: 1.1rem; font-weight: 400; }
+.project__meta {
+  margin: 0 0 1.5rem;
+  font-size: .75rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.project__intro p { margin: 0 0 1rem; }
+
+.credits { margin: 1.5rem 0 0; padding: 0; list-style: none; font-size: .85rem; }
+.credits li { display: flex; gap: .5rem; padding: .2rem 0; border-top: 1px solid var(--line); }
+.credit__role { flex: 0 0 11rem; color: var(--muted); }
+
+.project__group { margin-bottom: 3rem; }
+.project__group h2 {
+  margin: 0 0 1rem;
+  font-size: .8rem;
+  font-weight: 400;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.project__photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--gap);
+  align-items: start;
+}
+.project__photos figure { margin: 0; }
+
+@media (max-width: 600px) {
+  .project__photos, .cards { grid-template-columns: 1fr; }
+  .credits li { display: block; }
+  .credit__role { display: block; }
+}
