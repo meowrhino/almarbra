@@ -4,6 +4,10 @@
         ->  img/<categoría>/<proyecto>/<proyecto>-NN[-400|-800|-1400].webp
         ->  content/projects/<proyecto>.json
 
+     originals/PORTADA/<foto>                     (no es una categoría)
+        ->  img/portada/portada[-400|-800|-1400].webp
+        ->  content/home.json
+
    Convierte cada foto a WebP —el tamaño y la calidad, en formats.mjs—
    más sus variantes pequeñas para el srcset, mide sus dimensiones y
    escribe un JSON por proyecto con título, sinopsis y créditos en los
@@ -36,6 +40,7 @@ const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const SOURCE = join(ROOT, 'originals');
 const IMG = join(ROOT, 'img');
 const PROJECTS = join(ROOT, 'content', 'projects');
+const HOME = join(ROOT, 'content', 'home.json');
 const CACHE = join(ROOT, 'content', '.media-cache.json');
 const OVERRIDES = join(ROOT, 'content', 'overrides.json');
 
@@ -43,6 +48,10 @@ const CONCURRENCY = 6;   // conversiones a la vez
 
 const PHOTO = /\.(jpe?g|png)$/i;
 const FORCE = process.argv.includes('--force');
+
+/* La carpeta de la foto de portada. No es una categoría: no lleva
+   proyectos dentro, solo la foto que abre el sitio. */
+const COVER_DIR = 'PORTADA';
 
 /* ── recorrido de originals/ ─────────────────────────────────────── */
 
@@ -219,6 +228,30 @@ async function ingestProject(categoryDir, categorySlug, name, cache) {
   };
 }
 
+/* La foto de la portada. Vive en originals/PORTADA/ y no pertenece a
+   ningún proyecto, así que sale a img/portada/ y a su propio JSON. Si la
+   carpeta no está, se deja content/home.json como esté: quitarla no
+   debería dejar la portada sin foto. */
+async function ingestCover(cache) {
+  const dir = join(SOURCE, COVER_DIR);
+  if (!existsSync(dir)) return null;
+
+  const files = photosUnder(dir);
+  if (!files.length) return null;
+  if (files.length > 1) {
+    console.warn(`${COVER_DIR}/ tiene ${files.length} fotos; se usa la primera.`);
+  }
+
+  const outDir = join(IMG, 'portada');
+  mkdirSync(outDir, { recursive: true });
+
+  const { cached, ...hero } = await convert(files[0], outDir, 'portada', cache);
+  const swept = sweep(outDir, [hero]);
+
+  writeFileSync(HOME, JSON.stringify({ hero: { ...hero, alt: '' } }, null, 2) + '\n');
+  return { hero, swept };
+}
+
 async function main() {
   if (!existsSync(SOURCE)) {
     console.error(`No encuentro ${relative(ROOT, SOURCE)}/. Copia ahí el material de la clienta.`);
@@ -233,6 +266,7 @@ async function main() {
   let photos = 0;
 
   for (const category of dirs(SOURCE)) {
+    if (category === COVER_DIR) continue;   // la portada va aparte
     const categorySlug = slugify(category);
     const categoryDir = join(SOURCE, category);
 
@@ -250,6 +284,12 @@ async function main() {
         + `${project.images.length} fotos`
         + (swept ? `   (${swept} .webp huérfanos borrados)` : ''));
     }
+  }
+
+  const cover = await ingestCover(cache);
+  if (cover) {
+    console.log('portada'.padEnd(34) + `${cover.hero.w}x${cover.hero.h}`
+      + (cover.swept ? `   (${cover.swept} .webp huérfanos borrados)` : ''));
   }
 
   writeFileSync(CACHE, JSON.stringify(cache, null, 0));

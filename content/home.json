@@ -1,0 +1,9 @@
+{
+  "hero": {
+    "src": "img/portada/portada.webp",
+    "w": 1333,
+    "h": 2000,
+    "source": "originals/PORTADA/portada.png",
+    "alt": ""
+  }
+}

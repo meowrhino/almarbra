@@ -6,8 +6,8 @@ CSS e imágenes. **Cero dependencias y cero JavaScript de navegador.**
 
 Dos pantallas:
 
-- **portada** (`/`): la foto a todo el ancho y sin recortar —se ve entera— con
-  «entrar» encima. Debajo, otra pantalla de 100dvh en negro con la firma arriba y
+- **portada** (`/`): la foto —un PNG recortado, con el fondo transparente—
+  entera en la primera pantalla y «entrar» encima. Debajo, otra pantalla de 100dvh en negro con la firma arriba y
   los proyectos desperdigados. «Entrar» es un ancla y el desplazamiento suave lo
   hace el navegador.
 - **proyecto** (`/<slug>/`): ficha técnica —título, sinopsis y créditos— y la
@@ -25,8 +25,10 @@ npm run dev       # build + serve
 ```
 originals/              material de la clienta — FUERA DE GIT
   <CATEGORÍA>/<PROYECTO>/…/*.jpg + FICHA <PROYECTO>.rtf
+  PORTADA/*.png                    la foto de la portada, aparte
 
 content/site.json       título, idioma, meta
+content/home.json       GENERADO: la foto de la portada y sus medidas
 content/overrides.json  correcciones a mano
 content/projects/*.json GENERADO por la ingesta
 
@@ -40,6 +42,7 @@ build/serve.mjs         servidor local
 css/style.css           todo el estilo
 js/scatter.js           desperdiga los proyectos de la portada (lo único de navegador)
 img/<categoría>/<slug>/ GENERADO: 825 webp, 133 MB
+img/portada/            GENERADO: la foto de la portada
 index.html              GENERADO — no editar a mano
 <slug>/index.html       GENERADO — no editar a mano
 ```
@@ -54,6 +57,12 @@ index.html              GENERADO — no editar a mano
 2. lee la FICHA `.rtf` con `textutil` y saca título, sinopsis y créditos
    (rol, nombre, enlace) **en los tres idiomas** de la ficha: es, en, ca;
 3. escribe `content/projects/<proyecto>.json`.
+
+`originals/PORTADA/` no es una categoría: es la foto que abre el sitio. Sale a
+`img/portada/portada.webp` y a `content/home.json`. Cambiar la portada es dejar
+otra foto ahí y volver a ingerir. Es un PNG con transparencia y `cwebp` la
+conserva: en la web se ve la pieza recortada sobre el fondo de la página, con los
+flecos al aire.
 
 Es idempotente: se apoya en `content/.media-cache.json` y solo reconvierte lo que
 haya cambiado. Sin cambios tarda menos de un segundo. `npm run ingest -- --force`
@@ -126,15 +135,12 @@ que las direcciones quedan `/roma/`, `/sicky-magazine/`… Son dos plantillas y 
 Lo que se cambia sin tocar código, en `content/site.json`:
 
 ```jsonc
-"home": {
-  "enter": "entrar",                                             // la palabra de la portada
-  "hero":  "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp"    // la foto grande
-},
-"order": ["textil", "editorial-moda"]                            // en qué orden salen
+"home": { "enter": "entrar" },            // la palabra de la portada
+"order": ["textil", "editorial-moda"]     // en qué orden salen las categorías
 ```
 
-La ruta de `hero` es la de `img/`: cualquier foto ya ingerida sirve, y cambiarla es
-editar una línea y `npm run build`.
+La foto de la portada no se elige aquí: es la que haya en `originals/PORTADA/`
+(ver *La ingesta*).
 
 ## Lo único de navegador: js/scatter.js
 

@@ -53,32 +53,35 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* ── portada ─────────────────────────────────────────────────────────
 
-     .hero       la foto, a todo el ancho y sin recortar
+     .hero       la foto, entera en la primera pantalla
      #proyectos  la firma arriba y los proyectos desperdigados
 
-   La foto va a 100dvw y con su altura natural, así que se ve entera:
-   nunca se recorta. Si con eso queda más alta que la ventana —que es lo
-   normal en horizontal, porque es una foto vertical— el final de la
-   foto asoma ya en la pantalla de los proyectos. Si queda más baja, el
-   hero se estira a 100dvh y la foto se centra. */
+   La foto es un PNG recortado: el fondo es transparente y lo que se ve
+   es la pieza, con sus flecos, contra el fondo de la página. Por eso
+   cabe entera en la pantalla en vez de ir a sangre —si se saliera por
+   abajo, los flecos, que es lo que hay que ver, quedarían fuera—. */
 
 .hero {
   position: relative;
   width: 100dvw;
-  min-height: 100dvh;
+  height: 100dvh;
   display: grid;
-  align-content: center;
+  place-content: center;
 }
 
-.hero img { width: 100%; height: auto; }
+/* `contain` a mano: la foto crece hasta topar con el lado más corto de
+   la ventana y ahí se para, sin recortarse ni deformarse. */
+.hero img {
+  max-width: 100%;
+  max-height: 100dvh;
+  width: auto;
+  height: auto;
+}
 
-/* «entrar» centrado en la primera pantalla, no en mitad de la foto */
+/* «entrar», encima de la foto y centrado en la pantalla */
 .enter {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100dvh;
+  inset: 0;
   display: grid;
   place-items: center;
   font-size: clamp(4rem, 21vw, 13rem);
