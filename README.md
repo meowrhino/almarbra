@@ -6,10 +6,10 @@ CSS e imágenes. **Cero dependencias y cero JavaScript de navegador.**
 
 Dos pantallas:
 
-- **portada** (`/`): la foto a pantalla completa con «entrar». Al pulsarlo la foto
-  sube y aparecen los proyectos, cada uno con su imagen y su nombre. «Entrar» es
-  un ancla y el desplazamiento suave lo hace el navegador: por eso no hace falta
-  JavaScript.
+- **portada** (`/`): la foto a todo el ancho y sin recortar —se ve entera— con
+  «entrar» encima. Debajo, otra pantalla de 100dvh en negro con la firma arriba y
+  los proyectos desperdigados. «Entrar» es un ancla y el desplazamiento suave lo
+  hace el navegador: por eso no hace falta JavaScript.
 - **proyecto** (`/<slug>/`): ficha técnica —título, sinopsis y créditos— y la
   galería en scroll vertical.
 
@@ -37,7 +37,7 @@ build/build.mjs         content/ -> *.html
 build/serve.mjs         servidor local
 
 css/style.css           todo el estilo
-img/<categoría>/<slug>/ GENERADO: 903 webp
+img/<categoría>/<slug>/ GENERADO: 825 webp, 133 MB
 index.html              GENERADO — no editar a mano
 <slug>/index.html       GENERADO — no editar a mano
 ```
@@ -46,8 +46,9 @@ index.html              GENERADO — no editar a mano
 
 `npm run ingest` se come `originals/` entero:
 
-1. convierte cada foto a WebP en cuatro anchos —400, 800, 1400 y 2000— a
-   `img/<categoría>/<proyecto>/<proyecto>-NN.webp` (946 MB → 170 MB);
+1. convierte cada foto a WebP a `img/<categoría>/<proyecto>/<proyecto>-NN.webp`,
+   más tres variantes pequeñas para el `srcset` —400, 800 y 1400 px de ancho—
+   (946 MB → 133 MB);
 2. lee la FICHA `.rtf` con `textutil` y saca título, sinopsis y créditos
    (rol, nombre, enlace) **en los tres idiomas** de la ficha: es, en, ca;
 3. escribe `content/projects/<proyecto>.json`.
@@ -55,6 +56,13 @@ index.html              GENERADO — no editar a mano
 Es idempotente: se apoya en `content/.media-cache.json` y solo reconvierte lo que
 haya cambiado. Sin cambios tarda menos de un segundo. `npm run ingest -- --force`
 rehace todo.
+
+**La conversión es la de `meowrhino/imgToWeb`**, que es la de todos los sitios:
+calidad **0.85** y el **lado largo** topado a **2000 px**, con la proporción
+intacta. Ojo: el tope es el lado largo, no el ancho — una foto vertical de
+3840×5760 sale a 1333×2000, no a 2000×3000. Por eso las verticales rondan los
+1333 px de ancho, y en las galerías cada foto lleva un `max-width` con su ancho
+real para que no se amplíe en pantallas grandes.
 
 No genera una variante más ancha que el original, así que el `srcset` de cada foto
 lista solo los anchos que existen de verdad.
@@ -114,15 +122,21 @@ Lo que se cambia sin tocar código, en `content/site.json`:
 
 ```jsonc
 "home": {
-  "enter":   "entrar",                                      // la palabra de la portada
-  "hero":    "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp",  // la foto grande
-  "texture": "img/textil/cuerpo-esquema/cuerpo-esquema-60.webp"   // el fondo de la lista
+  "enter": "entrar",                                             // la palabra de la portada
+  "hero":  "img/textil/cuerpo-esquema/cuerpo-esquema-62.webp",   // la foto grande
+  "seed":  1                                                     // baraja la colocación
 },
-"order": ["textil", "editorial-moda"]                       // en qué orden salen
+"order": ["textil", "editorial-moda"]                            // en qué orden salen
 ```
 
-Las rutas de `hero` y `texture` son las de `img/`: cualquier foto ya ingerida
-sirve, y cambiarlas es editar una línea y `npm run build`.
+La ruta de `hero` es la de `img/`: cualquier foto ya ingerida sirve, y cambiarla es
+editar una línea y `npm run build`.
+
+Los proyectos de la segunda pantalla van desperdigados. No es azar de verdad: el
+build reparte las cajas por una rejilla invisible —4×4 en pantalla ancha, 2×7 en
+móvil— y las mueve un poco dentro de su celda, así que quedan desordenadas sin
+pisarse ni salirse. La misma `seed` da siempre la misma colocación, de modo que el
+HTML es estable; para barajar de nuevo, se cambia el número.
 
 El CSS se enlaza con `?v=<hash>` de su contenido: un deploy nunca deja a nadie con
 estilos viejos en caché.
@@ -139,7 +153,7 @@ Teeth Magazine · Vein Magazine — 143 fotos.
 **Textil** (3): Corpórea (17) · Cuerpo Esquema (83) · Roma (16, en tres piezas:
 Laocoonte, Río de la Plata, Virgen) — 116 fotos.
 
-259 fotos, 903 WebP.
+259 fotos, 825 WebP, 133 MB.
 
 ### Lo que hay que mirar antes de diseñar
 

@@ -28,8 +28,8 @@
   "images": [
     {
       "src": "img/textil/roma/roma-01.webp",
-      "w": 2000,
-      "h": 3016,
+      "w": 1326,
+      "h": 2000,
       "source": "originals/TEXTIL/ROMA/PIEZAS/LAOCOONTE/7047 - 2025.07.03 - Almudena González Martín - Kodak Ultramax 400 -3.jpg",
       "alt": "",
       "group": "laocoonte"
@@ -100,8 +100,8 @@
     },
     {
       "src": "img/textil/roma/roma-10.webp",
-      "w": 2000,
-      "h": 2985,
+      "w": 1340,
+      "h": 2000,
       "source": "originals/TEXTIL/ROMA/PIEZAS/VIRGEN/6447 - 2025.06.18 - Almudena González Martín - Kodak Ultramax 400-8.jpg",
       "alt": "",
       "group": "virgen"

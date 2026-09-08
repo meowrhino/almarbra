@@ -35,9 +35,15 @@ const PROJECTS = join(ROOT, 'content', 'projects');
 const CACHE = join(ROOT, 'content', '.media-cache.json');
 const OVERRIDES = join(ROOT, 'content', 'overrides.json');
 
-const WIDTHS = [400, 800, 1400];   // variantes para el srcset
-const BASE_WIDTH = 2000;           // el que va en `src`
-const QUALITY = 80;
+/* La conversión es la misma que usamos en meowrhino/imgToWeb, que es la
+   de todos los sitios: calidad 0.85 y el LADO LARGO —no el ancho— topado
+   a 2000 px, manteniendo la proporción. Una foto vertical de 3840×5760
+   sale a 1333×2000, no a 2000×3000.
+
+   WIDTHS son las variantes pequeñas del srcset, esas sí por ancho. */
+const MAX_SIDE = 2000;
+const QUALITY = 85;
+const WIDTHS = [400, 800, 1400];
 const CONCURRENCY = 6;
 
 const PHOTO = /\.(jpe?g|png)$/i;
@@ -113,11 +119,12 @@ async function convert(source, dir, name, cache) {
   }
 
   const { w, h } = await dimensions(source);
-  const scale = Math.min(1, BASE_WIDTH / w);
+  // el tope va sobre el lado largo, sea el ancho o el alto
+  const scale = Math.min(1, MAX_SIDE / Math.max(w, h));
   const outW = Math.round(w * scale);
   const outH = Math.round(h * scale);
 
-  await toWebp(source, base, w > BASE_WIDTH ? BASE_WIDTH : null);
+  await toWebp(source, base, scale < 1 ? outW : null);
   for (const width of WIDTHS) {
     if (width >= outW) continue;   // no se agranda nada
     await toWebp(source, join(dir, `${name}-${width}.webp`), width);

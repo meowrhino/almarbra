@@ -49,27 +49,36 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   white-space: nowrap;
 }
 
-/* ── portada: la foto ────────────────────────────────────────────── */
+/* ── portada ─────────────────────────────────────────────────────────
+
+     .hero       la foto, a todo el ancho y sin recortar
+     #proyectos  la firma arriba y los proyectos desperdigados
+
+   La foto va a 100dvw y con su altura natural, así que se ve entera:
+   nunca se recorta. Si con eso queda más alta que la ventana —que es lo
+   normal en horizontal, porque es una foto vertical— el final de la
+   foto asoma ya en la pantalla de los proyectos. Si queda más baja, el
+   hero se estira a 100dvh y la foto se centra. */
 
 .hero {
   position: relative;
-  height: 100svh;
-  overflow: hidden;
+  width: 100dvw;
+  min-height: 100dvh;
+  display: grid;
+  align-content: center;
 }
 
-.hero img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.hero img { width: 100%; height: auto; }
 
-/* «entrar» centrado sobre la foto */
+/* «entrar» centrado en la primera pantalla, no en mitad de la foto */
 .enter {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100dvh;
   display: grid;
   place-items: center;
-  padding-bottom: var(--bar);
   font-size: clamp(4rem, 21vw, 13rem);
   font-weight: 700;
   letter-spacing: -.03em;
@@ -79,66 +88,83 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* ── portada: los proyectos ──────────────────────────────────────── */
 
-.projects {
-  position: relative;
-  min-height: 100svh;
-  padding: clamp(3rem, 12vh, 7rem) var(--pad) calc(var(--bar) + 3rem);
-  /* la foto de textura la pone el build en el atributo style */
-  background: var(--bg) center / cover;
-  isolation: isolate;
+#proyectos {
+  width: 100dvw;
+  height: 100dvh;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: var(--bar) 1fr;
+  background: var(--bg);
 }
 
-/* velo negro encima de la textura, para que el texto se lea */
-.projects::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: rgba(0, 0, 0, .55);
+/* la firma: ya no va fija, sube con el scroll y queda justo encima de
+   los proyectos */
+.signature {
+  display: grid;
+  place-items: center;
+  margin: 0;
+  height: var(--bar);
+  letter-spacing: .02em;
+}
+
+/* Los proyectos se colocan a mano por encima del área: el build les
+   pone --x/--y (pantalla ancha) y --mx/--my (móvil), repartidos por una
+   rejilla invisible con un empujón al azar dentro de cada celda. */
+.projects {
+  position: relative;
+  padding: var(--pad);
 }
 
 .projects ul {
-  display: grid;
-  gap: clamp(1.25rem, 4vh, 2.5rem);
-  max-width: 46rem;
-  margin: 0 auto;
+  position: relative;
+  height: 100%;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.projects li {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 20%;
+}
+
 .projects a {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(1rem, 4vw, 2.5rem);
+  grid-template-columns: auto 1fr;
+  gap: .6rem;
   align-items: center;
 }
 
 .projects img {
-  justify-self: end;
-  height: clamp(3.25rem, 9vh, 5.5rem);
+  height: clamp(2.5rem, 7dvh, 4.5rem);
   width: auto;
   max-width: 100%;
   object-fit: cover;
 }
 
-.projects span { letter-spacing: .01em; }
+.projects span {
+  font-size: clamp(11px, 1.1dvw, 14px);
+  line-height: 1.25;
+  letter-spacing: .01em;
+}
 
 @media (hover: hover) {
   .projects a:hover span { text-decoration: underline; text-underline-offset: .25em; }
 }
 
-/* ── la firma, siempre abajo ─────────────────────────────────────── */
+/* en vertical estrecho: dos columnas y siete filas, y todo más pequeño */
+@media (max-width: 700px) {
+  .projects li {
+    left: var(--mx);
+    top: var(--my);
+    width: 42%;
+  }
 
-.signature {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: var(--bar);
-  display: grid;
-  place-items: center;
-  background: var(--bg);
-  letter-spacing: .02em;
+  .projects a { gap: .4rem; }
+  .projects img { height: clamp(2rem, 4.5dvh, 3rem); }
+  .projects span { font-size: 11px; }
 }
 
 /* ── página de proyecto ──────────────────────────────────────────── */
@@ -189,11 +215,14 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   color: var(--dim);
 }
 
+/* A sangre: la foto ocupa todo el ancho que da de sí, y no más. El
+   `max-width` de cada una lo pone el build con su ancho real, para no
+   ampliarlas. */
 .group figure {
-  margin: 0 auto clamp(1rem, 4vh, 2.5rem);
-  max-width: 70rem;
-  padding: 0 var(--pad);
+  margin: 0 0 clamp(.5rem, 2dvh, 1.5rem);
 }
+
+.group figure img { width: 100%; margin: 0 auto; }
 
 @media (max-width: 700px) {
   .credits { grid-template-columns: 1fr; gap: 0 }

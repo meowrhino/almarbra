@@ -50,10 +50,14 @@ function srcset(image, base) {
   return found.length ? [...found, `${base}${image.src} ${image.w}w`].join(', ') : null;
 }
 
-function img(image, { base = '', sizes = '100vw', eager = false } = {}) {
+/* `cap` limita la foto a su ancho real. Como la ingesta topa el lado
+   largo a 2000 px, las verticales rondan los 1333 de ancho: sin este
+   tope se ampliarían en pantallas grandes y se verían blandas. */
+function img(image, { base = '', sizes = '100vw', eager = false, cap = false } = {}) {
   const set = srcset(image, base);
   return `<img src="${attr(base + image.src)}"${set ? ` srcset="${attr(set)}" sizes="${attr(sizes)}"` : ''}`
     + ` width="${image.w}" height="${image.h}" alt="${attr(image.alt || '')}"`
+    + (cap ? ` style="max-width:${image.w}px"` : '')
     + (eager ? ' fetchpriority="high"' : ' loading="lazy"') + ' decoding="async">';
 }
 
@@ -88,21 +92,64 @@ ${body}
 const coverOf = (project) =>
   project.images.find((i) => i.src === project.cover) || project.images[0];
 
-function homePage(projects) {
-  const hero = { src: home.hero, w: 2000, h: 3000, alt: '' };
+/* Aleatorio con semilla: la misma semilla da siempre la misma
+   colocación, así que el HTML generado es estable y no hace falta
+   JavaScript en el navegador. Se cambia la semilla en site.json para
+   barajar de nuevo. */
+function random(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let x = Math.imul(a ^ (a >>> 15), 1 | a);
+    x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
-  const items = projects.map((project) => {
+/* Reparte `count` cajas por una rejilla de cols × rows y las mueve un
+   poco dentro de su celda. Así quedan desordenadas pero sin pisarse ni
+   salirse: cada una cae en su celda y nada más. Devuelve la esquina
+   superior izquierda de cada caja, en % del contenedor. */
+function scatter(count, cols, rows, boxW, boxH, rnd) {
+  const cells = [...Array(cols * rows).keys()];
+  for (let i = cells.length - 1; i > 0; i--) {        // baraja las celdas
+    const j = Math.floor(rnd() * (i + 1));
+    [cells[i], cells[j]] = [cells[j], cells[i]];
+  }
+
+  const cellW = 100 / cols;
+  const cellH = 100 / rows;
+  const freeW = Math.max(0, cellW - boxW);            // hueco que sobra
+  const freeH = Math.max(0, cellH - boxH);
+
+  return cells.slice(0, count).map((cell) => ({
+    x: (cell % cols) * cellW + rnd() * freeW,
+    y: Math.floor(cell / cols) * cellH + rnd() * freeH,
+  }));
+}
+
+function homePage(projects) {
+  /* La foto de portada es una de las ya ingeridas: se busca por su ruta
+     para heredar sus medidas y su srcset. */
+  const hero = projects.flatMap((p) => p.images).find((i) => i.src === home.hero);
+  if (!hero) throw new Error(`La foto de portada no existe en img/: ${home.hero}`);
+
+  /* Dos colocaciones, una por tamaño de pantalla: en el móvil no caben
+     cuatro columnas. Cada una va en sus propias variables CSS y la hoja
+     de estilo elige con una media query. */
+  const rnd = random(home.seed || 1);
+  const wide = scatter(projects.length, 4, 4, 20, 18, rnd);
+  const narrow = scatter(projects.length, 2, 7, 42, 12, rnd);
+
+  const items = projects.map((project, i) => {
     const cover = coverOf(project);
-    return `<li><a href="${attr(project.slug)}/">
-${cover ? img(cover, { sizes: '(max-width: 700px) 30vw, 15vw' }) : ''}
+    const pos = `--x:${wide[i].x.toFixed(2)}%; --y:${wide[i].y.toFixed(2)}%;`
+      + ` --mx:${narrow[i].x.toFixed(2)}%; --my:${narrow[i].y.toFixed(2)}%`;
+    return `<li style="${pos}"><a href="${attr(project.slug)}/">
+${cover ? img(cover, { sizes: '(max-width: 700px) 25vw, 12vw' }) : ''}
 <span>${esc(t(project.short) || t(project.title) || project.slug)}</span>
 </a></li>`;
   });
-
-  /* La textura va en el atributo style, no en una variable CSS: dentro
-     de una variable el url() se resolvería contra css/, no contra el
-     documento, y la ruta saldría mal. */
-  const texture = home.texture ? ` style="background-image: url('${attr(home.texture)}')"` : '';
 
   return page({
     title: null,
@@ -114,13 +161,15 @@ ${img(hero, { eager: true })}
 <a class="enter" href="#proyectos">${esc(home.enter || 'entrar')}</a>
 </section>
 
-<nav class="projects" id="proyectos"${texture}>
+<div id="proyectos">
+<p class="signature">${esc(site.title)}</p>
+
+<nav class="projects">
 <ul>
 ${items.join('\n')}
 </ul>
 </nav>
-
-<footer class="signature">${esc(site.title)}</footer>`,
+</div>`,
   });
 }
 
@@ -159,7 +208,7 @@ function projectPage(project) {
   const gallery = groups(project).map(([name, images], g) =>
     `<section class="group">\n${name ? `<h2>${esc(name)}</h2>\n` : ''}`
     + images.map((image, i) =>
-        `<figure>${img(image, { base, sizes: '(max-width: 700px) 100vw, 70vw', eager: g === 0 && i === 0 })}</figure>`
+        `<figure>${img(image, { base, sizes: '100vw', cap: true, eager: g === 0 && i === 0 })}</figure>`
       ).join('\n')
     + '\n</section>'
   );
