@@ -66,7 +66,12 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   gap: 1rem;
   height: var(--bar);
   padding-inline: var(--pad);
-  background: var(--bg);
+  /* Sin fondo: en blanco y con difference, se ve negro sobre el blanco y
+     en negativo sobre las fotos y los hilos que pasan por debajo. */
+  --ink: #fff;
+  --dim: rgba(255, 255, 255, .55);
+  color: var(--ink);
+  mix-blend-mode: difference;
 }
 
 .top nav { display: flex; gap: 1.25rem; }
@@ -142,7 +147,7 @@ html:has(#about:target) #lista { display: none; }
    pantalla, se quede en el centro (margin: auto). */
 #mapa {
   position: fixed;
-  inset: var(--bar) 0 0;
+  inset: 0;
   overflow: auto;
   scrollbar-width: none;
   cursor: grab;
@@ -335,7 +340,6 @@ html:has(#about:target) #lista { display: none; }
    Una sola columna estrecha —640 px como mucho— centrada y con aire por
    los cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
    ancho. Nada va a sangre; el negro alrededor es parte de la página.
-   El cuadrado junto al título es el color del proyecto en el mapa.
 
    Los 640 también los sabe build/build.mjs, que los pone en el `sizes`
    de cada foto: si cambian aquí, cambian allí. */
@@ -400,15 +404,6 @@ html:has(#about:target) #lista { display: none; }
    mal. Las fotos sí la ocupan entera. */
 .ficha h1,
 .ficha p { max-width: 34rem; }
-
-.ficha h1::before {
-  content: "";
-  display: block;
-  width: .35em;
-  height: .35em;
-  margin-bottom: .5em;
-  background: var(--c);
-}
 
 .ficha h1 {
   margin: 0 0 1.5rem;
