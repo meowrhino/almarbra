@@ -111,7 +111,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .idiomas button[aria-pressed="true"],
 [data-vista="mapa"] .top a[href$="#mapa"],
 [data-vista="lista"] .top a[href$="#lista"] { color: var(--ink); }
-[data-vista="about"] .top .name { text-decoration: underline; text-underline-offset: 4px; }
 
 @media (hover: hover) {
   .top a:hover,
@@ -135,7 +134,7 @@ html:has(#about:target) #lista { display: none; }
 
 /* ── el about: el texto arriba a la izquierda, bajo el nombre ───────
 
-   Detrás, la estela: el hilo que arrastra el cursor (js/mapa.js). */
+   Detrás, el telar: hilos de borde a borde que se tejen y destejen despacio (js/mapa.js). */
 
 #about {
   min-height: calc(100vh - var(--bar));
@@ -152,19 +151,13 @@ html:has(#about:target) #lista { display: none; }
 
 #about p { margin: 0 0 1em; }
 
-.estela {
+.fondo {
   position: fixed;
   inset: 0;
   width: 100%;
   height: 100%;
+  overflow: visible;
   pointer-events: none;
-}
-
-.estela path {
-  fill: none;
-  stroke-width: 3;
-  stroke-linecap: square;
-  shape-rendering: crispEdges;
 }
 
 /* ── el mapa ─────────────────────────────────────────────────────────
@@ -346,7 +339,8 @@ html:has(#about:target) #lista { display: none; }
    con su retraso, que pone js/mapa.js). La forma la da js/hilos.js. */
 
 .threads path,
-.row svg path {
+.row svg path,
+.fondo path {
   fill: none;
   stroke-width: 1.5;
   stroke-linecap: square;
@@ -361,11 +355,14 @@ html:has(#about:target) #lista { display: none; }
 
 @keyframes draw { to { stroke-dashoffset: 0; } }
 
+/* los del about se tejen y destejen solos, despacio (js/mapa.js) */
+.fondo path { animation: none; }
+
 /* PRUEBAS: la forma de los hilos (data-hilos, js/hilos.js). En diagonal y
    liso se suavizan los bordes; en escalera y fina, píxel duro. */
-[data-hilos="diagonal"] :is(.threads, .row svg, .hilo) path,
-[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { shape-rendering: auto; }
-[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { stroke-linejoin: round; stroke-linecap: round; }
+[data-hilos="diagonal"] :is(.threads, .row svg, .hilo, .fondo) path,
+[data-hilos="liso"] :is(.threads, .row svg, .hilo, .fondo) path { shape-rendering: auto; }
+[data-hilos="liso"] :is(.threads, .row svg, .hilo, .fondo) path { stroke-linejoin: round; stroke-linecap: round; }
 
 /* ── la transición ───────────────────────────────────────────────────
 
@@ -396,7 +393,8 @@ html:has(#about:target) #lista { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .threads path,
-  .row svg path { animation: none; stroke-dashoffset: 0; }
+  .row svg path,
+  .fondo path { animation: none; stroke-dashoffset: 0; }
   .js .pin { animation: none; }
   .js img { transition: none !important; }
 }

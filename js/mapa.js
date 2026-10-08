@@ -236,51 +236,89 @@
     if (z !== zoom) setZoom(z);
   });
 
-  /* ── el about: la estela ──────────────────────────────────────── */
+  /* ── el about: el telar ─────────────────────────────────────────── */
 
-  /* Detrás del texto, el cursor arrastra un hilo de píxeles que cambia
-     de color de proyecto cada TRAMO px y se recoge por la cola: cada
-     punto dura LIFE ms. */
-  const LIFE = 900;
-  const TRAMO = 160;
-  const trail = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  trail.setAttribute('class', 'estela');
-  trail.setAttribute('aria-hidden', 'true');
-  document.getElementById('about').prepend(trail);
+  /* Detrás del texto, como en un telar: hilos de borde a borde, la
+     trama en horizontal y la urdimbre en vertical, de los colores de los
+     proyectos. Cada uno entra por un lado y se teje muy despacio (GROW
+     s), se queda (HOLD), se desteje en el mismo sentido —la cola sigue a
+     la punta— y, tras un respiro, vuelve a entrar en otro sitio. La forma
+     no cambia: lo único que se mueve es la punta. Pocos a la vez
+     (STRANDS) y sin pasar por el texto. */
+  const STRANDS = 5;
+  const GROW = 40;
+  const HOLD = 15;
+  const FPS = 24;
+  const back = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  back.setAttribute('class', 'fondo');
+  back.setAttribute('aria-hidden', 'true');
+  const about = document.getElementById('about');
+  about.prepend(back);
+  const text = about.querySelector('div');
 
-  let pieces = [];   // { el, pts: [{ x, y, t }], run }
-  let ticking = false;
-  let tint = 0;
+  /* Un sitio libre en [from, to], o cualquiera si no queda hueco. */
+  const lane = (from, to, all) => (to - from > 80 ? from + Math.random() * (to - from) : 40 + Math.random() * (all - 80));
 
-  function tick() {
-    const now = performance.now();
-    for (const piece of pieces) {
-      piece.pts = piece.pts.filter((p) => now - p.t < LIFE);
-      piece.el.setAttribute('d', hilos.path(piece.pts));
+  /* Una vida nueva: dirección, sitio, sentido y color. */
+  function born(s, t) {
+    const W = innerWidth;
+    const H = innerHeight;
+    const box = text.getBoundingClientRect();
+    const ida = Math.random() < 0.5;   // el sentido, como la lanzadera
+    let a;
+    let b;
+    if (s.weft) {
+      const y = lane(box.bottom + 40, H - 40, H);
+      [a, b] = [{ x: -10, y }, { x: W + 10, y: y + (Math.random() - 0.5) * 120 }];
+    } else {
+      const x = lane(box.right + 40, W - 40, W);
+      [a, b] = [{ x, y: -10 }, { x: x + (Math.random() - 0.5) * 120, y: H + 10 }];
     }
-    for (const piece of pieces.filter((x) => !x.pts.length)) piece.el.remove();
-    pieces = pieces.filter((x) => x.pts.length);
-    ticking = pieces.length > 0;
-    if (ticking) requestAnimationFrame(tick);
+    s.el.setAttribute('d', hilos.path(ida ? hilos.wander(a, b) : hilos.wander(b, a)));
+    s.el.setAttribute('stroke', palette[Math.floor(Math.random() * palette.length)]);
+    s.from = t;
+    s.life = 2 * GROW + HOLD + 3 + Math.random() * 12;   // con el respiro del final
   }
 
-  addEventListener('pointermove', (e) => {
-    if (root.dataset.vista !== 'about') return;
-    const p = { x: e.clientX, y: e.clientY, t: performance.now() };
-    let piece = pieces[pieces.length - 1];
-    const last = piece?.pts[piece.pts.length - 1];
-    if (!piece || !last || piece.run > TRAMO) {
-      const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      el.setAttribute('stroke', palette[tint++ % palette.length]);
-      trail.append(el);
-      /* el tramo nuevo sale de donde acabó el anterior, sin hueco */
-      piece = { el, pts: last ? [{ ...last, t: p.t }] : [], run: 0 };
-      pieces.push(piece);
-    }
-    if (last) piece.run += Math.hypot(p.x - last.x, p.y - last.y);
-    piece.pts.push(p);
-    if (!ticking) { ticking = true; requestAnimationFrame(tick); }
+  const strands = Array.from({ length: STRANDS }, (_, i) => {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    el.setAttribute('pathLength', '1');
+    back.append(el);
+    return { el, weft: i % 2 === 0, from: 0, life: -1 };
   });
+
+  /* Cuánto se ve. El dash: positivo, se ve el principio; negativo, se
+     ha ido la cola. */
+  const ease = (x) => x * x * (3 - 2 * x);
+  function dash(age) {
+    if (still) return 0;
+    if (age < GROW) return 1 - ease(age / GROW);
+    if (age < GROW + HOLD) return 0;
+    return -ease(Math.min(1, (age - GROW - HOLD) / GROW));
+  }
+
+  function weave(t) {
+    strands.forEach((s, i) => {
+      if (s.life < 0) {
+        born(s, t);
+        s.from = t - (i / STRANDS) * (GROW + HOLD);   // no todos a la vez
+      } else if (t - s.from > s.life) born(s, t);
+      s.el.style.strokeDashoffset = dash(t - s.from);
+    });
+  }
+
+  /* Se teje solo con el about a la vista: el primer hilo nace al entrar,
+     que antes el texto no tiene sitio. */
+  const start = performance.now();
+  let last = 0;
+  (function loop(now) {
+    requestAnimationFrame(loop);
+    if (root.dataset.vista !== 'about' || document.hidden || now - last < 1000 / FPS) return;
+    last = now;
+    weave((now - start) / 1000);
+  })(start);
+  /* ponytail: al cambiar el tamaño de la ventana, los que ya están se
+     quedan con el de antes; los nuevos ya nacen con el nuevo. */
 
   /* ── la vista ──────────────────────────────────────────────────── */
 
