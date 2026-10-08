@@ -145,7 +145,7 @@ function version(file) {
      .tapada       se llega desde otra página de la web, o con atrás y
                    adelante: la página nace tapada para que la transición
                    la destape (js/transicion.js); si ese script no llegara,
-                   el CSS la destapa sola a los 3 s */
+                   el CSS la destapa sola a los 5 s */
 const HEAD_SCRIPT = `<script>{
 const html = document.documentElement;
 html.classList.add('js');

@@ -119,16 +119,17 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
    Se ve la vista que diga el hash (data-vista, en <html>). Sin
    JavaScript no hay data-vista y se ve la lista; el about, con #about en
-   la dirección (:target). */
+   la dirección (:target). Con JavaScript, :target no: el about saldría
+   antes de que lo tape la transición. */
 
 #mapa,
 #about { display: none; }
 [data-vista="mapa"] #mapa { display: grid; }
 [data-vista="about"] #about,
-#about:target { display: block; }
+:root:not(.js) #about:target { display: block; }
 [data-vista="mapa"] #lista,
 [data-vista="about"] #lista,
-html:has(#about:target) #lista { display: none; }
+html:not(.js):has(#about:target) #lista { display: none; }
 
 /* ── el about: el texto arriba a la izquierda, bajo el nombre ───────
 
@@ -233,6 +234,57 @@ html:has(#about:target) #lista { display: none; }
 .js :is(.pin, .row .pic, .group figure) img { transition: opacity .8s ease-out; }
 .js .pin img { transition-delay: calc(var(--d, 0s) + .3s); }
 .listo .pin { --d: 0s; }
+
+/* PRUEBAS: los píxeles del mapa (js/mapa.js). Las hilachas, flojas,
+   salen después de los huecos; el halo, al pasar por un proyecto;
+   la pelusa, cuando su hilo ya está cosido. Todo a saltos, como los
+   huecos. Con el panel, cada manera se apaga (.sin-<manera>). */
+.pixeles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  shape-rendering: crispEdges;
+}
+
+.pixeles path { transition: opacity .6s steps(4, end); }
+.hilachas { opacity: .5; animation: hueco .6s steps(4, end) 1.6s backwards; }
+.pelusa { opacity: .7; animation: hueco .4s steps(4, end) 2s backwards; }
+.halo { opacity: 0; }
+.dim .halo { opacity: .45; }
+.dim :is(.hilachas, .pelusa):not(.on) { opacity: .1; }
+
+.sin-hilachas .hilachas,
+.sin-halo .halo,
+.sin-pelusa .pelusa { display: none; }
+
+.pixeles-panel { display: none; }
+[data-vista="mapa"] .pixeles-panel {
+  position: fixed;
+  left: var(--pad);
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  height: var(--bar);
+  color: #fff;
+  mix-blend-mode: difference;
+}
+
+.pixeles-panel button {
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: .85em;
+  color: rgba(255, 255, 255, .45);
+  background: none;
+  cursor: pointer;
+}
+
+.pixeles-panel button[aria-pressed="true"] { color: #fff; }
 
 /* Los mandos del zoom, abajo en el centro: un − y un +, dibujados
    como píxeles, que pesan como una balanza: --s (lo largo del trazo) y
@@ -361,7 +413,7 @@ html:has(#about:target) #lista { display: none; }
    Un lienzo a toda la pantalla donde se tapa y se destapa
    (js/transicion.js). Una página a la que se llega desde otra nace
    tapada (.tapada, del <head>) hasta que el script la destapa; si no
-   llegara, a los 3 s se destapa sola. */
+   llegara, a los 5 s se destapa sola. */
 
 .veil {
   position: fixed;
@@ -378,7 +430,7 @@ html:has(#about:target) #lista { display: none; }
   inset: 0;
   z-index: 9;
   background: var(--bg);
-  animation: destapar 0s 3s forwards;
+  animation: destapar 0s 5s forwards;
 }
 
 @keyframes destapar { to { visibility: hidden; } }
@@ -387,7 +439,8 @@ html:has(#about:target) #lista { display: none; }
   .threads path,
   .row svg path,
   .fondo path { animation: none; stroke-dashoffset: 0; }
-  .js .pin { animation: none; }
+  .js .pin,
+  .pixeles path { animation: none !important; }
   .js img { transition: none !important; }
 }
 

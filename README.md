@@ -315,7 +315,10 @@ van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
 La transición vive en `js/transicion.js`: un lienzo a toda la pantalla,
 `TIME` segundos para tapar y otros tantos para destapar, a tiempo (dura lo
-mismo en una pantalla de 60 Hz que en una de 120). La pantalla se parte en
+mismo en una pantalla de 60 Hz que en una de 120; si el navegador se
+atasca, la ola se para y sigue, no salta). Hace de pantalla de carga: entre
+las dos olas espera en blanco a que lo nuevo esté listo —la página montada y
+las fotos que quedan a la vista, `WAIT` como mucho— y `HOLD` más. La pantalla se parte en
 píxeles de `C` px, cada uno con su turno: la fila que le toca en el sentido
 de la ola más un retraso por línea —una inclinación, una onda larga y un
 temblor, al azar en cada ola—; se tapa cuando le llega y se destapa igual, y
@@ -323,7 +326,7 @@ la ola lleva `BAND` píxeles de color delante. Los enlaces a otra página de la
 web se interceptan: se tapa, se apunta en `sessionStorage` el sentido y los
 colores, y se va; la página nueva nace tapada (un `<script>` en el `<head>`
 le pone `.tapada`) y se destapa en ese sentido. Si el script no llegara, el
-CSS la destapa sola a los 3 s. Mapa, lista y about son la misma página: ahí
+CSS la destapa sola a los 5 s. Mapa, lista y about son la misma página: ahí
 la llama `js/mapa.js` al cambiar el hash.
 
 El hilo de los proyectos, `js/hilo.js`: dos puntas, una hacia abajo y otra

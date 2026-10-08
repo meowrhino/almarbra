@@ -2,9 +2,11 @@
    se tapa de blanco, se cambia y se destapa en la página nueva.
 
    Un barrido: una ola de píxeles de colores barre la pantalla en
-   diagonal y deja blanco detrás; en la página nueva otra ola sigue en el
-   mismo sentido y la destapa. Baja al entrar en un proyecto,
-   sube al volver, y entre las vistas va de lado.
+   diagonal y la deja entera en blanco. Hace de pantalla de carga: se
+   espera en blanco a que lo nuevo esté listo —la página montada y las
+   fotos que se van a ver, ya llegadas— y entonces otra ola sigue en el
+   mismo sentido y lo destapa. Baja al entrar en un proyecto, sube al
+   volver, y entre las vistas va de lado.
 
    El sentido dice adónde se va:
 
@@ -32,7 +34,9 @@
   const KEY = 'almarbra-transicion';
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const TIME = 1;      // segundos en tapar, y otros tantos en destapar
+  const TIME = 1.4;    // segundos en tapar, y otros tantos en destapar
+  const HOLD = 250;    // ms en blanco, como mínimo, entre tapar y destapar
+  const WAIT = 2500;   // ms que se espera, como mucho, a que lo nuevo esté listo
   const BAND = 5;      // píxeles de color en el frente de la ola
   const C = 12;        // lado de un píxel de la ola, en px
 
@@ -118,10 +122,15 @@
     const cells = wave({ colors, dir, W, H });
     const end = Math.max(...cells.map((c) => c.key)) + BAND + 1;
 
+    /* Avanza a tramos de 1/30 s como mucho: si el navegador se atasca
+       (montando el mapa, decodificando fotos), la ola se para y sigue, en
+       vez de saltar hasta casi el final. */
     return new Promise((done) => {
-      const t0 = performance.now();
-      const step = (now = t0) => {
-        const t = Math.max(0, Math.min(1, (now - t0) / 1000 / TIME));
+      let t = 0;
+      let last = performance.now();
+      const step = (now = last) => {
+        t = Math.min(1, t + Math.min(1 / 30, Math.max(0, now - last) / 1000) / TIME);
+        last = now;
         ctx.clearRect(0, 0, W, H);
         paint(cells, t * end, cover, white);
         if (t < 1) requestAnimationFrame(step);
@@ -136,9 +145,34 @@
 
   const cover = (colors, dir) => (still ? Promise.resolve() : play({ colors, dir, cover: true }));
 
-  function uncover(colors, dir) {
+  const wait = (ms) => new Promise((done) => setTimeout(done, ms));
+
+  /* Lo que se espera en blanco: que la página esté montada (los demás
+     scripts, que van detrás de este, ya han corrido) y que hayan llegado
+     las fotos que quedan a la vista; como mucho WAIT. Y luego HOLD, para
+     que el blanco se vea entero. */
+  async function ready() {
+    if (document.readyState === 'loading') await new Promise((done) => addEventListener('DOMContentLoaded', done, { once: true }));
+    const seen = [...document.images].filter((img) => {
+      if (img.complete) return false;
+      const r = img.getBoundingClientRect();
+      return r.width && r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+    });
+    const arrived = seen.map((img) => new Promise((done) => {
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    }));
+    await Promise.race([Promise.all(arrived), wait(WAIT)]);
+    await wait(HOLD);
+  }
+
+  /* Destapa cuando lo nuevo está listo. Bajo el blanco, el mapa no hace
+     su entrada a pasos (css/style.css): ya está entero al destaparse. */
+  async function uncover(colors, dir) {
+    document.getElementById('mapa')?.classList.add('listo');
+    if (!still) await ready();
     root.classList.remove('tapada');
-    return still ? Promise.resolve() : play({ colors, dir, cover: false });
+    if (!still) await play({ colors, dir, cover: false });
   }
 
   /* Al llegar a una página tapada (el <head> pone .tapada): se destapa en

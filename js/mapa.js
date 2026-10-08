@@ -139,7 +139,130 @@
       svg.append(path);
     }
 
+    /* PRUEBAS: los píxeles, en otro SVG entre los hilos y las fotos. Cada
+       uno es un cuadrado de PX px, en la rejilla de los hilos:
+
+         hilachas  una nube floja con la forma del tejido de cada
+                   proyecto: alrededor de sus fotos, en lóbulos, y a lo
+                   largo de las uniones entre ellas, ancha al salir de
+                   cada foto y fina a medio camino; siempre. Un <path>
+                   por proyecto (data-p, para que se encienda al pasar)
+         halo      muchos, alrededor de las fotos del proyecto por el que
+                   se pasa; se hace al pasar y se borra al irse
+         pelusa    sueltos al lado de los hilos, como si se deshilacharan;
+                   uno por hilo, que se rehace cuando el hilo se recose */
+    pixels = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    pixels.setAttribute('class', 'pixeles');
+    pixels.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.after(pixels);
+
+    groups = Map.groupBy(spots, (s) => s.p);
+    for (const [p, boxes] of groups) {
+      const links = [...svg.querySelectorAll(`path[data-p="${p}"]`)].map((el) => el.ends);
+      layer('hilachas', p, colorOf(boxes[0].pin)).setAttribute('d', boxes.map(lobes).join('') + links.map(span).join(''));
+    }
+    halo = layer('halo', null, 'none');
+    for (const path of svg.querySelectorAll('path')) {
+      path.fluff = layer('pelusa', path.dataset.p, path.getAttribute('stroke'));
+      path.fluff.style.animationDelay = `${(parseFloat(path.style.animationDelay) + 1.2).toFixed(2)}s`;
+      fluff(path);
+    }
+
     setZoom(1);
+  }
+
+  /* PRUEBAS: los píxeles (ver build). */
+  const PX = 2;
+  const snap = (v) => Math.round(v / PX) * PX;
+  const dot = (x, y) => `M${snap(x)} ${snap(y)}h${PX}v${PX}h-${PX}z`;
+  const bell = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;   // de -1 a 1, más cerca de 0
+  /* una onda lenta y torcida, de 0 a 1, para que los bordes no salgan lisos */
+  const swell = () => {
+    const [a, b, f] = [Math.random() * 7, Math.random() * 7, 1 + Math.random() * 2];
+    return (t) => 0.5 + 0.3 * Math.sin(t * f + a) + 0.2 * Math.sin(t * f * 2.7 + b);
+  };
+  let pixels = null;
+  let groups = new Map();   // proyecto -> sus fotos
+  let halo = null;
+
+  function layer(name, p, color) {
+    const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    el.setAttribute('class', name);
+    el.setAttribute('fill', color);
+    if (p !== null) el.dataset.p = p;
+    pixels.append(el);
+    return el;
+  }
+
+  /* Alrededor de una foto, hasta R px de su borde: en cada casilla, un
+     píxel o no, según `chance` de la distancia al borde y del ángulo. */
+  function around(b, R, chance) {
+    let d = '';
+    const cx = b.x + b.w / 2;
+    const cy = b.y + b.h / 2;
+    for (let y = b.y - R; y < b.y + b.h + R; y += PX) {
+      for (let x = b.x - R; x < b.x + b.w + R; x += PX) {
+        const dist = Math.hypot(Math.max(b.x - x, 0, x - b.x - b.w), Math.max(b.y - y, 0, y - b.y - b.h));
+        if (dist > 0 && Math.random() < chance(dist, Math.atan2(y - cy, x - cx))) d += dot(x, y);
+      }
+    }
+    return d;
+  }
+
+  /* Las hilachas de una foto: en lóbulos, que llegan más o menos lejos
+     según hacia dónde. */
+  const lobes = (b) => {
+    const [k, a, c] = [2 + Math.floor(Math.random() * 3), Math.random() * 7, Math.random() * 7];
+    const reach = (angle) => 0.5 + 0.3 * Math.sin(k * angle + a) + 0.2 * Math.sin((k + 2) * angle + c);   // da la vuelta sin corte
+    return around(b, 50, (d, angle) => 0.16 * Math.exp(-d / (4 + 22 * reach(angle))));
+  };
+
+  /* Las de una unión entre dos fotos: píxeles a los lados de la recta,
+     más apartados cerca de las fotos y menos a medio camino, con un
+     ancho que ondula. */
+  function span([a, b]) {
+    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+    const [nx, ny] = [-(b.y - a.y) / len, (b.x - a.x) / len];
+    const wide = swell();
+    let d = '';
+    for (let k = 0, n = Math.round(len * 0.35); k < n; k++) {
+      const t = Math.random();
+      const width = (6 + 34 * Math.abs(1 - 2 * t) ** 2) * (0.4 + wide(t * 5));
+      const off = bell() * width;
+      d += dot(a.x + (b.x - a.x) * t + nx * off, a.y + (b.y - a.y) * t + ny * off);
+    }
+    return d;
+  }
+
+  /* El halo del proyecto encendido, o nada. */
+  let haloOff = 0;
+  function glow(p) {
+    clearTimeout(haloOff);
+    if (!halo || map.classList.contains('sin-halo')) return;
+    if (p === null) {   // se apaga (css/style.css) y luego se borra
+      haloOff = setTimeout(() => halo.setAttribute('d', ''), 700);
+      return;
+    }
+    const boxes = groups.get(p) || [];
+    halo.setAttribute('fill', colorOf(boxes[0].pin));
+    halo.setAttribute('d', boxes.map((b) => around(b, 60, (d) => 0.55 * Math.exp(-d / 16))).join(''));
+  }
+
+  /* La pelusa de un hilo: de vez en cuando, a un lado o al otro, un
+     píxel (o unos pocos juntos) apartado unos px. */
+  function fluff(el) {
+    let d = '';
+    el.pts.forEach((p, i) => {
+      const q = el.pts[i + 1];
+      if (!q || Math.random() > 0.5) return;
+      const len = Math.hypot(q.x - p.x, q.y - p.y) || 1;
+      const off = (2 + Math.random() * 12) * (Math.random() < 0.5 ? -1 : 1);
+      const x = p.x - ((q.y - p.y) / len) * off;
+      const y = p.y + ((q.x - p.x) / len) * off;
+      d += dot(x, y);
+      if (Math.random() < 0.35) d += dot(x + PX * (Math.random() < 0.5 ? 1 : -1), y + PX * Math.round(bell()));
+    });
+    el.fluff.setAttribute('d', d);
   }
 
   /* Descose un hilo y lo vuelve a coser por otro camino, entre los
@@ -151,6 +274,12 @@
     el.style.animation = 'none';
     el.getBBox();   // para que la animación vuelva a empezar
     el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
+    if (el.fluff) {   // PRUEBAS: su pelusa, otra vez, cuando ya está cosido
+      fluff(el);
+      el.fluff.style.animation = 'none';
+      el.fluff.getBBox();
+      el.fluff.style.animation = 'hueco .4s steps(4, end) .7s backwards';
+    }
   }
 
   /* Al pasar por una foto se enciende su proyecto y el resto se apaga.
@@ -161,6 +290,7 @@
     if (p === lit) return;
     lit = p;
     map.classList.toggle('dim', p !== null);
+    glow(p);   // PRUEBAS
     for (const el of world.querySelectorAll('[data-p]')) {
       const on = el.dataset.p === p;
       el.classList.toggle('on', on);
@@ -314,6 +444,34 @@
   })(start);
   /* ponytail: al cambiar el tamaño de la ventana, los que ya están se
      quedan con el de antes; los nuevos ya nacen con el nuevo. */
+
+  /* ── PRUEBAS: el panel de los píxeles ──────────────────────────────
+
+     Abajo a la izquierda, solo en el mapa: enciende y apaga cada manera
+     (una clase sin-<manera> en el mapa). Se recuerda en este navegador. */
+  const KINDS = ['hilachas', 'halo', 'pelusa'];
+  const OFF = 'almarbra-pixeles';
+  let off = [];
+  try { off = JSON.parse(localStorage.getItem(OFF)) || []; } catch { /* todo encendido */ }
+  const panel = document.createElement('div');
+  panel.className = 'pixeles-panel';
+  panel.innerHTML = KINDS.map((k) => `<button type="button" value="${k}">${k}</button>`).join('');
+  document.body.append(panel);
+  const paintPanel = () => {
+    for (const b of panel.children) {
+      const on = !off.includes(b.value);
+      b.setAttribute('aria-pressed', on);
+      map.classList.toggle(`sin-${b.value}`, !on);
+    }
+  };
+  panel.addEventListener('click', (e) => {
+    const k = e.target.closest('button')?.value;
+    if (!k) return;
+    off = off.includes(k) ? off.filter((x) => x !== k) : [...off, k];
+    try { localStorage.setItem(OFF, JSON.stringify(off)); } catch { /* vale para esta visita */ }
+    paintPanel();
+  });
+  paintPanel();
 
   /* ── la vista ──────────────────────────────────────────────────── */
 
