@@ -1,32 +1,24 @@
 /* almudena gonzalez
 
    Fondo negro, tipografía de palo seco en minúscula y las fotos
-   mandando. Dos pantallas: la portada (foto + «entrar» + lista de
-   proyectos) y la página de un proyecto (ficha + galería).
+   mandando. El menú arriba en todas las páginas. Dos pantallas: la
+   portada (el mapa o la lista) y la página de un proyecto (ficha +
+   galería).
 
-   La página funciona entera sin JavaScript: «entrar» es un ancla y el
-   desplazamiento suave lo hace el navegador. El único script,
-   js/scatter.js, solo desperdiga los proyectos de la portada; sin él
-   salen en una lista normal. */
+   La página funciona entera sin JavaScript: sin él la portada es la
+   lista. js/mapa.js monta el mapa y la transición de píxeles. */
 
 :root {
   --bg: #000;
   --ink: #fff;
   --dim: rgba(255, 255, 255, .55);
-  --bar: 3rem;                 /* alto de la firma de abajo */
+  --bar: 3rem;                 /* alto de la barra de arriba */
   --pad: clamp(1rem, 4vw, 3rem);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html {
-  background: var(--bg);
-  scroll-behavior: smooth;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-}
+html { background: var(--bg); }
 
 body {
   margin: 0;
@@ -51,128 +43,135 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   white-space: nowrap;
 }
 
-/* ── portada ─────────────────────────────────────────────────────────
+/* ── el menú de arriba ───────────────────────────────────────────── */
 
-     .hero       la foto, a todo el ancho y sin recortar
-     #proyectos  la firma arriba y los proyectos desperdigados
-
-   La foto es un PNG recortado: el fondo es transparente y lo que se ve
-   es la pieza, con sus flecos, contra el negro de la página.
-
-   Va a 100dvw y con su altura natural, así que se ve entera: nunca se
-   recorta. Si con eso queda más alta que la ventana —que es lo normal en
-   horizontal, porque es vertical— el final de la foto asoma ya en la
-   pantalla de los proyectos. Si queda más baja, el hero se estira a
-   100dvh y la foto se centra. */
-
-.hero {
-  position: relative;
-  width: 100dvw;
-  min-height: 100dvh;
-  display: grid;
-  align-content: center;
-}
-
-.hero img { width: 100%; height: auto; }
-
-/* «entrar» centrado en la primera pantalla, no en mitad de la foto */
-.enter {
-  position: absolute;
+.top {
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 100dvh;
-  display: grid;
-  place-items: center;
-  font-size: clamp(2.5rem, 7vw, 5rem);
-  font-weight: 700;
-  letter-spacing: -.03em;
-  line-height: 1;
-  text-shadow: 0 0 2rem rgba(0, 0, 0, .35);
-}
-
-/* ── portada: los proyectos ──────────────────────────────────────── */
-
-#proyectos {
-  width: 100dvw;
-  height: 100dvh;
-  overflow: hidden;
-  display: grid;
-  grid-template-rows: var(--bar) 1fr;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  height: var(--bar);
+  padding-inline: var(--pad);
   background: var(--bg);
 }
 
-/* la firma: ya no va fija, sube con el scroll y queda justo encima de
-   los proyectos */
-.signature {
-  display: grid;
-  place-items: center;
-  margin: 0;
-  height: var(--bar);
-  letter-spacing: .02em;
+.top nav { display: flex; gap: 1.25rem; }
+.top nav a { color: var(--dim); }
+
+/* la vista en la que estás, en blanco (la pone js/mapa.js en <html>) */
+[data-vista="mapa"] .top a[href$="#mapa"],
+[data-vista="lista"] .top a[href$="#lista"] { color: var(--ink); }
+
+@media (hover: hover) {
+  .top a:hover { color: var(--ink); }
 }
 
-.projects {
-  position: relative;
-  padding: var(--pad);
-  overflow-y: auto;   /* por si la lista de reserva no cabe */
+/* ── portada: mapa o lista ───────────────────────────────────────────
+
+   Sin JavaScript no hay data-vista y se ve la lista. Con él, la que
+   diga el hash. */
+
+#mapa { display: none; }
+[data-vista="mapa"] #mapa { display: block; }
+[data-vista="mapa"] #lista { display: none; }
+
+/* El mapa es un scroll en las dos direcciones, sin barras: con el dedo
+   o la rueda se recorre solo, y el ratón lo arrastra (js/mapa.js). */
+#mapa {
+  position: fixed;
+  inset: var(--bar) 0 0;
+  overflow: auto;
+  scrollbar-width: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
-/* Por defecto, una lista centrada: es lo que se ve sin JavaScript. */
-.projects ul {
-  position: relative;
+#mapa::-webkit-scrollbar { display: none; }
+#mapa.dragging { cursor: grabbing; }
+
+.world { position: relative; }
+
+/* los caminos: un píxel del lienzo es un cuadrado de pantalla */
+.world canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
   height: 100%;
-  display: grid;
-  align-content: center;
-  gap: clamp(.5rem, 2dvh, 1.25rem);
+  image-rendering: pixelated;
+}
+
+.pin {
+  position: absolute;
+  display: block;
+}
+
+.pin img { width: 100%; }
+
+/* el nombre del proyecto, bajo su portada, al encenderse */
+.pin span {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  padding-top: .4rem;
+  font-size: 12px;
+  white-space: nowrap;
+  color: var(--c);
+  opacity: 0;
+}
+
+.world canvas,
+.pin,
+.pin span { transition: opacity .2s; }
+
+.dim .pin:not(.on),
+.dim canvas:not(.on) { opacity: .15; }
+.pin.on span { opacity: 1; }
+
+/* La lista: un cuadrado del color del proyecto, el título, la
+   categoría y cuántas fotos tiene. */
+#lista ol {
   margin: 0;
-  padding: 0;
+  padding: clamp(1.5rem, 6vh, 4rem) var(--pad);
   list-style: none;
 }
 
-/* Con JavaScript, js/scatter.js marca la lista y coloca cada proyecto
-   donde le toca —left/top en píxeles, distintos en cada carga—. */
-.projects ul.is-scattered {
-  display: block;
-  overflow: hidden;
-}
-
-.projects ul.is-scattered li {
-  position: absolute;
-  width: 19%;
-}
-
-.projects a {
+#lista a {
   display: grid;
-  grid-template-columns: auto 1fr;
-  gap: .6rem;
-  align-items: center;
+  grid-template-columns: .7em 1fr auto 3ch;
+  gap: 1.25rem;
+  align-items: baseline;
+  padding-block: .55rem;
+  border-bottom: 1px solid rgba(255, 255, 255, .12);
 }
 
-.projects img {
-  height: clamp(2.5rem, 7dvh, 4.5rem);
-  width: auto;
-  max-width: 100%;
-  object-fit: cover;
-}
-
-.projects span {
-  font-size: clamp(11px, 1.1dvw, 14px);
-  line-height: 1.25;
-  letter-spacing: .01em;
-}
+#lista i { width: .7em; height: .7em; background: var(--c); }
+#lista .c,
+#lista .n { color: var(--dim); font-size: .9em; }
+#lista .n { text-align: right; }
 
 @media (hover: hover) {
-  .projects a:hover span { text-decoration: underline; text-underline-offset: .25em; }
+  #lista a:hover .t { color: var(--c); }
 }
 
-/* en vertical estrecho hacen falta cajas más anchas y todo más pequeño */
 @media (max-width: 700px) {
-  .projects ul.is-scattered li { width: 44%; }
+  #lista a { grid-template-columns: .7em 1fr 3ch; gap: .75rem; }
+  #lista .c { display: none; }
+}
 
-  .projects a { gap: .4rem; }
-  .projects img { height: clamp(2rem, 4.5dvh, 3rem); }
-  .projects span { font-size: 11px; }
+/* La tapa de píxeles entre vistas: un lienzo pequeño estirado a toda la
+   pantalla, sin suavizar. */
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  image-rendering: pixelated;
 }
 
 /* ── página de proyecto ──────────────────────────────────────────────
@@ -180,6 +179,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    Una sola columna estrecha —800 px como mucho— centrada y con aire por
    los cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
    ancho. Nada va a sangre; el negro alrededor es parte de la página.
+   El cuadrado junto al título es el color del proyecto en el mapa.
 
    Los 800 también los sabe build/build.mjs, que los pone en el `sizes`
    de cada foto: si cambian aquí, cambian allí. */
@@ -187,8 +187,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .project { --col: 800px; }
 
 /* La columna: 800 px, o todo el ancho menos el aire de los lados. La
-   firma de arriba y la vuelta de abajo van al ras de ella. */
-.project .bar,
+   vuelta de abajo va al ras de ella. */
+.project footer.bar,
 .project article {
   width: min(var(--col), 100% - 2 * var(--pad));
   margin-inline: auto;
@@ -220,6 +220,15 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    mal. Las fotos sí la ocupan entera. */
 .ficha h1,
 .ficha p { max-width: 34rem; }
+
+.ficha h1::before {
+  content: "";
+  display: block;
+  width: .35em;
+  height: .35em;
+  margin-bottom: .5em;
+  background: var(--c);
+}
 
 .ficha h1 {
   margin: 0 0 1.5rem;

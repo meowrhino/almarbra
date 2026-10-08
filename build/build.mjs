@@ -2,8 +2,8 @@
 
    Dos plantillas y ya:
 
-     dist/index.html                    portada: la foto con «entrar» y,
-                                        debajo, los proyectos
+     dist/index.html                    portada: el mapa y la lista de
+                                        proyectos, con el menú arriba
      dist/projects/<slug>/index.html    ficha técnica y galería en scroll
                                         vertical
 
@@ -15,10 +15,9 @@
    `cover` que no es de ninguna foto paran el build con un mensaje, y la
    web publicada se queda como estaba.
 
-   El sitio funciona entero sin JavaScript: «entrar» es un enlace a un
-   ancla y el desplazamiento suave lo hace el navegador. El único script,
-   js/scatter.js, solo desperdiga los proyectos de la portada; sin él
-   salen en una lista normal.
+   El sitio funciona entero sin JavaScript: sin él la portada es la
+   lista. El único script, js/mapa.js, monta el mapa y la transición de
+   píxeles entre mapa y lista.
 
      node build/build.mjs      (npm run build)
 
@@ -107,7 +106,7 @@ function version(file) {
 /* `path` es la dirección de la página dentro del sitio ('' la portada,
    'projects/roma/' un proyecto); sin ella no hay canonical ni og, que es
    lo que pasa en la 404. `image` es la que sale al compartir el enlace. */
-function page({ title, body, base = '', bodyClass = null, scripts = [], path = null, description = null, image = null }) {
+function page({ title, body, base = '', bodyClass = null, scripts = [], path = null, description = null, image = null, head = '' }) {
   const full = title ? `${title} — ${site.title}` : site.title;
   const desc = description || site.description || '';
   const share = path === null ? '' : `<link rel="canonical" href="${attr(abs(path))}">
@@ -129,7 +128,7 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
-</head>
+${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}>
 ${body}
 ${scripts.map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
@@ -144,41 +143,75 @@ ${scripts.map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></scrip
 const coverOf = (project) =>
   project.images.find((i) => i.src === project.cover) || project.images[0];
 
+/* En el mapa no van las 259 fotos: la portada de cada proyecto y unas
+   cuantas más, repartidas a lo largo de su galería. */
+const PER_PROJECT = 6;
+
+function mapImages(project) {
+  const cover = coverOf(project);
+  const rest = project.images.filter((i) => i !== cover);
+  const n = Math.min(PER_PROJECT - 1, rest.length);
+  return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
+}
+
+/** El menú de arriba, igual en todas las páginas. */
+function topBar(base = '') {
+  return `<header class="top">
+<a href="${attr(base)}./">${esc(site.title)}</a>
+<nav>
+<a href="${attr(base)}#mapa">${esc(home.map || 'mapa')}</a>
+<a href="${attr(base)}#lista">${esc(home.list || 'lista')}</a>
+</nav>
+</header>`;
+}
+
+/* La vista sale del hash (#mapa o #lista) y se pone en <html> antes de
+   pintar, para que no asome la otra. Sin JavaScript no se pone nada y
+   el CSS enseña la lista. */
+const VIEW_SCRIPT = `<script>document.documentElement.dataset.vista = location.hash === '#lista' ? 'lista' : 'mapa'</script>
+`;
+
 function homePage(projects) {
-  /* Los proyectos salen en el orden de siempre: js/scatter.js los
-     desperdiga en el navegador, con posiciones nuevas en cada carga.
-     `short` es el nombre corto para la portada, cuando el título entero
-     no cabe (ver content/overrides.json). */
-  const items = projects.map((project) => {
-    const cover = coverOf(project);
-    return `<li><a href="projects/${attr(project.slug)}/">
-${cover ? img(cover, { sizes: '(max-width: 700px) 25vw, 12vw' }) : ''}
-<span>${esc(t(project.short) || t(project.title) || project.slug)}</span>
-</a></li>`;
-  });
+  /* El mapa: las fotos de cada proyecto, sin posición. js/mapa.js las
+     reparte en cada carga y las une con píxeles del color del proyecto.
+     Es solo para la vista: quien navega con teclado o lector de
+     pantalla tiene la lista. */
+  const pins = projects.flatMap((project, p) => mapImages(project).map((image, i) => {
+    const long = i === 0 ? 170 : 120;   // la portada, más grande
+    const width = Math.round((long * image.w) / Math.max(image.w, image.h));
+    return `<a class="pin${i === 0 ? ' cover' : ''}" href="projects/${attr(project.slug)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
+      + img(image, { sizes: `${width}px` })
+      + (i === 0 ? `<span>${esc(t(project.short) || t(project.title) || project.slug)}</span>` : '')
+      + '</a>';
+  }));
+
+  const rows = projects.map((project) => `<li><a href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+<i></i><span class="t">${esc(t(project.title) || project.slug)}</span>
+<span class="c">${esc(project.category.replace(/-/g, ' '))}</span>
+<span class="n">${project.images.length}</span>
+</a></li>`);
 
   return page({
     title: null,
     path: '',
     image: hero,
     bodyClass: 'home',
-    scripts: ['js/scatter.js'],
+    head: VIEW_SCRIPT,
+    scripts: ['js/mapa.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
+${topBar()}
 
-<section class="hero">
-${img(hero, { eager: true })}
-<a class="enter" href="#proyectos">${esc(home.enter || 'entrar')}</a>
+<section id="mapa" aria-hidden="true">
+<div class="world">
+${pins.join('\n')}
+</div>
 </section>
 
-<div id="proyectos">
-<p class="signature">${esc(site.title)}</p>
-
-<nav class="projects">
-<ul>
-${items.join('\n')}
-</ul>
-</nav>
-</div>`,
+<section id="lista">
+<ol>
+${rows.join('\n')}
+</ol>
+</section>`,
   });
 }
 
@@ -246,11 +279,9 @@ function projectPage(project) {
     image: coverOf(project),
     base,
     bodyClass: 'project',
-    body: `<header class="bar">
-<a href="${attr(base)}">${esc(site.title)}</a>
-</header>
+    body: `${topBar(base)}
 
-<article>
+<article style="--c:${attr(project.color)}">
 <div class="ficha">
 <h1>${esc(t(project.title) || project.slug)}</h1>
 ${synopsis(t(project.synopsis))}
@@ -261,7 +292,7 @@ ${gallery.join('\n\n')}
 </article>
 
 <footer class="bar">
-<a href="${attr(base)}#proyectos">← proyectos</a>
+<a href="${attr(base)}#lista">← proyectos</a>
 </footer>`,
   });
 }
@@ -276,14 +307,12 @@ function notFoundPage() {
     title: 'no encontrada',
     base,
     bodyClass: 'project',
-    body: `<header class="bar">
-<a href="${attr(base)}">${esc(site.title)}</a>
-</header>
+    body: `${topBar(base)}
 
 <article>
 <div class="ficha">
 <h1>esta página no existe</h1>
-<p><a href="${attr(base)}#proyectos">ver los proyectos</a></p>
+<p><a href="${attr(base)}#lista">ver los proyectos</a></p>
 </div>
 </article>`,
   });
@@ -305,9 +334,17 @@ const projects = readdirSync(dir)
     || a.category.localeCompare(b.category)
     || a.slug.localeCompare(b.slug));
 
+/* Un color por proyecto, en el orden de arriba, sin repetir: si hay más
+   proyectos que colores en content/site.json, el build para. */
+const colors = site.colors || [];
+projects.forEach((project, i) => { project.color = colors[i]; });
+
 /* ── validar, antes de tocar dist/ ───────────────────────────────── */
 
 const errors = [];
+if (colors.length < projects.length) {
+  errors.push(`hay ${projects.length} proyectos y ${colors.length} colores en content/site.json: falta(n) ${projects.length - colors.length}`);
+}
 const seen = new Set();
 if (!existsSync(join(ROOT, hero.src))) errors.push(`no encuentro la foto de la portada: ${hero.src}`);
 for (const project of projects) {

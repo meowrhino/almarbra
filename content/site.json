@@ -5,10 +5,26 @@
   "description": "Portfolio de Almudena González — arte textil y fotografía de moda.",
   "noindex": true,
   "home": {
-    "enter": "entrar"
+    "map": "mapa",
+    "list": "lista"
   },
   "order": [
     "textil",
     "editorial-moda"
+  ],
+  "colors": [
+    "Maroon",
+    "MediumSpringGreen",
+    "Turquoise",
+    "Violet",
+    "FireBrick",
+    "MediumAquamarine",
+    "DarkTurquoise",
+    "Orchid",
+    "Brown",
+    "SpringGreen",
+    "MediumTurquoise",
+    "Plum",
+    "MediumSeaGreen"
   ]
 }
