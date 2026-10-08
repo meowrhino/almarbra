@@ -295,12 +295,10 @@ ${pins.join('\n')}
 
 <div class="zoom" aria-hidden="true">
 <button type="button" data-step="-1" tabindex="-1">−</button>
-<div class="ticks"></div>
 <button type="button" data-step="1" tabindex="-1">+</button>
 </div>
 
 <section id="about">
-${img(hero, { sizes: '(min-width: 800px) 35vw, 70vw' })}
 <div>${tr(about, synopsis, 'div')}</div>
 </section>
 

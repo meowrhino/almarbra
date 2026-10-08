@@ -39,6 +39,12 @@
      data-pts; aquí se les pone la forma que toque. */
   const listPaths = [...document.querySelectorAll('.row svg path[data-pts]')];
   for (const el of listPaths) el.pts = el.dataset.pts.split(' ').map((xy) => { const [x, y] = xy.split(','); return { x: +x, y: +y }; });
+  /* En la lista, lo mismo que en el mapa: al pasar por una fila su hilo
+     se vuelve a coser. */
+  for (const el of listPaths) {
+    el.ends = [el.pts[0], el.pts[el.pts.length - 1]];
+    el.closest('.row').addEventListener('pointerenter', () => redraw(el));
+  }
   const reshape = () => { for (const el of [...listPaths, ...world.querySelectorAll('.threads path')]) shape(el); };
   reshape();
 
@@ -141,9 +147,20 @@
     setZoom(1);
   }
 
+  /* Descose un hilo y lo vuelve a coser por otro camino, entre los
+     mismos extremos, y lo dibuja de nuevo. */
+  function redraw(el) {
+    if (still) return;
+    el.pts = hilos.wander(...el.ends);
+    shape(el);
+    el.style.animation = 'none';
+    el.getBBox();   // para que la animación vuelva a empezar
+    el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
+  }
+
   /* Al pasar por una foto se enciende su proyecto y el resto se apaga.
-     Y sus hilos se descosen y se vuelven a coser por otro camino: cada
-     vez que se pasa, salen con otra forma y se dibujan de nuevo. */
+     Y sus hilos se descosen y se vuelven a coser: cada vez que se pasa,
+     salen con otra forma. */
   let lit = null;
   function light(p) {
     if (p === lit) return;
@@ -152,12 +169,7 @@
     for (const el of world.querySelectorAll('[data-p]')) {
       const on = el.dataset.p === p;
       el.classList.toggle('on', on);
-      if (!on || !el.pts || still) continue;
-      el.pts = hilos.wander(...el.ends);
-      shape(el);
-      el.style.animation = 'none';
-      el.getBBox();   // para que la animación vuelva a empezar
-      el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
+      if (on && el.pts) redraw(el);
     }
   }
   world.addEventListener('pointerover', (e) => light(e.target.closest('.pin')?.dataset.p ?? null));
@@ -187,22 +199,21 @@
 
   /* ── el zoom ───────────────────────────────────────────────────── */
 
-  /* A saltos, sin animación: cinco escalones, abajo en el centro, una
-     barrita de píxeles cada uno, más alta cuanto más cerca (--h).
+  /* A saltos, sin animación: cinco escalones con un − y un + abajo en
+     el centro, como una balanza. En el del medio pesan igual; cuanto más
+     cerca, más grande el + y más pequeño el −, y al revés. A tope, el
+     otro queda en nada, pero se ve (SIZES, el trazo en px).
      Acerca o aleja sobre el centro de la pantalla. */
   const ZOOMS = [0.5, 0.7, 1, 1.4, 2];
+  const SIZES = [4, 6, 10, 17, 26];
   const zoomBox = document.querySelector('.zoom');
-  const ticks = zoomBox.querySelector('.ticks');
+  const [minus, plus] = zoomBox.querySelectorAll('button');
   let zoom = 1;
 
-  ZOOMS.forEach((z, i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.tabIndex = -1;
-    b.dataset.z = z;
-    b.style.setProperty('--h', `${4 + i * 3}px`);
-    ticks.append(b);
-  });
+  const weigh = (b, s) => {
+    b.style.setProperty('--s', `${s}px`);
+    b.style.setProperty('--t', `${Math.max(2, Math.round(s / 6))}px`);
+  };
 
   function setZoom(z) {
     const cx = (map.scrollLeft + map.clientWidth / 2) / zoom;
@@ -212,15 +223,63 @@
     world.style.zoom = z;
     if (firstTime) map.scrollTo((world.offsetWidth * z - map.clientWidth) / 2, (world.offsetHeight * z - map.clientHeight) / 2);
     else map.scrollTo(cx * z - map.clientWidth / 2, cy * z - map.clientHeight / 2);
-    for (const b of ticks.children) b.classList.toggle('on', Number(b.dataset.z) === z);
+    const i = ZOOMS.indexOf(z);
+    weigh(plus, SIZES[i]);
+    weigh(minus, SIZES[SIZES.length - 1 - i]);
   }
 
   zoomBox.addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b) return;
     const i = ZOOMS.indexOf(zoom);
-    const z = b.dataset.z ? Number(b.dataset.z) : ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, i + Number(b.dataset.step)))];
+    const z = ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, i + Number(b.dataset.step)))];
     if (z !== zoom) setZoom(z);
+  });
+
+  /* ── el about: la estela ──────────────────────────────────────── */
+
+  /* Detrás del texto, el cursor arrastra un hilo de píxeles que cambia
+     de color de proyecto cada TRAMO px y se recoge por la cola: cada
+     punto dura LIFE ms. */
+  const LIFE = 900;
+  const TRAMO = 160;
+  const trail = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  trail.setAttribute('class', 'estela');
+  trail.setAttribute('aria-hidden', 'true');
+  document.getElementById('about').prepend(trail);
+
+  let pieces = [];   // { el, pts: [{ x, y, t }], run }
+  let ticking = false;
+  let tint = 0;
+
+  function tick() {
+    const now = performance.now();
+    for (const piece of pieces) {
+      piece.pts = piece.pts.filter((p) => now - p.t < LIFE);
+      piece.el.setAttribute('d', hilos.path(piece.pts));
+    }
+    for (const piece of pieces.filter((x) => !x.pts.length)) piece.el.remove();
+    pieces = pieces.filter((x) => x.pts.length);
+    ticking = pieces.length > 0;
+    if (ticking) requestAnimationFrame(tick);
+  }
+
+  addEventListener('pointermove', (e) => {
+    if (root.dataset.vista !== 'about') return;
+    const p = { x: e.clientX, y: e.clientY, t: performance.now() };
+    let piece = pieces[pieces.length - 1];
+    const last = piece?.pts[piece.pts.length - 1];
+    if (!piece || !last || piece.run > TRAMO) {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      el.setAttribute('stroke', palette[tint++ % palette.length]);
+      trail.append(el);
+      /* el tramo nuevo sale de donde acabó el anterior, sin hueco */
+      piece = { el, pts: last ? [{ ...last, t: p.t }] : [], run: 0 };
+      pieces.push(piece);
+    }
+    if (last) piece.run += Math.hypot(p.x - last.x, p.y - last.y);
+    piece.pts.push(p);
+    if (!ticking) { ticking = true; requestAnimationFrame(tick); }
   });
 
   /* ── la vista ──────────────────────────────────────────────────── */

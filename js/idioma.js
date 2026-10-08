@@ -1,4 +1,4 @@
-/* El selector de idioma del centro de la barra. El texto que tiene
+/* El selector de idioma, abajo a la derecha. El texto que tiene
    traducción ya está en la página en todos los idiomas (data-l, ver
    build/build.mjs) y el CSS enseña el de data-idioma en <html>; esto
    solo lo cambia, lo marca y lo recuerda en este navegador. */

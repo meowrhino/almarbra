@@ -77,17 +77,26 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   mix-blend-mode: difference;
 }
 
-.top nav { display: flex; gap: 1.25rem; }
+/* mapa y lista, arriba a la derecha: solo cuando estás en una de las
+   dos (o sin JavaScript, que la portada es la lista) */
+.top nav { display: none; gap: 1.25rem; }
+[data-vista="mapa"] .top nav,
+[data-vista="lista"] .top nav,
+:root:not(.js) .home .top nav { display: flex; }
 .top nav a { color: var(--dim); }
 
-/* el selector de idioma, en el centro */
+/* el selector de idioma, abajo a la derecha */
 .idiomas {
-  position: absolute;
-  left: 50%;
+  position: fixed;
+  right: var(--pad);
+  bottom: 0;
   display: flex;
+  align-items: center;
   gap: .6rem;
-  transform: translateX(-50%);
+  height: var(--bar);
 }
+
+[data-vista="mapa"] .idiomas { display: none; }
 
 .idiomas button {
   padding: 0;
@@ -119,28 +128,43 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 #about { display: none; }
 [data-vista="mapa"] #mapa { display: grid; }
 [data-vista="about"] #about,
-#about:target { display: grid; }
+#about:target { display: block; }
 [data-vista="mapa"] #lista,
 [data-vista="about"] #lista,
 html:has(#about:target) #lista { display: none; }
 
-/* ── el about: la foto de la portada y el texto ──────────────────── */
+/* ── el about: el texto arriba a la izquierda, bajo el nombre ───────
+
+   Detrás, la estela: el hilo que arrastra el cursor (js/mapa.js). */
 
 #about {
-  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
-  gap: clamp(2rem, 6vw, 6rem);
-  align-items: center;
   min-height: calc(100vh - var(--bar));
-  padding: clamp(1rem, 4vh, 3rem) var(--pad);
+  padding: .5rem var(--pad) var(--pad);
 }
 
-#about img { justify-self: end; max-height: 75vh; width: auto; }
-#about div { max-width: 32rem; font-size: clamp(1.1rem, 2vw, 1.5rem); line-height: 1.35; }
+#about div {
+  position: relative;
+  z-index: 1;
+  max-width: 32rem;
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  line-height: 1.35;
+}
+
 #about p { margin: 0 0 1em; }
 
-@media (max-width: 700px) {
-  #about { grid-template-columns: 1fr; }
-  #about img { justify-self: center; max-height: 50vh; }
+.estela {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.estela path {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: square;
+  shape-rendering: crispEdges;
 }
 
 /* ── el mapa ─────────────────────────────────────────────────────────
@@ -214,56 +238,50 @@ html:has(#about:target) #lista { display: none; }
 .js .pin { animation: hueco .4s steps(4, end) var(--d, 0s) backwards; }
 @keyframes hueco { from { opacity: 0; } }
 
-.js :is(.pin, .row .pic, #about, .group figure) img:not(.ok) { opacity: 0; }
-.js :is(.pin, .row .pic, #about, .group figure) img { transition: opacity .8s ease-out; }
+.js :is(.pin, .row .pic, .group figure) img:not(.ok) { opacity: 0; }
+.js :is(.pin, .row .pic, .group figure) img { transition: opacity .8s ease-out; }
 .js .pin img { transition-delay: calc(var(--d, 0s) + .3s); }
 .listo .pin { --d: 0s; }
 
-/* Los mandos del zoom, abajo en el centro: − y +, y entre ellos una
-   barrita de píxeles por escalón, más alta cuanto más cerca (--h, de
-   js/mapa.js); la puesta, entera. Finos, pero cada uno con 28 px de
-   zona de clic. En difference, como el menú. */
+/* Los mandos del zoom, abajo en el centro: un − y un +, dibujados
+   como píxeles, que pesan como una balanza: --s (lo largo del trazo) y
+   --t (lo grueso) los pone js/mapa.js según el zoom. En difference,
+   como el menú. */
 .zoom { display: none; }
 [data-vista="mapa"] .zoom {
   position: fixed;
-  bottom: .75rem;
+  bottom: .5rem;
   left: 50%;
   z-index: 3;
   display: flex;
   align-items: center;
+  gap: .25rem;
   color: #fff;
   mix-blend-mode: difference;
   transform: translateX(-50%);
 }
 
 .zoom button {
+  --s: 10px;
+  --t: 2px;
   display: block;
-  width: 28px;
-  height: 28px;
+  width: calc(var(--s) + 18px);
+  height: calc(var(--s) + 18px);
   padding: 0;
   border: 0;
-  font-size: 0;   /* el − y el + se dibujan, como píxeles */
+  font-size: 0;   /* el − y el + se dibujan */
   color: inherit;
-  background: none;
+  background: linear-gradient(currentColor, currentColor) center / var(--s) var(--t) no-repeat;
   cursor: pointer;
-  opacity: .6;
+  opacity: .7;
+  transition: width .15s steps(3), height .15s steps(3), background-size .15s steps(3);
 }
 
-.zoom > button { background: linear-gradient(currentColor, currentColor) center / 10px 2px no-repeat; }
-.zoom > button[data-step="1"] {
+.zoom button[data-step="1"] {
   background:
-    linear-gradient(currentColor, currentColor) center / 10px 2px no-repeat,
-    linear-gradient(currentColor, currentColor) center / 2px 10px no-repeat;
+    linear-gradient(currentColor, currentColor) center / var(--s) var(--t) no-repeat,
+    linear-gradient(currentColor, currentColor) center / var(--t) var(--s) no-repeat;
 }
-
-.zoom .ticks { display: flex; align-items: center; }
-.zoom .ticks button {
-  width: 12px;
-  background: linear-gradient(currentColor, currentColor) center / 4px var(--h) no-repeat;
-  opacity: .35;
-}
-
-.zoom .ticks button.on { opacity: 1; }
 
 @media (hover: hover) {
   .zoom button:hover { opacity: 1; }
