@@ -1,5 +1,5 @@
 {
-  "_": "Correcciones a mano sobre lo que sale de las fichas. Se aplican encima del JSON generado, así que reingestar no se las lleva. Cada clave es el slug del proyecto. `cover` elige la imagen del proyecto en la portada; sin ella se usa la primera. `short` es el nombre corto para la portada. `drop` son fotos del original (por nombre de archivo) que no entran en la web.",
+  "_": "Cambios a mano en cada proyecto, por encima de lo que sale de las FICHAS. Cada clave es el slug del proyecto (el nombre de su archivo en content/projects/). Se puede poner: «title» y «synopsis» (por idioma), «short» (nombre corto para el mapa), «cover» (la foto que lo representa), «color» y «drop» (fotos del original que no entran; esto último pide volver a hacer npm run ingest). Las claves que empiezan por _ son notas.",
   "roma": {
     "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
     "title": {

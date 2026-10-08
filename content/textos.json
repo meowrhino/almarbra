@@ -1,0 +1,32 @@
+{
+  "_": "Las palabras de la web en cada idioma: el menú de arriba y el nombre de cada categoría (la clave es el nombre de la carpeta de la categoría, en minúsculas y con guiones).",
+  "menu": {
+    "mapa": {
+      "es": "mapa",
+      "en": "map",
+      "ca": "mapa"
+    },
+    "lista": {
+      "es": "lista",
+      "en": "list",
+      "ca": "llista"
+    },
+    "volver": {
+      "es": "← proyectos",
+      "en": "← projects",
+      "ca": "← projectes"
+    }
+  },
+  "categorias": {
+    "textil": {
+      "es": "textil",
+      "en": "textile",
+      "ca": "tèxtil"
+    },
+    "editorial-moda": {
+      "es": "editorial moda",
+      "en": "fashion editorial",
+      "ca": "editorial de moda"
+    }
+  }
+}

@@ -16,12 +16,23 @@
    web publicada se queda como estaba.
 
    El sitio funciona entero sin JavaScript: sin él la portada es la
-   lista. El único script, js/mapa.js, monta el mapa y la transición de
-   píxeles entre mapa y lista.
+   lista. js/mapa.js monta el mapa y la transición de líneas, js/hilo.js
+   el hilo de fondo de los proyectos y js/idioma.js cambia de idioma.
 
      node build/build.mjs      (npm run build)
 
-   Lo que se edita es content/. */
+   Lo que se edita es content/:
+
+     web.json        título, dirección, idiomas, orden de categorías y
+                     colores
+     about.json      el texto del about, por idioma
+     textos.json     el menú y las categorías, por idioma
+     mapa.json       la mezcla del mapa (0 por zonas, 100 revuelto)
+     proyectos.json  cambios a mano por proyecto: título, nombre corto,
+                     portada, color… (se aplican aquí y en la ingesta)
+
+   content/projects/ y content/home.json los escribe la ingesta: no se
+   tocan a mano. */
 
 import { createHash } from 'node:crypto';
 import {
@@ -43,15 +54,18 @@ function read(file) {
   try { return JSON.parse(text); } catch (e) { fail(`${file} no es un JSON válido: ${e.message}`); }
 }
 
-const site = read('content/site.json');
-if (!site.url) fail('falta "url" en content/site.json: la dirección donde se publica la web');
+const site = read('content/web.json');
+if (!site.url) fail('falta "url" en content/web.json: la dirección donde se publica la web');
+const about = read('content/about.json');
+const textos = read('content/textos.json');
+const mapa = read('content/mapa.json');
+const changes = read('content/proyectos.json');
 
 /* Las páginas se enlazan entre sí con rutas relativas; solo lo que se lee
    desde fuera —canonical, og:image, sitemap— y la 404 necesitan la
    dirección entera. */
 const abs = (path) => new URL(path, site.url).href;
 const lang = site.lang || 'es';
-const home = site.home || {};
 
 /* La foto de la portada no es de ningún proyecto: la ingesta la saca de
    originals/PORTADA/ y la deja aquí con sus medidas (ver
@@ -73,7 +87,7 @@ const t = (field) => (field ? field[lang] ?? Object.values(field)[0] ?? null : n
 const LANGS = site.langs || [lang];
 
 function tr(field, render = esc, tag = 'span') {
-  const values = LANGS.map((l) => field?.[l] ?? t(field));
+  const values = LANGS.map((l) => field?.[l] || t(field));
   if (values[0] == null) return '';
   if (values.every((v) => JSON.stringify(v) === JSON.stringify(values[0]))) return render(values[0]);
   return LANGS.map((l, i) => `<${tag} data-l="${l}" lang="${l}">${render(values[i])}</${tag}>`).join('');
@@ -122,14 +136,6 @@ const IDIOMA_HEAD = `<script>try { document.documentElement.dataset.idioma = loc
 document.documentElement.dataset.idioma ||= ${JSON.stringify(lang)};</script>
 `;
 
-/* PRUEBAS: qué variante se ve de cada cosa —fondo, lista, transición y
-   fondo de proyecto—, en <html> antes de pintar. Lo elige el panel de
-   js/pruebas.js (se abre con ?pruebas) y se recuerda en este navegador.
-   Cuando se decida, esto se va y lo elegido se queda en el CSS. */
-const PRUEBAS_HEAD = `<script>Object.assign(document.documentElement.dataset, { fondo: 'blanco', lista: 'franjas', transicion: 'lineas', proyecto: 'liso', mezcla: '50' });
-try { Object.assign(document.documentElement.dataset, JSON.parse(localStorage.getItem('almarbra-pruebas'))); } catch {}</script>
-`;
-
 /* `path` es la dirección de la página dentro del sitio ('' la portada,
    'projects/roma/' un proyecto); sin ella no hay canonical ni og, que es
    lo que pasa en la 404. `image` es la que sale al compartir el enlace. */
@@ -155,10 +161,10 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
-${IDIOMA_HEAD}${PRUEBAS_HEAD}${head}</head>
+${IDIOMA_HEAD}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
-${[...scripts, 'js/idioma.js', 'js/pruebas.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
+${[...scripts, 'js/idioma.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -202,27 +208,35 @@ function wander(a, b) {
   });
 }
 
-/* El hilo a escalones, como en una pantalla de pocos píxeles: cada punto
-   se pega a una rejilla de `g` y de uno a otro se va en horizontal y
-   luego en vertical. Igual que en js/mapa.js. */
-function stairs(points, g) {
+/* El hilo a escalones, como en una pantalla de pocos píxeles: la curva
+   se recorre a pasos de `g` como mucho, cada punto se pega a una
+   rejilla de `g` y de uno a otro se va en horizontal y luego en
+   vertical. Como los pasos son de una casilla, el escalón es fino y
+   sigue la curva. Igual que en js/mapa.js. */
+const STEP = 3;
+
+function stairs(points, g = STEP) {
   let d = '';
   let last = null;
-  for (const p of points) {
-    const x = Math.round(p.x / g) * g;
-    const y = Math.round(p.y / g) * g;
+  const put = (px, py) => {
+    const x = Math.round(px / g) * g;
+    const y = Math.round(py / g) * g;
     if (!last) d = `M${x} ${y}`;
     else d += `${x !== last.x ? `H${x}` : ''}${y !== last.y ? `V${y}` : ''}`;
     last = { x, y };
-  }
+  };
+  points.forEach((p, i) => {
+    const q = points[i - 1];
+    const n = q ? Math.ceil(Math.hypot(p.x - q.x, p.y - q.y) / g) : 1;
+    for (let k = 1; k <= n; k++) put(q ? q.x + ((p.x - q.x) * k) / n : p.x, q ? q.y + ((p.y - q.y) * k) / n : p.y);
+  });
   return d;
 }
 
-const thread = (a, b) => stairs(wander(a, b), 4);
+const thread = (a, b) => stairs(wander(a, b));
 
 const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
-const meta = (project) => `${tr(site.categories?.[project.category]) || esc(project.category.replace(/-/g, ' '))} · ${project.images.length}`;
-const num = (i) => String(i + 1).padStart(2, '0');
+const meta = (project) => `${tr(textos.categorias?.[project.category]) || esc(project.category.replace(/-/g, ' '))} · ${project.images.length}`;
 
 /* Una fila de la lista: una franja de proporción fija (1000×500) con la
    portada a un lado y, del centro de la foto al otro lado, un hilo de su
@@ -250,53 +264,6 @@ function listRow(project, i) {
 </a></li>`;
 }
 
-/* ── PRUEBAS: otras listas, para elegir (js/pruebas.js) ──────────── */
-
-/* El índice: una línea por proyecto —número, título, un pespunte de su
-   color y lo que es—. Al pasar, la portada flota a la derecha. */
-function indexRow(project, i) {
-  return `<li><a class="item" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<span class="n">${num(i)}</span><span class="t">${tr(project.title) || esc(project.slug)}</span><span class="stitch"></span><span class="m">${meta(project)}</span>
-${img(coverOf(project), { sizes: '16rem' })}
-</a></li>`;
-}
-
-/* El hilo: un solo hilo baja por toda la lista y atraviesa las portadas,
-   una a cada lado; en cada proyecto cambia al color de ese proyecto,
-   como cuando se empalma otro ovillo. Cada fila sale por abajo donde
-   entra la siguiente, así que el hilo no se corta. */
-const SPINE = { w: 1000, h: 440 };
-
-function spine(projects) {
-  let entry = SPINE.w / 2;
-  return projects.map((project, i) => {
-    const cover = coverOf(project);
-    let h = 320;
-    let w = (h * cover.w) / cover.h;
-    if (w > 380) { w = 380; h = (w * cover.h) / cover.w; }
-    const left = i % 2 === 0;
-    const c = { x: left ? 290 : 710, y: SPINE.h / 2 };
-    const exit = Math.round((380 + Math.random() * 240) / 4) * 4;
-    const d = stairs([...wander({ x: entry, y: 0 }, c), ...wander(c, { x: exit, y: SPINE.h }).slice(1)], 4);
-    entry = exit;
-    const side = left ? `left:${pct(560, SPINE.w)}` : `right:${pct(560, SPINE.w)};text-align:right`;
-    return `<li><a class="knot" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<svg viewBox="0 0 ${SPINE.w} ${SPINE.h}" aria-hidden="true"><path pathLength="1" d="${d}" style="animation-delay:${(i * 0.3).toFixed(1)}s"/></svg>
-<div class="pic" style="left:${pct(c.x - w / 2, SPINE.w)};top:${pct(c.y - h / 2, SPINE.h)};width:${pct(w, SPINE.w)}">${img(cover, { sizes: `${Math.round((w / SPINE.w) * 100)}vw` })}</div>
-<h2 style="${side}">${tr(project.title) || esc(project.slug)} <small>${num(i)} · ${meta(project)}</small></h2>
-</a></li>`;
-  });
-}
-
-/* El muestrario: las portadas como retales cortados con tijera de
-   picos, en rejilla, con su etiqueta debajo. */
-function swatch(project, i) {
-  return `<li><a class="swatch" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<div class="cut"><div>${img(coverOf(project), { sizes: '(min-width: 700px) 20vw, 45vw' })}</div></div>
-<p><b>${num(i)}</b> ${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></p>
-</a></li>`;
-}
-
 /** El menú de arriba, igual en todas las páginas. En la portada el
     nombre abre el about; en las demás, lleva a la portada. */
 function topBar(base = '', onHome = false) {
@@ -304,8 +271,8 @@ function topBar(base = '', onHome = false) {
 <a href="${onHome ? '#about' : `${attr(base)}./`}" class="name">${esc(site.title)}</a>
 ${LANGS.length > 1 ? `<div class="idiomas">${LANGS.map((l) => `<button type="button" value="${l}">${l}</button>`).join('')}</div>` : ''}
 <nav>
-<a href="${attr(base)}#mapa">${tr(home.map) || 'mapa'}</a>
-<a href="${attr(base)}#lista">${tr(home.list) || 'lista'}</a>
+<a href="${attr(base)}#mapa">${tr(textos.menu?.mapa) || 'mapa'}</a>
+<a href="${attr(base)}#lista">${tr(textos.menu?.lista) || 'lista'}</a>
 </nav>
 </header>`;
 }
@@ -341,7 +308,7 @@ function homePage(projects) {
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
 ${topBar('', true)}
 
-<section id="mapa" aria-hidden="true">
+<section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}">
 <div class="world">
 ${pins.join('\n')}
 </div>
@@ -355,22 +322,13 @@ ${pins.join('\n')}
 
 <section id="about">
 ${img(hero, { sizes: '(min-width: 800px) 35vw, 70vw' })}
-<div>${tr(site.about, synopsis, 'div')}</div>
+<div>${tr(about, synopsis, 'div')}</div>
 </section>
 
 <section id="lista">
-<div class="l-franjas"><ol>
+<ol>
 ${rows.join('\n')}
-</ol></div>
-<div class="l-indice"><ol>
-${projects.map(indexRow).join('\n')}
-</ol></div>
-<div class="l-hilo"><ol>
-${spine(projects).join('\n')}
-</ol></div>
-<div class="l-muestrario"><ol>
-${projects.map(swatch).join('\n')}
-</ol></div>
+</ol>
 </section>`,
   });
 }
@@ -440,6 +398,7 @@ function projectPage(project) {
     base,
     bodyClass: 'project',
     bodyStyle: `--c:${project.color}`,
+    scripts: ['js/hilo.js'],
     body: `${topBar(base)}
 
 <article>
@@ -453,7 +412,7 @@ ${gallery.join('\n\n')}
 </article>
 
 <footer class="bar">
-<a href="${attr(base)}#lista">${tr(home.back) || '← proyectos'}</a>
+<a href="${attr(base)}#lista">${tr(textos.menu?.volver) || '← proyectos'}</a>
 </footer>`,
   });
 }
@@ -488,24 +447,39 @@ const rank = (category) => {
   return i < 0 ? order.length : i;
 };
 
+/* Los cambios a mano de content/proyectos.json, por encima del JSON de
+   la ingesta: así cambiar un título o una portada no pide reingerir.
+   Por claves; los textos por idioma se mezclan. `drop` y las notas (_)
+   no: `drop` ya lo usó la ingesta. */
+function applyChanges(project) {
+  const out = { ...project };
+  for (const [key, value] of Object.entries(changes[project.slug] || {})) {
+    if (key.startsWith('_') || key === 'drop') continue;
+    out[key] = value && !Array.isArray(value) && typeof value === 'object' ? { ...(out[key] || {}), ...value } : value;
+  }
+  return out;
+}
+
 const projects = readdirSync(dir)
   .filter((n) => n.endsWith('.json'))
-  .map((n) => read(`content/projects/${n}`))
+  .map((n) => applyChanges(read(`content/projects/${n}`)))
   .sort((a, b) => rank(a.category) - rank(b.category)
     || a.category.localeCompare(b.category)
     || a.slug.localeCompare(b.slug));
 
-/* Un color por proyecto, en el orden de arriba, sin repetir: si hay más
-   proyectos que colores en content/site.json, el build para. */
+/* Un color por proyecto: el suyo si lo tiene en content/proyectos.json,
+   y si no el de content/web.json que le toque por orden. Si a alguno no
+   le llega ninguno, el build para. */
 const colors = site.colors || [];
-projects.forEach((project, i) => { project.color = colors[i]; });
+projects.forEach((project, i) => { project.color ||= colors[i]; });
 
 /* ── validar, antes de tocar dist/ ───────────────────────────────── */
 
 const errors = [];
-if (colors.length < projects.length) {
-  errors.push(`hay ${projects.length} proyectos y ${colors.length} colores en content/site.json: falta(n) ${projects.length - colors.length}`);
+for (const project of projects) {
+  if (!project.color) errors.push(`${project.slug}: no tiene color; añade uno a «colors» en content/web.json o ponle «color» en content/proyectos.json`);
 }
+if (!(mapa.mezcla >= 0 && mapa.mezcla <= 100)) errors.push(`content/mapa.json: «mezcla» va de 0 a 100 y es ${JSON.stringify(mapa.mezcla)}`);
 const seen = new Set();
 if (!existsSync(join(ROOT, hero.src))) errors.push(`no encuentro la foto de la portada: ${hero.src}`);
 for (const project of projects) {
@@ -516,7 +490,7 @@ for (const project of projects) {
     if (!existsSync(join(ROOT, image.src))) errors.push(`${project.slug}: no encuentro ${image.src}`);
   }
   if (project.cover && !project.images?.some((i) => i.src === project.cover)) {
-    errors.push(`${project.slug}: el cover ${project.cover} no es ninguna de sus fotos (content/overrides.json)`);
+    errors.push(`${project.slug}: el cover ${project.cover} no es ninguna de sus fotos (content/proyectos.json)`);
   }
 }
 if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que se arregle.`);

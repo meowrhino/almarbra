@@ -13,9 +13,9 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const read = (f) => JSON.parse(readFileSync(join(ROOT, f), 'utf8'));
 
-const site = read('content/site.json');
+const site = read('content/web.json');
 const lang = site.lang || 'es';
-const overrides = read('content/overrides.json');
+const overrides = read('content/proyectos.json');
 
 const proyectos = readdirSync(join(ROOT, 'content/projects'))
   .filter((f) => f.endsWith('.json'))

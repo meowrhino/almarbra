@@ -19,7 +19,7 @@
      node build/ingest.mjs            # solo lo nuevo
      node build/ingest.mjs --force    # todo otra vez
 
-   Las correcciones a mano van en content/overrides.json, que se aplica
+   Las correcciones a mano van en content/proyectos.json, que se aplica
    encima del JSON generado: así reingestar no se las lleva por delante.
    Ahí `drop` lista fotos del original que no entran en la web.
 
@@ -48,7 +48,7 @@ const MEDIA = join(ROOT, 'media');
 const PROJECTS = join(ROOT, 'content', 'projects');
 const HOME = join(ROOT, 'content', 'home.json');
 const CACHE = join(ROOT, 'content', '.media-cache.json');
-const OVERRIDES = join(ROOT, 'content', 'overrides.json');
+const OVERRIDES = join(ROOT, 'content', 'proyectos.json');
 
 const CONCURRENCY = 6;   // conversiones a la vez
 

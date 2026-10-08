@@ -36,9 +36,12 @@
   /* Un hilo de a a b: la recta, desviada por dos ondas —una larga, que
      lo curva entero, y otra corta, que lo hace temblar— que se apagan en
      los extremos para que salga y llegue justo al centro de cada foto.
-     Y a escalones: cada punto se pega a una rejilla de STEP px y de uno a
-     otro se va en horizontal y luego en vertical (como build/build.mjs). */
-  const STEP = 4;
+     Y a escalones, como en una pantalla de pocos píxeles: la curva se
+     recorre a pasos de STEP px, cada punto se pega a una rejilla de STEP
+     y de uno a otro se va en horizontal y luego en vertical. Como cada
+     paso es de una casilla, el escalón es fino y sigue la curva (igual
+     que build/build.mjs). */
+  const STEP = 3;
   const snap = (v) => Math.round(v / STEP) * STEP;
 
   function thread(a, b) {
@@ -51,7 +54,7 @@
     const amp = (0.06 + Math.random() * 0.12) * len * (Math.random() < 0.5 ? -1 : 1);
     const wobble = Math.min(14, len * 0.04);
     const phase = Math.random() * Math.PI * 2;
-    const n = Math.max(8, Math.ceil(len / 8));
+    const n = Math.max(8, Math.ceil(len / STEP));
     let d = '';
     let last = null;
     for (let k = 0; k <= n; k++) {
@@ -74,7 +77,6 @@
   function build() {
     if (built || !map.clientWidth || !map.clientHeight) return;
     built = true;
-    world.querySelector('.threads')?.remove();
     const boxes = pins.map((pin) => ({ w: pin.offsetWidth, h: pin.offsetHeight }));
     const total = boxes.reduce((s, b) => s + b.w * b.h, 0);
     const aspect = map.clientWidth / map.clientHeight;
@@ -88,10 +90,10 @@
        alrededor de la suya, a REACH px como mucho. Las zonas se tocan y
        se mezclan un poco por los bordes. Si no hay hueco se va aflojando.
 
-       PRUEBAS: la mezcla (data-mezcla, de 0 a 100) tira de cada foto
-       desde su zona hacia un sitio cualquiera del plano: con 0 son zonas
-       limpias; con 100, todo revuelto. */
-    const mix = Number(root.dataset.mezcla ?? 50) / 100;
+       La mezcla (content/mapa.json, de 0 a 100, en data-mezcla) tira de
+       cada foto desde su zona hacia un sitio cualquiera del plano: con 0
+       son zonas limpias; con 100, todo revuelto. */
+    const mix = Number(map.dataset.mezcla ?? 50) / 100;
     const anywhere = (size, of) => MARGIN + Math.random() * (of - size - 2 * MARGIN);
     const first = pins.map((pin, i) => i === 0 || pins[i - 1].dataset.p !== pin.dataset.p);
     const order = [...pins.keys()].sort((a, b) => first[b] - first[a]);
@@ -222,41 +224,39 @@
     if (z !== zoom) setZoom(z);
   });
 
-  /* ── la transición ─────────────────────────────────────────────
+  /* ── la transición: líneas que se dibujan solas ────────────────
 
      Un lienzo a toda la pantalla tapa, se cambia de vista y se destapa.
      Mientras tapa, el fondo se va poniendo del color de la página y
-     encima se dibuja algo. PRUEBAS: tres maneras, la que diga
-     data-transicion en <html> (js/pruebas.js). */
+     encima, cada línea sale de un borde hacia dentro y va torciendo al
+     azar, a escalones de STEP px como los hilos. */
 
   const FRAMES = 30;   // fotogramas en tapar
+  const LINES = 60;    // cuántas líneas a la vez
 
   const veil = document.createElement('canvas');
   veil.className = 'veil';
   document.body.append(veil);
   const vctx = veil.getContext('2d');
-  const pick = (colors) => colors[Math.floor(Math.random() * colors.length)];
 
-  /* Líneas: cada una sale de un borde hacia dentro y va torciendo al
-     azar, a escalones de STEP px. */
-  function lineas(colors, W, H) {
-    const walkers = Array.from({ length: 60 }, () => {
+  function lines(colors, W, H) {
+    const walkers = Array.from({ length: LINES }, () => {
       const side = Math.floor(Math.random() * 4);
       const x = side === 1 ? W : side === 3 ? 0 : Math.random() * W;
       const y = side === 2 ? H : side === 0 ? 0 : Math.random() * H;
       const angle = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - 0.5) * 1.6;
-      return { x: snap(x), y: snap(y), angle, turn: (Math.random() - 0.5) * 0.08, color: pick(colors) };
+      return { x: snap(x), y: snap(y), angle, turn: (Math.random() - 0.5) * 0.08, color: colors[Math.floor(Math.random() * colors.length)] };
     });
     return () => {
       for (const w of walkers) {
         vctx.strokeStyle = w.color;
         vctx.beginPath();
         vctx.moveTo(w.x, w.y);
-        for (let k = 0; k < 6; k++) {
-          w.turn += (Math.random() - 0.5) * 0.05;
-          w.angle += w.turn;
-          const x = snap(w.x + Math.cos(w.angle) * 7);
-          const y = snap(w.y + Math.sin(w.angle) * 7);
+        for (let k = 0; k < 14; k++) {
+          w.turn += (Math.random() - 0.5) * 0.02;
+          w.angle += w.turn / 4;
+          const x = snap(w.x + Math.cos(w.angle) * STEP);
+          const y = snap(w.y + Math.sin(w.angle) * STEP);
           vctx.lineTo(x, w.y);
           vctx.lineTo(x, y);
           w.x = x;
@@ -266,66 +266,6 @@
       }
     };
   }
-
-  /* Telar: primero cae la urdimbre —rayas verticales finas— y luego la
-     trama la cruza fila a fila, de arriba abajo, una pasada a la derecha
-     y la siguiente a la izquierda, como la lanzadera. */
-  function telar(colors, W, H) {
-    const R = 6;
-    const rows = Math.ceil(H / R);
-    const ink = getComputedStyle(root).getPropertyValue('--dim');
-    return (f) => {
-      vctx.fillStyle = ink;
-      const warp = Math.min(1, f / (FRAMES * 0.4)) * H;
-      const prev = Math.min(1, (f - 1) / (FRAMES * 0.4)) * H;
-      for (let x = R / 2; x < W; x += R) vctx.fillRect(x, prev, 1, warp - prev);
-      for (let i = 0; i < rows; i++) {
-        const start = (i / rows) * FRAMES * 0.6;
-        const span = FRAMES * 0.35;
-        const a = Math.max(0, Math.min(1, (f - 1 - start) / span)) * W;
-        const b = Math.max(0, Math.min(1, (f - start) / span)) * W;
-        if (b <= a) continue;
-        vctx.fillStyle = colors[i % colors.length];
-        vctx.fillRect(i % 2 ? W - b : a, i * R + 2, b - a, 3);
-      }
-    };
-  }
-
-  /* Ovillo: hilos que dan vueltas en cuadrado del borde hacia dentro,
-     como cuando se devana. Uno por color, hasta tres, entrelazados. */
-  function ovillo(colors, W, H) {
-    const strands = [...new Set(colors)].sort(() => Math.random() - 0.5).slice(0, 3);
-    const gap = 8 * strands.length;
-    const speed = (W * H) / gap / FRAMES;
-    const yarns = strands.map((color, k) => {
-      const inset = 2 + k * 8;
-      return { color, x: inset, y: inset, dir: 0, l: inset, t: inset, r: W - inset, b: H - inset };
-    });
-    return () => {
-      for (const s of yarns) {
-        vctx.strokeStyle = s.color;
-        vctx.beginPath();
-        vctx.moveTo(s.x, s.y);
-        let left = speed;
-        while (left > 0 && s.l < s.r && s.t < s.b) {
-          const to = [s.r, s.b, s.l, s.t][s.dir];
-          const at = s.dir % 2 ? s.y : s.x;
-          const run = Math.min(left, Math.abs(to - at));
-          const sign = s.dir < 2 ? 1 : -1;
-          if (s.dir % 2) s.y += sign * run; else s.x += sign * run;
-          vctx.lineTo(s.x, s.y);
-          left -= run;
-          if (run === Math.abs(to - at)) {
-            if (s.dir === 0) s.t += gap; else if (s.dir === 1) s.r -= gap; else if (s.dir === 2) s.b -= gap; else s.l += gap;
-            s.dir = (s.dir + 1) % 4;
-          }
-        }
-        vctx.stroke();
-      }
-    };
-  }
-
-  const STYLES = { lineas, telar, ovillo };
 
   function cover(colors) {
     const dpr = devicePixelRatio || 1;
@@ -337,7 +277,7 @@
     vctx.lineJoin = 'miter';
     veil.style.transition = 'none';
     veil.style.opacity = 1;
-    const draw = (STYLES[root.dataset.transicion] || lineas)(colors, innerWidth, innerHeight);
+    const draw = lines(colors, innerWidth, innerHeight);
 
     return new Promise((done) => {
       let frame = 0;
@@ -376,14 +316,6 @@
   show(wanted());
 
   addEventListener('resize', () => { if (root.dataset.vista === 'mapa') build(); });
-
-  /* PRUEBAS: al cambiar la mezcla en el panel (js/pruebas.js), se
-     reparte otra vez. */
-  addEventListener('mezcla', () => {
-    built = false;
-    world.style.zoom = '';
-    if (root.dataset.vista === 'mapa') build();
-  });
 
   addEventListener('hashchange', async () => {
     const view = wanted();

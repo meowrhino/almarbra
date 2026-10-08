@@ -3,14 +3,15 @@
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
 JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
-[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el único JavaScript de navegador es el del mapa.
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son tres archivos pequeños: el mapa, el hilo de los proyectos y el idioma.
 
-El menú va arriba en todas las páginas: el nombre a la izquierda, **mapa** y
-**lista** a la derecha. Dos pantallas:
+Fondo blanco. El menú va arriba en todas las páginas: el nombre a la
+izquierda, el idioma en el centro, **mapa** y **lista** a la derecha. Dos
+pantallas:
 
 - **portada** (`/`): el **mapa** (`#mapa`) o la **lista** (`#lista`), como el
   túnel y la lista de oriol-colomer. El mapa es la idea de anaelleblin.com: las
-  fotos de todos los proyectos, por zonas, en un plano que se arrastra, con zoom
+  fotos de todos los proyectos, más o menos por zonas (la `mezcla`), en un plano que se arrastra, con zoom
   (+ y −), y las de un mismo proyecto unidas por un hilo fino de su color, que
   serpentea y se dibuja al cargar. Al pasar por una foto se enciende su
   proyecto. La lista: una franja por proyecto con la portada a un lado —una a la
@@ -19,28 +20,45 @@ El menú va arriba en todas las páginas: el nombre a la izquierda, **mapa** y
   llena de líneas que se dibujan solas; al entrar en un proyecto, de su color.
 
   En la portada, el nombre abre el **about** (`#about`): la foto de la
-  portada y el texto de `about` en `content/site.json`.
+  portada y el texto de `content/about.json`.
 
   **Idiomas**: es · en · ca en el centro de la barra. Lo traducido va en la
   página en los tres (`data-l`) y se ve el elegido (`js/idioma.js`, que lo
   recuerda); si falta un idioma, sale el español. Los textos de la
-  interfaz y las categorías, en `content/site.json`.
+  interfaz y las categorías, en `content/textos.json`.
 
-  Los hilos van a escalones de 4 px, como dibujados en pocos píxeles.
+  Los hilos van a escalones de 3 px: siguen la curva, pero se ve que están
+  hechos de píxeles.
 
-  **Pruebas abiertas.** `?pruebas` en la dirección abre un panel abajo a la
-  izquierda para elegir, de cada cosa, una variante (se recuerda en el
-  navegador; la × lo cierra): fondo blanco o negro; lista en franjas,
-  índice, hilo o muestrario; transición de líneas, telar u ovillo; y el
-  fondo de los proyectos liso, tinte, trama o hilo; y la mezcla del mapa,
-  de 0 (zonas limpias) a 100 (todo revuelto). Todo lo marcado
-  `PRUEBAS` en el código (y `js/pruebas.js`) se va cuando se decida.
+  Las otras opciones que se probaron (fondo negro; lista en índice, hilo o
+  muestrario; transición de telar u ovillo; fondo de proyecto con tinte o
+  trama) están en el commit «Pruebas con panel…», abriendo `?pruebas`.
 
   Lo de píxeles (mapa de calor, halos, ruido de color, lista con cuadrados) se
   quedó en la rama `pixel`.
 - **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con aire alrededor
-  —ficha técnica arriba, galería en scroll vertical debajo—. Nada va a sangre: el
-  negro de los lados es parte de la página.
+  —ficha técnica arriba, galería en scroll vertical debajo—. Por detrás, un
+  hilo grueso de su color baja de lado a lado y entra y sale de la columna,
+  por encima y por debajo, como una costura; se dibuja al bajar.
+
+## Lo que se cambia sin tocar código
+
+Todo en `content/`, un archivo por cosa. Cada uno lleva arriba una nota (`"_"`)
+que dice qué se puede poner. Se edita, se hace push y en un par de minutos está
+publicado.
+
+| archivo | qué |
+|---|---|
+| `about.json` | el texto del about, en es / en / ca (vacío = sale el español) |
+| `textos.json` | las palabras del menú y el nombre de cada categoría, por idioma |
+| `mapa.json` | `mezcla`, de 0 (por zonas) a 100 (todo revuelto); ahora 50 |
+| `proyectos.json` | por proyecto: `title`, `synopsis`, `short`, `cover`, `color`, `drop` |
+| `web.json` | título, dirección, idiomas, orden de categorías, colores |
+
+Lo de `proyectos.json` se aplica al hacer el build, así que cambiar un título o
+una portada no pide reingerir; solo `drop` (quitar fotos) necesita
+`npm run ingest`. `content/projects/` y `content/home.json` los escribe la
+ingesta: no se tocan a mano.
 
 ```bash
 npm run ingest    # originals/ -> media/*.webp + content/projects/*.json
@@ -56,9 +74,12 @@ originals/              material de la clienta — FUERA DE GIT
   <CATEGORÍA>/<PROYECTO>/…/*.jpg + FICHA <PROYECTO>.rtf
   PORTADA/*.png                    la foto de la portada, aparte
 
-content/site.json       título, url, idioma, meta
+content/web.json        título, url, idiomas, orden y colores
+content/about.json      el texto del about
+content/textos.json     menú y categorías, por idioma
+content/mapa.json       la mezcla del mapa
+content/proyectos.json  correcciones a mano por proyecto
 content/home.json       GENERADO: la foto de la portada y sus medidas
-content/overrides.json  correcciones a mano
 content/projects/*.json GENERADO por la ingesta
 
 build/ingest.mjs        originals/ -> media/ + content/projects/
@@ -69,7 +90,9 @@ build/build.mjs         content/ + media/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/ (y de pruebas/)
 
 css/style.css           todo el estilo
-js/mapa.js              el mapa y la transición de líneas (lo único de navegador)
+js/mapa.js              el mapa y la transición de líneas
+js/hilo.js              el hilo de fondo de la página de un proyecto
+js/idioma.js            el selector de idioma
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
 media/portada/          GENERADO: la foto que sale al compartir la portada
 
@@ -151,11 +174,11 @@ en la página del proyecto. Las dos carpetas pueden ir a cualquier profundidad
 `npm run ingest`. Un proyecto sin carpeta `home` manda al mapa su portada y
 cinco fotos más, repartidas por su galería.
 
-### content/overrides.json
+### content/proyectos.json
 
 `content/projects/*.json` lo **reescribe la ingesta cada vez**, así que editarlo a
 mano no sirve de nada. Las correcciones van aquí, indexadas por slug, y se aplican
-encima del JSON recién generado:
+encima del JSON recién generado (en la ingesta y otra vez en el build):
 
 ```jsonc
 {
@@ -163,6 +186,7 @@ encima del JSON recién generado:
     "title": { "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN" },
     "short": { "es": "roma" },                     // nombre corto para la portada
     "cover": "media/roma/roma-12.webp",       // la foto que lo representa
+    "color": "Maroon",                        // su color, si no el que le toque
     "drop": ["virgen_13colores.jpg"]          // fotos del original que no entran
   }
 }
@@ -212,18 +236,12 @@ en la pestaña **Actions** de GitHub, verde es publicado.
 
 En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
 
-Lo que se cambia sin tocar código, en `content/site.json`:
-
-```jsonc
-"home": { "map": "mapa", "list": "lista" }, // las palabras del menú
-"order": ["textil", "editorial-moda"],      // en qué orden salen las categorías
-"colors": ["Maroon", "MediumSpringGreen", …] // un color por proyecto, en ese orden
-```
-
-Los colores son nombres de CSS, uno por proyecto y sin repetir: de las cuatro
+En `content/web.json`, `order` dice en qué orden salen las categorías y
+`colors` da un color por proyecto, en ese orden: nombres de CSS de las cuatro
 familias de Maroon, MediumSpringGreen, Turquoise y Violet, alternadas para que
-dos proyectos seguidos no sean de la misma. Si hay más proyectos que colores,
-el build para y lo dice.
+dos proyectos seguidos no sean de la misma. Un proyecto con `color` en
+`proyectos.json` usa el suyo. Si a alguno no le llega color, el build para y
+lo dice.
 
 La foto de `originals/PORTADA/` ya no sale en la web: es la `og:image` de la
 portada, la que se ve al compartir el enlace.
@@ -238,21 +256,24 @@ otro.
 El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
 (las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
 pisarse y por zonas: primero la primera foto de cada proyecto, separadas entre
-sí, y luego el resto alrededor de la suya (`REACH`). Las zonas se tocan y se
-mezclan un poco por los bordes.
+sí, y luego el resto alrededor de la suya (`REACH`). La `mezcla` de
+`content/mapa.json` tira de cada foto desde su zona hacia un sitio cualquiera
+del plano: 0 son zonas limpias, 100 todo revuelto.
 
 Las fotos de un mismo proyecto van unidas por hilos —cada una con la más
 cercana de las que ya estaban, así que cada proyecto es un árbol—. Cada hilo es
 la recta entre los dos centros desviada por dos ondas, una larga que lo curva
-entero y otra corta que lo hace temblar, apagadas en los extremos. Van en un SVG
+entero y otra corta que lo hace temblar, apagadas en los extremos, recorrida
+a pasos de una casilla de 3 px (`STEP`) y dibujada a escalones. Van en un SVG
 del tamaño del plano, con el grueso fijo a cualquier zoom, y se dibujan solos al
 cargar, cada uno con su retraso. La misma receta está en `build/build.mjs` para
 el hilo de la lista. Los mandos, arriba de `js/mapa.js`: `DENSITY` (lo juntas que
 van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
 La transición entre mapa y lista: 60 líneas salen de los bordes y van torciendo
-al azar mientras el fondo se oscurece; se cambia de vista y todo se funde
-(`LINES`, `FRAMES`, `STRIDE`).
+al azar, a escalones como los hilos, mientras el fondo se pone blanco; se
+cambia de vista y todo se funde (`LINES`, `FRAMES`). Entre mapa, lista y
+about.
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS
@@ -268,7 +289,7 @@ El CSS se enlaza con `?v=<hash>` de su contenido: un deploy nunca deja a nadie c
 estilos viejos en caché.
 
 Todas las páginas llevan `noindex` y `robots.txt` bloquea el sitio, hasta que haya
-web de verdad. **Al lanzar**, en `content/site.json`:
+web de verdad. **Al lanzar**, en `content/web.json`:
 
 - `"url"`: la dirección definitiva (ahora `https://meowrhino.github.io/almarbra/`).
   De ahí salen el canonical, las `og:image`, el sitemap y los enlaces de la 404.
@@ -297,12 +318,13 @@ Laocoonte, Río de la Plata, Virgen) — 112 fotos.
 - **Cuerpo Esquema** mezcla 24 fotos de piezas con 59 capturas de pantalla y
   recursos: son dos cosas distintas y 19 bajan de 1400 px. Hay que decidir qué
   entra en la web.
-- Las fichas traen **es / en / ca**. Ahora se pinta solo el castellano (`lang` en
-  `site.json`); los otros dos están en el JSON, esperando a que el diseño diga si
-  hay selector.
+- Las fichas traen **es / en / ca** y se pueden ver con el selector, pero los
+  tres van en la misma página: Google solo indexa el español. Si hace falta
+  que se encuentre en inglés, habrá que generar páginas `/en/…`.
+- El about solo está en español.
 - Ninguna imagen tiene `alt`. El campo está vacío en las 259, listo para escribirlo.
 - Las diez editoriales de moda salen con la primera foto de portada. Si alguna no
-  es la buena, se cambia con `cover` en `content/overrides.json`.
+  es la buena, se cambia con `cover` en `content/proyectos.json`.
 
 ## pruebas/ — el visualizador de nodos
 

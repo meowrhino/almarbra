@@ -1,6 +1,6 @@
 /* almudena gonzalez
 
-   Fondo negro, tipografía de palo seco en minúscula y las fotos
+   Fondo blanco, tipografía de palo seco en minúscula y las fotos
    mandando. El menú arriba en todas las páginas. Dos pantallas: la
    portada (el mapa o la lista) y la página de un proyecto (ficha +
    galería).
@@ -9,18 +9,11 @@
    lista. js/mapa.js monta el mapa y la transición de líneas. */
 
 :root {
-  --bg: #000;
-  --ink: #fff;
-  --dim: rgba(255, 255, 255, .55);
-  --bar: 3rem;                 /* alto de la barra de arriba */
-  --pad: clamp(1rem, 4vw, 3rem);
-}
-
-/* PRUEBAS: fondo blanco (js/pruebas.js) */
-[data-fondo="blanco"] {
   --bg: #fff;
   --ink: #000;
   --dim: rgba(0, 0, 0, .5);
+  --bar: 3rem;                 /* alto de la barra de arriba */
+  --pad: clamp(1rem, 4vw, 3rem);
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -174,8 +167,7 @@ html:has(#about:target) #lista { display: none; }
 
 /* a escalones, sin suavizar: el hilo se ve hecho de píxeles */
 .threads path,
-.row svg path,
-.knot svg path {
+.row svg path {
   fill: none;
   stroke-width: 1.5;
   stroke-linecap: square;
@@ -192,8 +184,7 @@ html:has(#about:target) #lista { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
   .threads path,
-  .row svg path,
-  .knot svg path { animation: none; stroke-dashoffset: 0; }
+  .row svg path { animation: none; stroke-dashoffset: 0; }
 }
 
 .pin {
@@ -283,17 +274,6 @@ html:has(#about:target) #lista { display: none; }
    hilo de su color que sale de la foto y acaba en el título, al otro
    lado. Dónde va cada cosa lo calcula build/build.mjs, en % de la
    franja. El hilo se dibuja al enseñarse la lista. */
-/* PRUEBAS: cuatro listas en la página; se ve la de data-lista (sin
-   JavaScript, las franjas). */
-#lista > div { display: none; }
-#lista > .l-franjas,
-[data-lista="indice"] #lista > .l-indice,
-[data-lista="hilo"] #lista > .l-hilo,
-[data-lista="muestrario"] #lista > .l-muestrario { display: block; }
-[data-lista="indice"] #lista > .l-franjas,
-[data-lista="hilo"] #lista > .l-franjas,
-[data-lista="muestrario"] #lista > .l-franjas { display: none; }
-
 #lista ol {
   display: grid;
   gap: clamp(1rem, 4vh, 3rem);
@@ -339,126 +319,6 @@ html:has(#about:target) #lista { display: none; }
   .row:hover h2 { color: var(--c); }
 }
 
-/* PRUEBAS: el índice. Una línea por proyecto, con un pespunte de su
-   color hasta lo que es. Al pasar, el pespunte corre y la portada flota
-   a la derecha. */
-#lista .l-indice ol { gap: 0; }
-
-.item {
-  position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: 1rem;
-  padding: .55rem 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-}
-
-.item .n { width: 2ch; font-size: .8em; color: var(--dim); }
-.item .t { font-weight: 700; }
-.item .m { font-size: .8em; color: var(--dim); white-space: nowrap; }
-
-.item .stitch {
-  flex: 1;
-  align-self: center;
-  height: 2px;
-  background: repeating-linear-gradient(90deg, var(--c) 0 8px, transparent 8px 14px);
-}
-
-.item img {
-  position: absolute;
-  z-index: 1;
-  right: 18%;
-  top: 50%;
-  width: 14rem;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-50%);
-  transition: opacity .15s;
-}
-
-@keyframes run { to { background-position-x: 14px; } }
-
-@media (hover: hover) {
-  .item:hover .t { color: var(--c); }
-  .item:hover .stitch { animation: run .3s linear infinite; }
-  .item:hover img { opacity: 1; }
-}
-
-/* PRUEBAS: el hilo. Filas pegadas, sin hueco, para que el hilo que sale
-   por abajo de una entre por arriba de la siguiente. */
-#lista .l-hilo ol { gap: 0; }
-
-.knot {
-  position: relative;
-  display: block;
-  aspect-ratio: 1000 / 440;
-}
-
-.knot svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  stroke: var(--c);
-}
-
-.knot .pic { position: absolute; }
-.knot .pic img { width: 100%; }
-
-.knot h2 {
-  position: absolute;
-  top: 50%;
-  margin: 0;
-  max-width: 40%;
-  padding: .15em .35em;
-  font-size: clamp(.9rem, 2vw, 1.5rem);
-  font-weight: 700;
-  line-height: 1.15;
-  background: var(--bg);
-  transform: translateY(-50%);
-}
-
-.knot h2 small { display: block; font-size: .6em; font-weight: 400; color: var(--dim); }
-
-@media (hover: hover) {
-  .knot:hover h2 { color: var(--c); }
-}
-
-/* PRUEBAS: el muestrario. Retales con el borde de tijera de picos —dos
-   máscaras: una corta los lados, la de dentro arriba y abajo— y una
-   etiqueta. */
-#lista .l-muestrario ol { grid-template-columns: repeat(auto-fill, minmax(min(14rem, 40vw), 1fr)); gap: 2.5rem 1.5rem; }
-
-.swatch { display: block; }
-
-.swatch .cut {
-  --z: 7px;
-  aspect-ratio: 4 / 5;
-  mask:
-    conic-gradient(from 45deg at left, #0000, #000 1deg 89deg, #0000 90deg) left / 51% calc(2 * var(--z)) repeat-y,
-    conic-gradient(from -135deg at right, #0000, #000 1deg 89deg, #0000 90deg) right / 51% calc(2 * var(--z)) repeat-y;
-  transition: transform .2s;
-}
-
-.swatch .cut > div {
-  height: 100%;
-  mask:
-    conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top / calc(2 * var(--z)) 51% repeat-x,
-    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / calc(2 * var(--z)) 51% repeat-x;
-}
-
-.swatch img { width: 100%; height: 100%; object-fit: cover; }
-
-.swatch p { margin: .75rem 0 0; font-size: .9em; line-height: 1.3; }
-.swatch b { display: inline-block; padding: 0 .3em; margin-right: .2em; color: var(--bg); background: var(--c); }
-.swatch small { display: block; color: var(--dim); }
-
-@media (hover: hover) {
-  .swatch:nth-child(odd):hover .cut { transform: rotate(-2deg); }
-  .swatch:nth-child(even):hover .cut { transform: rotate(2deg); }
-}
-
 /* La tapa entre vistas: un lienzo a toda la pantalla donde se dibujan
    las líneas (js/mapa.js). */
 .veil {
@@ -482,59 +342,19 @@ html:has(#about:target) #lista { display: none; }
 
 .project { --col: 800px; }
 
-/* PRUEBAS: el fondo de la página de un proyecto (data-proyecto).
-
-   tinte: la página entera de su color, rebajado; el texto, de su color
-          oscurecido.
-   trama: un vichy de su color alrededor; la columna, más estrecha y
-          lisa encima, con un pespunte: una etiqueta cosida a la tela.
-   hilo:  un hilo grueso de su color baja de lado a lado y entra y sale
-          de la columna, por encima y por debajo, como una costura; se
-          va dibujando al bajar (js/pruebas.js). */
+/* Por detrás, un hilo grueso de su color baja de lado a lado, entra y
+   sale de la columna —por encima y por debajo, como una costura— y se va
+   dibujando al bajar (js/hilo.js). La columna es lisa, del color de la
+   página, para que el hilo pase por debajo. */
 .project { min-height: 100vh; }
 
-[data-proyecto="tinte"] .project {
-  --bg: color-mix(in srgb, var(--c) 28%, #fff);
-  --ink: color-mix(in srgb, var(--c) 30%, #000);
-  --dim: color-mix(in srgb, var(--c) 45%, #000);
-}
-
-[data-fondo="negro"][data-proyecto="tinte"] .project {
-  --bg: color-mix(in srgb, var(--c) 30%, #000);
-  --ink: color-mix(in srgb, var(--c) 25%, #fff);
-  --dim: color-mix(in srgb, var(--c) 50%, #fff);
-}
-
-[data-proyecto="trama"] .project {
-  --col: 680px;
-  background:
-    repeating-linear-gradient(90deg, color-mix(in srgb, var(--c) 45%, transparent) 0 10px, transparent 10px 20px),
-    repeating-linear-gradient(0deg, color-mix(in srgb, var(--c) 45%, transparent) 0 10px, transparent 10px 20px),
-    var(--bg);
-}
-
-[data-proyecto="trama"] .project article,
-[data-proyecto="trama"] .project footer.bar {
-  width: min(var(--col), 100% - 2 * var(--pad) - 3rem);
-  padding-inline: clamp(1.25rem, 3vw, 2.5rem);
-  background: var(--bg);
-}
-
-[data-proyecto="trama"] .project article {
-  margin-top: clamp(1.5rem, 5vh, 3rem);
-  outline: 2px dashed var(--c);
-  outline-offset: -10px;
-}
-
-[data-proyecto="trama"] .project footer.bar { margin-bottom: clamp(1.5rem, 5vh, 3rem); }
-
-[data-proyecto="hilo"] .project article {
+.project article {
   position: relative;
   z-index: 1;
   background: var(--bg);
 }
 
-.fondo-hilo {
+.hilo {
   position: absolute;
   top: 0;
   left: 0;
@@ -543,17 +363,15 @@ html:has(#about:target) #lista { display: none; }
   stroke: var(--c);
 }
 
-.fondo-hilo.encima { z-index: 2; }
+.hilo.encima { z-index: 2; }
 
-.fondo-hilo path {
+.hilo path {
   fill: none;
   stroke-width: 4;
   stroke-linecap: square;
   shape-rendering: crispEdges;
   stroke-dasharray: 1;
 }
-
-[data-proyecto]:not([data-proyecto="hilo"]) .fondo-hilo { display: none; }
 
 /* La columna: 800 px, o todo el ancho menos el aire de los lados. La
    vuelta de abajo va al ras de ella. */
@@ -598,28 +416,6 @@ html:has(#about:target) #lista { display: none; }
   margin-bottom: .5em;
   background: var(--c);
 }
-
-/* PRUEBAS: el panel para elegir variantes (js/pruebas.js) */
-.pruebas {
-  position: fixed;
-  left: .75rem;
-  bottom: .75rem;
-  z-index: 20;
-  display: grid;
-  gap: .3rem;
-  padding: .6rem .7rem;
-  font-size: 12px;
-  color: #000;
-  background: #fff;
-  border: 1px solid #000;
-  text-transform: lowercase;
-}
-
-.pruebas div { display: flex; gap: .4rem; align-items: baseline; }
-.pruebas b { width: 6.5em; font-weight: 400; color: rgba(0, 0, 0, .5); }
-.pruebas button { padding: 0 .2em; border: 0; font: inherit; color: inherit; background: none; cursor: pointer; }
-.pruebas button[aria-pressed="true"] { color: #fff; background: #000; }
-.pruebas .x { position: absolute; top: .2rem; right: .3rem; }
 
 .ficha h1 {
   margin: 0 0 1.5rem;
