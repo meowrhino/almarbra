@@ -7,6 +7,9 @@
      dist/projects/<slug>/index.html    ficha técnica y galería en scroll
                                         vertical
 
+   Una vez por idioma: el del sitio en la raíz y los demás en su carpeta
+   (dist/en/, dist/ca/…), cada página con sus hreflang.
+
    Más lo que pide un sitio estático: 404.html, sitemap.xml, robots.txt,
    .nojekyll y _headers, y una copia de css/, js/ y media/. dist/ no se
    commitea: lo publica la Action (.github/workflows/deploy.yml).
@@ -18,15 +21,15 @@
    El sitio funciona entero sin JavaScript: sin él la portada es la
    lista. Con él: js/mapa.js monta el mapa y cambia de vista,
    js/transicion.js tapa y destapa al cambiar de página, js/hilos.js da
-   la forma a los hilos (y aquí se importa para los de la lista),
-   js/hilo.js dibuja el de los proyectos y js/idioma.js cambia de idioma.
+   la forma a los hilos (y aquí se importa para los de la lista) y
+   js/hilo.js dibuja el de los proyectos.
 
      node build/build.mjs      (npm run build)
 
    Lo que se edita es content/:
 
-     web.json        título, dirección, idiomas, orden de categorías y
-                     colores
+     web.json        título, dirección, descripción, idiomas, orden de
+                     categorías y colores
      about.json      el texto del about, por idioma
      textos.json     el menú y las categorías, por idioma
      mapa.json       la mezcla del mapa (0 por zonas, 100 revuelto)
@@ -81,22 +84,22 @@ const hero = read('content/home.json').hero;
 const esc = (v) => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const attr = (v) => esc(v).replace(/"/g, '&quot;');
 
-/** El valor en el idioma del sitio, con el primero que haya de reserva. */
-const t = (field) => (field ? field[lang] ?? Object.values(field)[0] ?? null : null);
-
-/* Los idiomas del selector de arriba. Lo que tiene traducción va en la
-   página en todos, cada uno en su <span data-l> (o la etiqueta que se
-   diga), y el CSS enseña el de data-idioma en <html> (js/idioma.js). Si
-   falta un idioma, va el del sitio. Si todos dicen lo mismo, va una vez
-   y sin envoltorio. */
+/* Los idiomas. Cada página sale una vez por idioma: el del sitio en la
+   raíz y los demás en su carpeta (en/, ca/). `cur` es el de la página
+   que se está escribiendo (ver «escribir», abajo). */
 const LANGS = site.langs || [lang];
+let cur = lang;
+const prefix = (l) => (l === lang ? '' : `${l}/`);
 
-function tr(field, render = esc, tag = 'span') {
-  const values = LANGS.map((l) => field?.[l] || t(field));
-  if (values[0] == null) return '';
-  if (values.every((v) => JSON.stringify(v) === JSON.stringify(values[0]))) return render(values[0]);
-  return LANGS.map((l, i) => `<${tag} data-l="${l}" lang="${l}">${render(values[i])}</${tag}>`).join('');
-}
+/** El valor en el idioma de la página; si falta, el del sitio, o el
+    primero que haya. */
+const t = (field) => (field ? field[cur] || field[lang] || Object.values(field).find(Boolean) || null : null);
+
+/** Lo mismo, ya pintado (por defecto, escapado). */
+const tr = (field, render = esc) => {
+  const value = t(field);
+  return value == null ? '' : render(value);
+};
 
 /* ── imágenes ────────────────────────────────────────────────────── */
 
@@ -141,7 +144,6 @@ function version(file) {
 
      .js           hay JavaScript: las fotos esperan a haber llegado para
                    aparecer (css/style.css)
-     data-idioma   el idioma elegido (js/idioma.js)
      .tapada       se llega desde otra página de la web, o con atrás y
                    adelante: la página nace tapada para que la transición
                    la destape (js/transicion.js); si ese script no llegara,
@@ -153,8 +155,6 @@ function version(file) {
 const HEAD_SCRIPT = `<script>{
 const html = document.documentElement;
 html.classList.add('js');
-try { html.dataset.idioma = localStorage.getItem('almarbra-idioma') || ''; } catch {}
-html.dataset.idioma ||= ${JSON.stringify(lang)};
 let back = false;
 try {
   back = !sessionStorage.getItem('almarbra-transicion') && performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
@@ -170,38 +170,42 @@ window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListe
 
 const LOCALES = { es: 'es_ES', en: 'en_GB', ca: 'ca_ES' };
 
-/* `path` es la dirección de la página dentro del sitio ('' la portada,
-   'projects/roma/' un proyecto); sin ella no hay canonical ni og, que es
-   lo que pasa en la 404. `image` es la que sale al compartir el enlace. */
-function page({ title, body, base = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, head = '' }) {
+/* `path` es la dirección de la página dentro del sitio, sin el idioma
+   ('' la portada, 'projects/roma/' un proyecto); sin ella no hay
+   canonical, hreflang ni og, que es lo que pasa en la 404. `root` va de
+   la página a la raíz del sitio, donde están css/, js/, media/ y
+   fonts/. `image` es la que sale al compartir el enlace. */
+function page({ title, body, root = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, head = '' }) {
   const full = title ? `${title} — ${site.title}` : site.title;
-  const desc = description || site.description || '';
-  const share = path === null ? '' : `<link rel="canonical" href="${attr(abs(path))}">
-<meta property="og:type" content="website">
+  const desc = description || t(site.description) || '';
+  const alternates = LANGS.length > 1
+    ? [...LANGS, 'x-default'].map((l) => `<link rel="alternate" hreflang="${l}" href="${attr(abs(prefix(l === 'x-default' ? lang : l) + path))}">\n`).join('')
+    : '';
+  const share = path === null ? '' : `<link rel="canonical" href="${attr(abs(prefix(cur) + path))}">
+${alternates}<meta property="og:type" content="website">
 <meta property="og:site_name" content="${attr(site.title)}">
 <meta property="og:title" content="${attr(full)}">
 <meta property="og:description" content="${attr(desc)}">
-<meta property="og:url" content="${attr(abs(path))}">
+<meta property="og:url" content="${attr(abs(prefix(cur) + path))}">
 ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <meta property="og:image:width" content="${image.w}">
 <meta property="og:image:height" content="${image.h}">
-` : ''}<meta property="og:locale" content="${LOCALES[lang] || lang}">
+` : ''}<meta property="og:locale" content="${LOCALES[cur] || cur}">
 <meta name="twitter:card" content="summary_large_image">
 `;
   return `<!DOCTYPE html>
-<html lang="${attr(lang)}">
+<html lang="${attr(cur)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
-${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
+${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="preload" href="${attr(root)}fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="${attr(root)}css/style.css${version('css/style.css')}">
 ${HEAD_SCRIPT}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
-${['js/hilos.js', 'js/transicion.js', ...scripts, 'js/idioma.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
+${['js/hilos.js', 'js/transicion.js', ...scripts].map((s) => `<script src="${attr(root)}${s}${version(s)}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -237,7 +241,7 @@ const meta = (project) => `${tr(textos.categorias?.[project.category]) || esc(pr
    cualquier ancho. Sale distinto en cada build. */
 const ROW = { w: 1000, h: 500, side: 50 };
 
-function listRow(project, i) {
+function listRow(root, project, i) {
   const cover = coverOf(project);
   let h = 400;
   let w = (h * cover.w) / cover.h;
@@ -255,19 +259,24 @@ function listRow(project, i) {
 
   return `<li><a class="row${flip ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
 <svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${hilos.path(pts)}" data-ends="${ends}"/></svg>
-<div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
+<div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { base: root, sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
 <h2 style="${edge};top:${pct(end.y, ROW.h)}">${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></h2>
 </a></li>`;
 }
 
 /** El menú de arriba, igual en todas las páginas. El nombre lleva
     siempre a la portada. A la derecha, mapa, lista y about, con lo que
-    está puesto marcado (css/style.css). */
-function topBar(base = '') {
-  const link = (to) => `<a href="${attr(base)}#${to}" data-to="${to}">${tr(textos.menu?.[to]) || to}</a>`;
+    está puesto marcado (css/style.css). Abajo, la misma página en los
+    otros idiomas. `home` va de la página a la portada de su idioma;
+    `root`, a la raíz del sitio. */
+function topBar({ home = '', root = '', path = null }) {
+  const link = (to) => `<a href="${attr(home)}#${to}" data-to="${to}">${tr(textos.menu?.[to]) || to}</a>`;
+  const langs = path !== null && LANGS.length > 1
+    ? `<div class="idiomas">${LANGS.map((l) => `<a href="${attr(root + prefix(l) + path)}" hreflang="${l}" lang="${l}"${l === cur ? ' aria-current="true"' : ''}>${l}</a>`).join('')}</div>`
+    : '';
   return `<header class="top">
-<a href="${attr(base)}#mapa" class="name">${esc(site.title)}</a>
-${LANGS.length > 1 ? `<div class="idiomas">${LANGS.map((l) => `<button type="button" value="${l}">${l}</button>`).join('')}</div>` : ''}
+<a href="${attr(home)}#mapa" class="name">${esc(site.title)}</a>
+${langs}
 <nav>
 ${link('mapa')}
 ${link('lista')}
@@ -290,13 +299,14 @@ function personLd() {
     '@type': 'Person',
     name: site.title,
     url: site.url,
-    description: t(about)?.split(/\n{2,}/)[0] || site.description,
+    description: t(about)?.split(/\n{2,}/)[0] || t(site.description),
     ...(site.redes?.length ? { sameAs: site.redes } : {}),
   };
   return `<script type="application/ld+json">${JSON.stringify(person).replace(/</g, '\\u003c')}</script>\n`;
 }
 
 function homePage(projects) {
+  const root = cur === lang ? '' : '../';
   /* El mapa: las fotos de cada proyecto, sin posición. js/mapa.js las
      reparte en cada carga y las une con hilos del color del proyecto.
      Es solo para la vista: quien navega con teclado o lector de
@@ -305,21 +315,22 @@ function homePage(projects) {
     const long = [170, 120, 145][i % 3];   // de tres tamaños, para que no parezca una rejilla
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
     return `<a class="pin" href="projects/${attr(project.slug)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
-      + img(image, { sizes: `${width * 2}px` })
+      + img(image, { base: root, sizes: `${width * 2}px` })
       + `<span>${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
 
-  const rows = projects.map(listRow);
+  const rows = projects.map((project, i) => listRow(root, project, i));
 
   return page({
     title: null,
     path: '',
+    root,
     image: hero,
     bodyClass: 'home',
     head: VIEW_SCRIPT + personLd(),
     scripts: ['js/mapa.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
-${topBar()}
+${topBar({ root, path: '' })}
 
 <section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}">
 <div class="world">
@@ -333,7 +344,7 @@ ${pins.join('\n')}
 </div>
 
 <section id="about">
-<div>${tr(about, synopsis, 'div')}</div>
+<div>${tr(about, synopsis)}</div>
 </section>
 
 <section id="lista">
@@ -390,40 +401,42 @@ function groups(project) {
 const GALLERY_SIZES = '(min-width: 896px) 800px, 100vw';
 
 function projectPage(project) {
-  const base = '../../';   // las páginas cuelgan de projects/<slug>/
+  const home = '../../';   // las páginas cuelgan de projects/<slug>/
+  const root = home + (cur === lang ? '' : '../');
+  const path = `projects/${project.slug}/`;
 
   /* La primera foto se carga con prioridad; las demás, según hagan falta. */
   const gallery = groups(project).map(({ name, images }, g) =>
     `<section class="group">\n${name ? `<h2>${esc(name)}</h2>\n` : ''}`
     + images.map((image, i) =>
-        `<figure>${img(image, { base, sizes: GALLERY_SIZES, cap: true, eager: g === 0 && i === 0 })}</figure>`
+        `<figure>${img(image, { base: root, sizes: GALLERY_SIZES, cap: true, eager: g === 0 && i === 0 })}</figure>`
       ).join('\n')
     + '\n</section>'
   );
 
   return page({
     title: t(project.title),
-    path: `projects/${project.slug}/`,
+    path,
     description: summary(t(project.synopsis)),
     image: coverOf(project),
-    base,
+    root,
     bodyClass: 'project',
     bodyStyle: `--c:${project.color}`,
     scripts: ['js/hilo.js'],
-    body: `${topBar(base)}
+    body: `${topBar({ home, root, path })}
 
 <article>
 <div class="ficha">
 <h1>${tr(project.title) || esc(project.slug)}</h1>
-${tr(project.synopsis, synopsis, 'div')}
-${tr(project.credits, credits, 'div')}
+${tr(project.synopsis, synopsis)}
+${tr(project.credits, credits)}
 </div>
 
 ${gallery.join('\n\n')}
 </article>
 
 <footer class="bar">
-<a href="${attr(base)}#lista" class="back">${tr(textos.menu?.volver) || 'back'}</a>
+<a href="${attr(home)}#lista" class="back">${tr(textos.menu?.volver) || 'back'}</a>
 </footer>
 <script>try { const v = sessionStorage.getItem('almarbra-vista'); if (v) document.querySelector('.back').hash = v; } catch {}</script>`,
   });
@@ -437,9 +450,9 @@ function notFoundPage() {
   const base = new URL(site.url).pathname;
   return page({
     title: 'no encontrada',
-    base,
+    root: base,
     bodyClass: 'project',
-    body: `${topBar(base)}
+    body: `${topBar({ home: base, root: base })}
 
 <article>
 <div class="ficha">
@@ -513,23 +526,29 @@ if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que 
    sirviendo (build/watch.mjs) y si desaparece deja de mirarla. */
 mkdirSync(OUT, { recursive: true });
 for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true, maxRetries: 5 });
-for (const d of ['css', 'js', 'media']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
+for (const d of ['css', 'js', 'media', 'fonts']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
 cpSync(join(ROOT, '_headers'), join(OUT, '_headers'));
 
-writeFileSync(join(OUT, 'index.html'), homePage(projects));
-console.log('index.html'.padEnd(32) + `${projects.length} proyectos`);
+const paths = ['', ...projects.map((p) => `projects/${p.slug}/`)];
 
-for (const project of projects) {
-  mkdirSync(join(OUT, 'projects', project.slug), { recursive: true });
-  writeFileSync(join(OUT, 'projects', project.slug, 'index.html'), projectPage(project));
-  console.log(`projects/${project.slug}/`.padEnd(32) + `${project.images.length} fotos`);
+for (const l of LANGS) {
+  cur = l;
+  const at = join(OUT, prefix(l));
+  mkdirSync(at, { recursive: true });
+  writeFileSync(join(at, 'index.html'), homePage(projects));
+  for (const project of projects) {
+    mkdirSync(join(at, 'projects', project.slug), { recursive: true });
+    writeFileSync(join(at, 'projects', project.slug, 'index.html'), projectPage(project));
+  }
+  console.log(`${prefix(l) || '/'}`.padEnd(8) + `portada y ${projects.length} proyectos`);
 }
 
+cur = lang;
 writeFileSync(join(OUT, '404.html'), notFoundPage());
 
 writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${['', ...projects.map((p) => `projects/${p.slug}/`)].map((p) => `  <url><loc>${esc(abs(p))}</loc></url>`).join('\n')}
+${LANGS.flatMap((l) => paths.map((p) => `  <url><loc>${esc(abs(prefix(l) + p))}</loc></url>`)).join('\n')}
 </urlset>
 `);
 
@@ -541,4 +560,4 @@ writeFileSync(
 // GitHub Pages: servir los archivos tal cual, sin pasar por Jekyll
 writeFileSync(join(OUT, '.nojekyll'), '');
 
-console.log(`\n✓ dist/: ${projects.length + 1} páginas, 404, sitemap y robots.`);
+console.log(`\n✓ dist/: ${paths.length} páginas × ${LANGS.length} idiomas, 404, sitemap y robots.`);

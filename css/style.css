@@ -8,6 +8,13 @@
    La página funciona entera sin JavaScript: sin él la portada es la
    lista y las fotos se ven sin más. Con él, .js en <html> (el <head>). */
 
+/* DM Mono, servida desde aquí y no desde Google (fonts/): latin y,
+   para lo que no entra, latin-ext. */
+@font-face { font-family: "DM Mono"; font-weight: 400; font-display: swap; src: url(../fonts/dm-mono-400.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "DM Mono"; font-weight: 400; font-display: swap; src: url(../fonts/dm-mono-400-ext.woff2) format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "DM Mono"; font-weight: 500; font-display: swap; src: url(../fonts/dm-mono-500.woff2) format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "DM Mono"; font-weight: 500; font-display: swap; src: url(../fonts/dm-mono-500-ext.woff2) format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
 :root {
   --bg: #fff;
   --ink: #000;
@@ -44,18 +51,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   white-space: nowrap;
 }
 
-/* ── idiomas ─────────────────────────────────────────────────────────
-
-   El texto traducido va en la página en todos los idiomas (data-l); se
-   ve el de data-idioma en <html> (js/idioma.js). Sin JavaScript, el
-   español. */
-
-[data-l] { display: none; }
-[data-idioma="es"] [data-l="es"],
-[data-idioma="en"] [data-l="en"],
-[data-idioma="ca"] [data-l="ca"],
-:root:not([data-idioma]) [data-l="es"] { display: revert; }
-
 /* ── el menú de arriba ───────────────────────────────────────────────
 
    Sin fondo y en difference, como los mandos del zoom: negro sobre el
@@ -82,7 +77,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .top nav { display: flex; gap: 1.25rem; }
 .top nav a { color: var(--dim); }
 
-/* el selector de idioma, abajo a la derecha */
+/* el idioma, abajo a la derecha: la misma página en los otros */
 .idiomas {
   position: fixed;
   right: var(--pad);
@@ -95,24 +90,17 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 [data-vista="mapa"] .idiomas { display: none; }
 
-.idiomas button {
-  padding: 0;
-  border: 0;
-  font: inherit;
-  color: var(--dim);
-  background: none;
-  cursor: pointer;
-}
+.idiomas a { color: var(--dim); }
 
 /* lo que está puesto: el idioma y la vista (data-vista lo pone js/mapa.js) */
-.idiomas button[aria-pressed="true"],
+.idiomas [aria-current],
 [data-vista="mapa"] .top [data-to="mapa"],
 [data-vista="lista"] .top [data-to="lista"],
 [data-vista="about"] .top [data-to="about"] { color: var(--ink); }
 
 @media (hover: hover) {
   .top a:hover,
-  .idiomas button:hover { color: var(--ink); }
+  .idiomas a:hover { color: var(--ink); }
 }
 
 /* ── portada: mapa, lista o about ────────────────────────────────────

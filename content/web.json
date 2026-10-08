@@ -1,5 +1,5 @@
 {
-  "_": "Lo general de la web. Casi nunca hace falta tocarlo. «order»: en qué orden salen las categorías. «colors»: un color por proyecto, en el orden de la lista (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en proyectos.json.",
+  "_": "Lo general de la web. Casi nunca hace falta tocarlo. «description», por idioma, es la que sale en Google y al compartir. «order»: en qué orden salen las categorías. «colors»: un color por proyecto, en el orden de la lista (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en proyectos.json.",
   "title": "almudena gonzalez",
   "url": "https://meowrhino.github.io/almarbra/",
   "lang": "es",
@@ -8,7 +8,11 @@
     "en",
     "ca"
   ],
-  "description": "Portfolio de Almudena González — arte textil y fotografía de moda.",
+  "description": {
+    "es": "Portfolio de Almudena González — arte textil y fotografía de moda.",
+    "en": "Portfolio of Almudena González — textile art and fashion photography.",
+    "ca": "Portfoli d'Almudena González — art tèxtil i fotografia de moda."
+  },
   "noindex": true,
   "order": [
     "textil",

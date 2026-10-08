@@ -570,6 +570,7 @@
   /* La vista se apunta para el «back» de los proyectos (build/build.mjs). */
   function show(view) {
     root.dataset.vista = view;
+    for (const a of document.querySelectorAll('.idiomas a')) a.hash = view;   // otro idioma, en la misma vista
     if (view !== 'about') try { sessionStorage.setItem('almarbra-vista', view); } catch { /* sin él, back va a la lista */ }
     scrollTo(0, 0);
     if (view === 'mapa') build();

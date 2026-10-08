@@ -3,9 +3,9 @@
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
 JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
-[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cinco archivos pequeños: el mapa, la transición, los hilos, el hilo de los proyectos y el idioma.
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cuatro archivos pequeños: el mapa, la transición, los hilos y el hilo de los proyectos.
 
-Fondo blanco, tipografía mono (DM Mono, de Google Fonts) en minúscula y las
+Fondo blanco, tipografía mono (DM Mono, servida desde la propia web, sin Google) en minúscula y las
 fotos mandando, unidas por hilos de píxeles del color de cada proyecto.
 
 **La interfaz**, igual en todas las páginas: el nombre arriba a la izquierda
@@ -50,10 +50,12 @@ sobre las fotos.
   de irse, así que la página nueva tapa una foto quieta de la de antes
   (View Transitions; donde no las hay, nace en blanco).
 
-  **Idiomas**: lo traducido va en la página en los tres (`data-l`) y se ve
-  el elegido (`js/idioma.js`, que lo recuerda); si falta un idioma, sale el
-  español. Los textos de la interfaz y las categorías, en
-  `content/textos.json`.
+  **Idiomas**: una página por idioma. El español en la raíz (`/`,
+  `/projects/roma/`) y los otros en su carpeta (`/en/…`, `/ca/…`), cada
+  una con sus `hreflang`, para que Google indexe cada idioma aparte. El
+  selector de abajo lleva a la misma página en otro idioma (en la portada,
+  a la misma vista), con su ola. Si falta una traducción, sale el español.
+  Los textos de la interfaz y las categorías, en `content/textos.json`.
 
   Los hilos van a escalones de 2 px: siguen la curva, pero se ve que están
   hechos de píxeles. Solo cambian de casilla cuando la curva se ha ido tres
@@ -87,7 +89,7 @@ publicado.
 | `textos.json` | las palabras del menú y el nombre de cada categoría, por idioma |
 | `mapa.json` | `mezcla`, de 0 (por zonas) a 100 (todo revuelto); ahora 50 |
 | `proyectos.json` | por proyecto: `title`, `synopsis`, `short`, `cover`, `color`, `drop` |
-| `web.json` | título, dirección, idiomas, orden de categorías, colores |
+| `web.json` | título, dirección, descripción (por idioma), idiomas, orden de categorías, colores |
 
 Lo de `proyectos.json` se aplica al hacer el build, así que cambiar un título o
 una portada no pide reingerir; solo `drop` (quitar fotos) necesita
@@ -137,9 +139,9 @@ js/mapa.js              el mapa, la lista y el about (con su telar)
 js/transicion.js        la transición al cambiar de página o de vista, y la entrada de las fotos
 js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
 js/hilo.js              el hilo de la página de un proyecto
-js/idioma.js            el selector de idioma
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
 media/portada/          GENERADO: la foto que sale al compartir la portada
+fonts/                  DM Mono en woff2 (400 y 500, latin y latin-ext)
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
 wrangler.jsonc          para cuando pase a Cloudflare Workers
@@ -148,8 +150,9 @@ wrangler.jsonc          para cuando pase a Cloudflare Workers
 dist/                   GENERADO por el build — FUERA DE GIT
   index.html
   projects/<slug>/index.html
+  en/  ca/                         lo mismo en cada idioma
   404.html  sitemap.xml  robots.txt  .nojekyll  _headers
-  css/  js/  media/                copia tal cual
+  css/  js/  media/  fonts/        copia tal cual
 ```
 
 En git va **solo el fuente**: `content/`, `media/` y el código. Las páginas no se
@@ -350,7 +353,7 @@ que mide cada uno en cada escalón, en `SIZES`.
 
 La vista la dice el hash, así que atrás y adelante funcionan y se puede enlazar
 `/#lista`. Un `<script>` en el `<head>` la pone antes de pintar; otro, en
-todas las páginas, pone lo demás que no puede esperar: `.js`, el idioma y si
+todas las páginas, pone lo demás que no puede esperar: `.js` y si
 la página nace tapada (`HEAD_SCRIPT`, en `build/build.mjs`).
 
 **Sin JavaScript la portada es la lista**, que es también lo que leen el teclado
@@ -389,10 +392,8 @@ Laocoonte, Río de la Plata, Virgen) — 112 fotos.
 - **Cuerpo Esquema** mezcla 24 fotos de piezas con 59 capturas de pantalla y
   recursos: son dos cosas distintas y 19 bajan de 1400 px. Hay que decidir qué
   entra en la web.
-- Las fichas traen **es / en / ca** y se pueden ver con el selector, pero los
-  tres van en la misma página: Google solo indexa el español. Si hace falta
-  que se encuentre en inglés, habrá que generar páginas `/en/…`.
-- El about solo está en español.
+- El about solo está en español: en `/en/` y `/ca/` sale el español hasta
+  que se escriba en `content/about.json`.
 - Ninguna imagen tiene `alt`. El campo está vacío en las 259, listo para escribirlo.
 - Las diez editoriales de moda salen con la primera foto de portada. Si alguna no
   es la buena, se cambia con `cover` en `content/proyectos.json`.
