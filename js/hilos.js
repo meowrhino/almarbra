@@ -1,24 +1,50 @@
-/* La forma de los hilos, la misma en toda la web: los del mapa, los de la
-   lista, el de la página de un proyecto y las líneas de la transición. Se
-   le da la curva en puntos y devuelve el `d` de un <path>.
+/* Los hilos, los mismos en toda la web: los del mapa, los de la lista,
+   el de la página de un proyecto y las líneas de la transición.
+
+     hilos.wander(a, b)   la curva de a a b, en puntos
+     hilos.path(puntos)   el `d` de un <path> con esa curva, ya con su forma
+
+   Lo usa también el build (build/build.mjs), que lo importa para dibujar
+   los hilos de la lista sin JavaScript: por eso se cuelga de globalThis y
+   no toca el documento si no lo hay.
 
    Para que no salgan dientes, el hilo solo cambia de casilla cuando la
    curva ya se ha ido tres cuartos de una: así no va y vuelve entre dos
    cuando pasa justo por el borde.
 
    PRUEBAS: cuatro formas, la de data-hilos en <html> (js/pruebas.js):
-     escalera  a escalones de 3 px, en horizontal y luego en vertical
-     fina      lo mismo a 2 px: el escalón casi no se ve
+     fina      a escalones de 2 px, en horizontal y luego en vertical:
+               el escalón casi no se ve (la de por defecto)
+     escalera  lo mismo a 3 px
      diagonal  de casilla en casilla de 3 px, pero cada escalón suelto se
                corta en diagonal: se ve pixel, sin dientes
      liso      la curva tal cual, sin rejilla */
 
-window.hilos = (() => {
+globalThis.hilos = (() => {
   const GRID = { escalera: 3, fina: 2, diagonal: 3, liso: 0 };
   const mode = () => {
-    const m = document.documentElement.dataset.hilos;
-    return m in GRID ? m : 'escalera';
+    const m = globalThis.document?.documentElement.dataset.hilos;
+    return m in GRID ? m : 'fina';
   };
+
+  /* La recta de a a b, desviada por dos ondas —una larga, que la curva
+     entera, y otra corta, que la hace temblar— que se apagan en los
+     extremos, para que salga y llegue justo a a y a b. */
+  function wander(a, b) {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const waves = 0.5 + Math.random() * 1.5;
+    const amp = (0.06 + Math.random() * 0.12) * len * (Math.random() < 0.5 ? -1 : 1);
+    const wobble = Math.min(14, len * 0.04);
+    const phase = Math.random() * Math.PI * 2;
+    const n = Math.max(8, Math.ceil(len / 8));
+    return Array.from({ length: n + 1 }, (_, k) => {
+      const t = k / n;
+      const off = Math.sin(Math.PI * t) * (amp * Math.sin(Math.PI * waves * t + phase / 4) + wobble * Math.sin((t * len) / 35 + phase));
+      return { x: a.x + dx * t - (dy / len) * off, y: a.y + dy * t + (dx / len) * off };
+    });
+  }
 
   /* La curva a pasos de `g` como mucho, para no saltarse casillas. */
   function dense(points, g) {
@@ -63,20 +89,24 @@ window.hilos = (() => {
     if (!points.length) return '';
     if (!g) return points.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('');
     const c = cells(points, g);
-    let d = `M${c[0][0] * g} ${c[0][1] * g}`;
+    const steps = [];   // [orden, valor]; dos H o dos V seguidas son una
+    const put = (cmd, v) => {
+      const last = steps[steps.length - 1];
+      if (cmd !== 'L' && last?.[0] === cmd) last[1] = v;
+      else steps.push([cmd, v]);
+    };
     for (let i = 1; i < c.length; i++) {
       const [a, b, n] = [c[i - 1], c[i], c[i + 1]];
       /* diagonal: un escalón de una casilla en cada sentido (a → b → n,
          con b en la esquina) se corta en diagonal de a a n. */
       if (m === 'diagonal' && n && Math.abs(n[0] - a[0]) === 1 && Math.abs(n[1] - a[1]) === 1) {
-        d += `L${n[0] * g} ${n[1] * g}`;
+        put('L', `${n[0] * g} ${n[1] * g}`);
         i += 1;
-        continue;
-      }
-      d += b[0] !== a[0] ? `H${b[0] * g}` : `V${b[1] * g}`;
+      } else if (b[0] !== a[0]) put('H', b[0] * g);
+      else put('V', b[1] * g);
     }
-    return d;
+    return `M${c[0][0] * g} ${c[0][1] * g}${steps.map(([cmd, v]) => cmd + v).join('')}`;
   }
 
-  return { path, mode };
+  return { wander, path };
 })();

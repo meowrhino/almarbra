@@ -14,10 +14,10 @@
   const root = document.documentElement;
   const KEY = 'almarbra-pruebas';
   const OPTIONS = {
-    hilos: ['escalera', 'fina', 'diagonal', 'liso'],
-    transicion: ['circulo', 'barrido', 'pixeles', 'lineas'],
+    hilos: ['fina', 'escalera', 'diagonal', 'liso'],
+    transicion: ['barrido', 'circulo', 'pixeles', 'lineas'],
   };
-  const DEFAULTS = { hilos: 'escalera', transicion: 'circulo' };
+  const DEFAULTS = { hilos: 'fina', transicion: 'barrido' };
 
   const store = (key, value) => {
     try {

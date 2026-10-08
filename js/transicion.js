@@ -1,12 +1,10 @@
 /* La transición: siempre que se cambia de página o de vista, la pantalla
    se tapa de blanco, se cambia y se destapa en la página nueva.
 
-   La de por defecto, «círculo»: una ola de píxeles de colores sale de
-   donde se ha hecho clic y se abre en círculo; detrás deja blanco. En la
-   página nueva ese blanco se vuelve a cerrar hacia el mismo punto, y
-   detrás de la ola ya se ve la página. Al volver (de un proyecto a la
-   portada, o hacia la izquierda en el menú) es al revés: el blanco entra
-   desde los bordes hasta el punto, y luego se abre desde él hacia fuera.
+   La de por defecto, «barrido»: una ola de píxeles de colores barre la
+   pantalla en diagonal y deja blanco detrás; en la página nueva otra ola
+   sigue en el mismo sentido y la destapa. Baja al entrar en un proyecto,
+   sube al volver, y entre las vistas va de lado.
 
    El sentido dice adónde se va:
 
@@ -24,13 +22,15 @@
    PRUEBAS: cuatro maneras, la de data-transicion en <html> (el panel de
    js/pruebas.js):
 
-     circulo   el círculo desde el clic (la de por defecto)
-     barrido   la ola en diagonal: baja al entrar en un proyecto, sube al
-               salir, y de lado entre las vistas; destapa siguiendo
+     barrido   la ola en diagonal (la de por defecto)
+     circulo   el blanco se abre en círculo desde el clic y en la página
+               nueva se cierra hacia él; hacia atrás, al revés
      pixeles   se deshace en cuadrados, alguno de color, despacio
      lineas    líneas que salen de los bordes y van torciendo
 
-   La usa js/mapa.js para mapa, lista y about (window.transicion). */
+   La usa js/mapa.js para mapa, lista y about (window.transicion).
+
+   Aquí también entran las fotos: cada una aparece cuando ha llegado. */
 
 (() => {
   const root = document.documentElement;
@@ -187,7 +187,7 @@
 
   const styleName = () => {
     const asked = new URLSearchParams(location.search).get('transicion') || root.dataset.transicion;
-    return asked in STYLES || asked === 'lineas' ? asked : 'circulo';
+    return asked in STYLES || asked === 'lineas' ? asked : 'barrido';
   };
 
   let last = null;   // el punto de la última tapa, para destapar desde él
@@ -298,6 +298,14 @@
   });
 
   arrive();
+
+  /* Y las fotos de la página: cada una aparece cuando ha llegado (.ok;
+     el fundido y el orden, en css/style.css). Las que fallen, también:
+     mejor el hueco que nada. */
+  for (const img of document.images) {
+    if (img.complete) img.classList.add('ok');
+    else for (const type of ['load', 'error']) img.addEventListener(type, () => img.classList.add('ok'), { once: true });
+  }
 
   window.transicion = { cover, uncover, way };
 })();

@@ -11,20 +11,27 @@ pantallas:
 
 - **portada** (`/`): el **mapa** (`#mapa`) o la **lista** (`#lista`), como el
   túnel y la lista de oriol-colomer. El mapa es la idea de anaelleblin.com: las
-  fotos de todos los proyectos, más o menos por zonas (la `mezcla`), en un plano que se arrastra, con zoom
-  (+ y −), y las de un mismo proyecto unidas por un hilo fino de su color, que
-  serpentea y se dibuja al cargar. Al pasar por una foto se enciende su
-  proyecto y sus hilos se descosen y se vuelven a coser por otro camino. La lista: una franja por proyecto con la portada a un lado —una a la
-  izquierda, la siguiente a la derecha— y un hilo de su color que sale de la
-  foto y acaba en el título, al otro lado.
+  fotos de todos los proyectos, más o menos por zonas (la `mezcla`), en un
+  plano que se arrastra, con zoom abajo en el centro (− y +, y una barrita de
+  píxeles por escalón), y las de un mismo proyecto unidas por un hilo fino de
+  su color, que serpentea y se dibuja al cargar. Al pasar por una foto se
+  enciende su proyecto y sus hilos se descosen y se vuelven a coser por otro
+  camino. La lista: una franja por proyecto con la portada a un lado —una a
+  la izquierda, la siguiente a la derecha— y un hilo de su color que sale de
+  la foto y acaba en el título, al otro lado.
+
+  **Al cargar**, primero salen los huecos de las fotos —una trama de píxeles
+  del color de su proyecto—, del centro de la pantalla hacia fuera; luego se
+  dibujan los hilos y cada foto entra fundiéndose en su hueco cuando ha
+  llegado. En la lista, el about y las galerías, las fotos también entran
+  fundiéndose.
 
   **Siempre que se cambia de página o de vista**, una ola de píxeles de
-  colores sale de donde se ha hecho clic y se abre en círculo, dejando
-  blanco detrás; se cambia, y en la página nueva ese blanco se cierra de
-  vuelta hacia el punto y deja ver la página (`js/transicion.js`). Hacia
-  atrás —de un proyecto a la portada, o hacia la izquierda del menú— es al
-  revés: el blanco entra desde los bordes hasta el punto y luego se abre. Al entrar o salir de un proyecto, de su color.
-  También con atrás y adelante del navegador, desde el centro.
+  colores barre la pantalla en diagonal y la deja en blanco; se cambia, y en
+  la página nueva otra ola sigue en el mismo sentido y la destapa
+  (`js/transicion.js`). Al entrar en un proyecto baja, al volver sube; entre
+  about, mapa y lista va de lado, en el orden del menú. Al entrar o salir de
+  un proyecto, de su color. También con atrás y adelante del navegador.
 
   En la portada, el nombre abre el **about** (`#about`): la foto de la
   portada y el texto de `content/about.json`.
@@ -34,21 +41,37 @@ pantallas:
   recuerda); si falta un idioma, sale el español. Los textos de la
   interfaz y las categorías, en `content/textos.json`.
 
-  Los hilos van a escalones de 3 px: siguen la curva, pero se ve que están
+  Los hilos van a escalones de 2 px: siguen la curva, pero se ve que están
   hechos de píxeles. Solo cambian de casilla cuando la curva se ha ido tres
   cuartos de una, para que no vayan y vuelvan entre dos (eso los dentaba).
 
-  **Panel de pruebas**: `?pruebas` en la dirección abre abajo a la izquierda
+  **Panel de pruebas**: `?pruebas` en la dirección abre arriba a la izquierda
   un panel con lo que aún se está decidiendo (se recuerda en el navegador; la
-  × lo cierra) con la forma de los hilos —escalera, fina, diagonal o liso, en
-  `js/hilos.js`, la misma para toda la web— y la transición —círculo,
-  barrido (en diagonal: baja al entrar, sube al salir, de lado entre
-  vistas), píxeles (despacio) o líneas—. Para probar una sin panel,
-  `?transicion=pixeles`. Todo lo marcado `PRUEBAS` en
-  el código, y `js/pruebas.js`, se va cuando se decida.
+  × lo cierra): la forma de los hilos —fina (la de ahora), escalera,
+  diagonal o liso, en `js/hilos.js`, la misma para toda la web— y la
+  transición —barrido (la de ahora), círculo (se abre desde el clic y se
+  cierra en la página nueva), píxeles (despacio) o líneas—. Para probar una sin panel,
+  `?transicion=pixeles`.
 
   El hover «pespunte» y la columna de 640 están en el commit «Panel de
   pruebas otra vez…».
+
+### Cuando se decida: quitar el panel
+
+Todo lo de las pruebas va marcado `PRUEBAS` en el código. Con la forma de
+los hilos y la transición elegidas:
+
+1. `js/pruebas.js`: borrarlo, y quitarlo de la lista de scripts de `page()`
+   en `build/build.mjs`.
+2. `build/build.mjs`: en `HEAD_SCRIPT`, la línea de `almarbra-pruebas`.
+3. `js/hilos.js`: dejar en `GRID` solo la forma elegida (y, si no es
+   diagonal, el `if (m === 'diagonal' …)` de `path`).
+4. `js/transicion.js`: dejar en `STYLES` solo la elegida (y `lineas`, si no
+   es ella); `styleName()` pasa a devolverla siempre.
+5. `js/mapa.js` y `js/hilo.js`: el `addEventListener('pruebas', …)`.
+6. `css/style.css`: los bloques `PRUEBAS` (la forma de los hilos y el panel);
+   si la forma elegida es diagonal o liso, sus reglas pasan a ser las de
+   siempre.
 
   Las otras opciones que se probaron (fondo negro; lista en índice, hilo o
   muestrario; transición de telar u ovillo; fondo de proyecto con tinte o
@@ -120,8 +143,8 @@ build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
 css/style.css           todo el estilo
 js/mapa.js              el mapa, la lista y el about
-js/transicion.js        la transición al cambiar de página o de vista
-js/hilos.js             la forma de todos los hilos de la web
+js/transicion.js        la transición al cambiar de página o de vista, y la entrada de las fotos
+js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
 js/hilo.js              el hilo de fondo de la página de un proyecto
 js/pruebas.js           PRUEBAS: el panel de ?pruebas
 js/idioma.js            el selector de idioma
@@ -296,10 +319,11 @@ Las fotos de un mismo proyecto van unidas por hilos —cada una con la más
 cercana de las que ya estaban, así que cada proyecto es un árbol—. Cada hilo es
 la recta entre los dos centros desviada por dos ondas, una larga que lo curva
 entero y otra corta que lo hace temblar, apagadas en los extremos, recorrida
-a pasos de una casilla de 3 px (`STEP`) y dibujada a escalones. Van en un SVG
-del tamaño del plano, con el grueso fijo a cualquier zoom, y se dibujan solos al
-cargar, cada uno con su retraso. La misma receta está en `build/build.mjs` para
-el hilo de la lista. Los mandos, arriba de `js/mapa.js`: `DENSITY` (lo juntas que
+y pasada a la forma de los hilos. Las dos cosas son de `js/hilos.js`
+(`wander` y `path`), que también importa `build/build.mjs` para el hilo de la
+lista: la misma receta en el navegador y en el build. Van en un SVG del tamaño
+del plano, con el grueso fijo a cualquier zoom, y se dibujan solos al cargar,
+cada uno con su retraso. Los mandos, arriba de `js/mapa.js`: `DENSITY` (lo juntas que
 van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
 La transición vive en `js/transicion.js`: un lienzo a toda la pantalla,
@@ -316,10 +340,14 @@ página: ahí la llama `js/mapa.js` al cambiar el hash.
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS
-`zoom`, y acerca sobre el centro de la pantalla.
+`zoom`, y acerca sobre el centro de la pantalla. Sus mandos, abajo en el
+centro y en `difference` como el menú, para que se vean sobre las fotos.
 
 La vista la dice el hash, así que atrás y adelante funcionan y se puede enlazar
-`/#lista`. Un `<script>` de una línea en el `<head>` la pone antes de pintar.
+`/#lista`. Un `<script>` en el `<head>` la pone antes de pintar; otro, en
+todas las páginas, pone lo demás que no puede esperar: `.js`, el idioma, si
+la página nace tapada y lo elegido en el panel (`HEAD_SCRIPT`, en
+`build/build.mjs`).
 
 **Sin JavaScript la portada es la lista**, que es también lo que leen el teclado
 y los lectores de pantalla: el mapa va con `aria-hidden`.

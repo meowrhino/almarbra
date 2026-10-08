@@ -16,8 +16,10 @@
    web publicada se queda como estaba.
 
    El sitio funciona entero sin JavaScript: sin él la portada es la
-   lista. js/mapa.js monta el mapa y la transición de líneas, js/hilo.js
-   el hilo de fondo de los proyectos y js/idioma.js cambia de idioma.
+   lista. Con él: js/mapa.js monta el mapa y cambia de vista,
+   js/transicion.js tapa y destapa al cambiar de página, js/hilos.js da
+   la forma a los hilos (y aquí se importa para los de la lista),
+   js/hilo.js dibuja el de los proyectos y js/idioma.js cambia de idioma.
 
      node build/build.mjs      (npm run build)
 
@@ -42,6 +44,9 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { WIDTHS, variant } from './formats.mjs';
+import '../js/hilos.js';   // globalThis.hilos: la curva y la forma de los hilos, como en el navegador
+
+const { hilos } = globalThis;
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const OUT = join(ROOT, 'dist');
@@ -131,20 +136,25 @@ function version(file) {
   return hashes.get(file);
 }
 
-/* El idioma elegido, en <html> antes de pintar (ver js/idioma.js). */
-const IDIOMA_HEAD = `<script>try { document.documentElement.dataset.idioma = localStorage.getItem('almarbra-idioma') || ''; } catch {}
-document.documentElement.dataset.idioma ||= ${JSON.stringify(lang)};</script>
-`;
+/* Lo que tiene que estar en <html> antes de pintar, para que no asome
+   nada que no toca:
 
-/* Si se llega desde otra página de la web (o con atrás y adelante), la
-   página nace tapada, para que la transición la destape (js/transicion.js).
-   Si ese script no llegara, el CSS la destapa sola a los 3 s. */
-const TAPADA_HEAD = `<script>try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (sessionStorage.getItem('almarbra-transicion') || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) document.documentElement.classList.add('tapada'); } catch {}</script>
-`;
-
-/* PRUEBAS: lo que se haya elegido en el panel (js/pruebas.js), en
-   <html> antes de pintar. Sin nada elegido manda lo de content/. */
-const PRUEBAS_HEAD = `<script>try { Object.assign(document.documentElement.dataset, JSON.parse(localStorage.getItem('almarbra-pruebas'))); } catch {}</script>
+     .js           hay JavaScript: las fotos esperan a haber llegado para
+                   aparecer (css/style.css)
+     data-idioma   el idioma elegido (js/idioma.js)
+     .tapada       se llega desde otra página de la web, o con atrás y
+                   adelante: la página nace tapada para que la transición
+                   la destape (js/transicion.js); si ese script no llegara,
+                   el CSS la destapa sola a los 3 s
+     data-hilos…   PRUEBAS: lo elegido en el panel (js/pruebas.js) */
+const HEAD_SCRIPT = `<script>{
+const html = document.documentElement;
+html.classList.add('js');
+try { html.dataset.idioma = localStorage.getItem('almarbra-idioma') || ''; } catch {}
+html.dataset.idioma ||= ${JSON.stringify(lang)};
+try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (sessionStorage.getItem('almarbra-transicion') || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) html.classList.add('tapada'); } catch {}
+try { Object.assign(html.dataset, JSON.parse(localStorage.getItem('almarbra-pruebas'))); } catch {}
+}</script>
 `;
 
 /* `path` es la dirección de la página dentro del sitio ('' la portada,
@@ -172,7 +182,7 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
-${IDIOMA_HEAD}${TAPADA_HEAD}${PRUEBAS_HEAD}${head}</head>
+${HEAD_SCRIPT}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
 ${['js/hilos.js', 'js/transicion.js', ...scripts, 'js/idioma.js', 'js/pruebas.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
@@ -201,65 +211,6 @@ function mapImages(project) {
   return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
 }
 
-/* Un hilo de a a b, como los del mapa (js/mapa.js): la recta desviada
-   por una onda larga y otra corta, que se apagan en los extremos. Da
-   los puntos; `stairs` los pasa a escalones. */
-function wander(a, b) {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const len = Math.hypot(dx, dy) || 1;
-  const amp = (0.06 + Math.random() * 0.12) * len * (Math.random() < 0.5 ? -1 : 1);
-  const waves = 0.5 + Math.random() * 1.5;
-  const phase = Math.random() * Math.PI * 2;
-  const n = Math.ceil(len / 8);
-  return Array.from({ length: n + 1 }, (_, k) => {
-    const t = k / n;
-    const off = Math.sin(Math.PI * t) * (amp * Math.sin(Math.PI * waves * t + phase / 4) + 12 * Math.sin((t * len) / 35 + phase));
-    return { x: a.x + dx * t - (dy / len) * off, y: a.y + dy * t + (dx / len) * off };
-  });
-}
-
-/* El hilo a escalones, como en una pantalla de pocos píxeles: la curva
-   se recorre a pasos de `g` como mucho y va de casilla en casilla de una
-   rejilla de `g`, en horizontal y luego en vertical. Para que no salga
-   dentada, solo cambia de casilla cuando la curva ya se ha ido tres
-   cuartos de casilla: así no va y vuelve entre dos cuando pasa justo por
-   el borde. Igual que en js/mapa.js. */
-const STEP = 3;
-
-function stairs(points, g = STEP) {
-  const dense = points.flatMap((p, i) => {
-    const q = points[i - 1];
-    if (!q) return [p];
-    const n = Math.ceil(Math.hypot(p.x - q.x, p.y - q.y) / g);
-    return Array.from({ length: n }, (_, k) => ({ x: q.x + ((p.x - q.x) * (k + 1)) / n, y: q.y + ((p.y - q.y) * (k + 1)) / n }));
-  });
-  let d = '';
-  let cx = null;
-  let cy = null;
-  for (const p of dense) {
-    const px = p.x / g;
-    const py = p.y / g;
-    if (cx === null) {
-      cx = Math.round(px);
-      cy = Math.round(py);
-      d = `M${cx * g} ${cy * g}`;
-      continue;
-    }
-    let nx = cx;
-    let ny = cy;
-    while (px - nx > 0.75) nx += 1;
-    while (nx - px > 0.75) nx -= 1;
-    while (py - ny > 0.75) ny += 1;
-    while (ny - py > 0.75) ny -= 1;
-    if (nx !== cx) d += `H${nx * g}`;
-    if (ny !== cy) d += `V${ny * g}`;
-    cx = nx;
-    cy = ny;
-  }
-  return d;
-}
-
 const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
 const meta = (project) => `${tr(textos.categorias?.[project.category]) || esc(project.category.replace(/-/g, ' '))} · ${project.images.length}`;
 
@@ -280,13 +231,13 @@ function listRow(project, i) {
   const y = (ROW.h - h) / 2;
   const end = { x: flip ? ROW.side + 10 : ROW.w - ROW.side - 10, y: ROW.h * (0.3 + Math.random() * 0.4) };
 
-  /* Los puntos del hilo van también en data-pts: js/mapa.js le pone la
-     forma con js/hilos.js. Sin JavaScript, la escalera de aquí. */
-  const pts = wander({ x: x + w / 2, y: y + h / 2 }, end);
+  /* Los puntos del hilo van también en data-pts, para que js/mapa.js le
+     ponga la forma que toque. Sin JavaScript, la de por defecto. */
+  const pts = hilos.wander({ x: x + w / 2, y: y + h / 2 }, end);
   const edge = flip ? `left:${pct(ROW.side, ROW.w)}` : `right:${pct(ROW.side, ROW.w)}`;
 
   return `<li><a class="row${flip ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${stairs(pts)}" data-pts="${pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/></svg>
+<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${hilos.path(pts)}" data-pts="${pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/></svg>
 <div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
 <h2 style="${edge};top:${pct(end.y, ROW.h)}">${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></h2>
 </a></li>`;
@@ -343,9 +294,9 @@ ${pins.join('\n')}
 </section>
 
 <div class="zoom" aria-hidden="true">
-<button type="button" data-step="1" tabindex="-1">+</button>
-<div class="ticks"></div>
 <button type="button" data-step="-1" tabindex="-1">−</button>
+<div class="ticks"></div>
+<button type="button" data-step="1" tabindex="-1">+</button>
 </div>
 
 <section id="about">
@@ -528,7 +479,7 @@ if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que 
 /* Se vacía dist/ pero no se borra la carpeta: Live Server la está
    sirviendo (build/watch.mjs) y si desaparece deja de mirarla. */
 mkdirSync(OUT, { recursive: true });
-for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true });
+for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true, maxRetries: 5 });
 for (const d of ['css', 'js', 'media']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
 cpSync(join(ROOT, '_headers'), join(OUT, '_headers'));
 

@@ -1,12 +1,12 @@
 /* almudena gonzalez
 
    Fondo blanco, tipografía de palo seco en minúscula y las fotos
-   mandando. El menú arriba en todas las páginas. Dos pantallas: la
-   portada (el mapa o la lista) y la página de un proyecto (ficha +
-   galería).
+   mandando, unidas por hilos de píxeles del color de cada proyecto. El
+   menú arriba en todas las páginas. Dos pantallas: la portada (el mapa,
+   la lista o el about) y la página de un proyecto (ficha + galería).
 
    La página funciona entera sin JavaScript: sin él la portada es la
-   lista. js/mapa.js monta el mapa y la transición de líneas. */
+   lista y las fotos se ven sin más. Con él, .js en <html> (el <head>). */
 
 :root {
   --bg: #fff;
@@ -48,15 +48,22 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    El texto traducido va en la página en todos los idiomas (data-l); se
    ve el de data-idioma en <html> (js/idioma.js). Sin JavaScript, el
    español. */
+
 [data-l] { display: none; }
 [data-idioma="es"] [data-l="es"],
 [data-idioma="en"] [data-l="en"],
 [data-idioma="ca"] [data-l="ca"],
 :root:not([data-idioma]) [data-l="es"] { display: revert; }
 
-/* ── el menú de arriba ───────────────────────────────────────────── */
+/* ── el menú de arriba ───────────────────────────────────────────────
+
+   Sin fondo y en difference, como los mandos del zoom: negro sobre el
+   blanco y en negativo sobre las fotos y los hilos que pasan por debajo.
+   Por eso dentro de la barra la tinta es blanca. */
 
 .top {
+  --ink: #fff;
+  --dim: rgba(255, 255, 255, .55);
   position: sticky;
   top: 0;
   z-index: 2;
@@ -66,17 +73,14 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   gap: 1rem;
   height: var(--bar);
   padding-inline: var(--pad);
-  /* Sin fondo: en blanco y con difference, se ve negro sobre el blanco y
-     en negativo sobre las fotos y los hilos que pasan por debajo. */
-  --ink: #fff;
-  --dim: rgba(255, 255, 255, .55);
   color: var(--ink);
   mix-blend-mode: difference;
 }
 
 .top nav { display: flex; gap: 1.25rem; }
+.top nav a { color: var(--dim); }
 
-/* el selector de idioma, en el centro de la barra */
+/* el selector de idioma, en el centro */
 .idiomas {
   position: absolute;
   left: 50%;
@@ -94,10 +98,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   cursor: pointer;
 }
 
-.idiomas button[aria-pressed="true"] { color: var(--ink); }
-.top nav a { color: var(--dim); }
-
-/* la vista en la que estás, en blanco (la pone js/mapa.js en <html>) */
+/* lo que está puesto: el idioma y la vista (data-vista lo pone js/mapa.js) */
+.idiomas button[aria-pressed="true"],
 [data-vista="mapa"] .top a[href$="#mapa"],
 [data-vista="lista"] .top a[href$="#lista"] { color: var(--ink); }
 [data-vista="about"] .top .name { text-decoration: underline; text-underline-offset: 4px; }
@@ -107,22 +109,22 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .idiomas button:hover { color: var(--ink); }
 }
 
-/* ── portada: mapa o lista ───────────────────────────────────────────
+/* ── portada: mapa, lista o about ────────────────────────────────────
 
-   Sin JavaScript no hay data-vista y se ve la lista. Con él, la que
-   diga el hash. */
+   Se ve la vista que diga el hash (data-vista, en <html>). Sin
+   JavaScript no hay data-vista y se ve la lista; el about, con #about en
+   la dirección (:target). */
 
-#mapa { display: none; }
-[data-vista="mapa"] #mapa { display: grid; }
-[data-vista="mapa"] #lista { display: none; }
-
-/* El about: lo abre el nombre, en la portada. Sin JavaScript, con
-   #about en la dirección (:target). */
+#mapa,
 #about { display: none; }
+[data-vista="mapa"] #mapa { display: grid; }
 [data-vista="about"] #about,
 #about:target { display: grid; }
+[data-vista="mapa"] #lista,
 [data-vista="about"] #lista,
 html:has(#about:target) #lista { display: none; }
+
+/* ── el about: la foto de la portada y el texto ──────────────────── */
 
 #about {
   grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
@@ -141,10 +143,13 @@ html:has(#about:target) #lista { display: none; }
   #about img { justify-self: center; max-height: 50vh; }
 }
 
-/* El mapa es un scroll en las dos direcciones, sin barras: con el dedo
-   o la rueda se recorre solo, y el ratón lo arrastra (js/mapa.js). Es
-   una rejilla para que el plano, si al alejarlo queda más pequeño que la
-   pantalla, se quede en el centro (margin: auto). */
+/* ── el mapa ─────────────────────────────────────────────────────────
+
+   Un scroll en las dos direcciones, a toda la pantalla y sin barras: con
+   el dedo o la rueda se recorre solo, y el ratón lo arrastra (js/mapa.js).
+   Es una rejilla para que el plano, si al alejarlo queda más pequeño que
+   la pantalla, se quede en el centro (margin: auto). */
+
 #mapa {
   position: fixed;
   inset: 0;
@@ -160,42 +165,12 @@ html:has(#about:target) #lista { display: none; }
 
 .world { position: relative; margin: auto; }
 
-/* los hilos: finos y del mismo grueso a cualquier zoom, y se dibujan
-   solos al cargar (cada uno con su retraso, que pone js/mapa.js) */
 .threads {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   overflow: visible;
-}
-
-/* a escalones, sin suavizar: el hilo se ve hecho de píxeles */
-.threads path,
-.row svg path {
-  fill: none;
-  stroke-width: 1.5;
-  stroke-linecap: square;
-  stroke-linejoin: miter;
-  shape-rendering: crispEdges;
-  vector-effect: non-scaling-stroke;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: draw 1.6s ease-out forwards;
-  transition: opacity .2s;
-}
-
-@keyframes draw { to { stroke-dashoffset: 0; } }
-
-/* PRUEBAS: la forma de los hilos (data-hilos, js/hilos.js). En diagonal y
-   liso se suavizan los bordes; en escalera y fina, píxel duro. */
-[data-hilos="diagonal"] :is(.threads, .row svg, .hilo) path,
-[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { shape-rendering: auto; }
-[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { stroke-linejoin: round; stroke-linecap: round; }
-
-@media (prefers-reduced-motion: reduce) {
-  .threads path,
-  .row svg path { animation: none; stroke-dashoffset: 0; }
 }
 
 .pin {
@@ -220,71 +195,87 @@ html:has(#about:target) #lista { display: none; }
 .pin,
 .pin span { transition: opacity .2s; }
 
+/* al pasar por una foto se enciende su proyecto (js/mapa.js) */
 .dim .pin:not(.on),
 .dim .threads path:not(.on) { opacity: .15; }
 .pin:hover span { opacity: 1; }
 
-/* El zoom, a la derecha, como en anaelleblin.com: + arriba, − abajo y
-   en medio una raya por escalón, más larga la que está puesta. */
+/* La entrada. Primero salen los huecos —una trama de píxeles del color
+   del proyecto—, del centro hacia fuera: --d es el retraso de cada uno
+   (js/mapa.js). Luego cada foto se funde en el suyo cuando ha llegado
+   (.ok, js/transicion.js). Pasado el rato (.listo), las que lleguen
+   tarde entran sin esperar. Lo mismo, sin orden, en la lista, el about
+   y las galerías. */
+.pin,
+.row .pic {
+  background: repeating-conic-gradient(color-mix(in srgb, var(--c) 35%, transparent) 0 25%, transparent 0 50%) 0 0 / 6px 6px;
+}
+
+.js .pin { animation: hueco .4s steps(4, end) var(--d, 0s) backwards; }
+@keyframes hueco { from { opacity: 0; } }
+
+.js :is(.pin, .row .pic, #about, .group figure) img:not(.ok) { opacity: 0; }
+.js :is(.pin, .row .pic, #about, .group figure) img { transition: opacity .8s ease-out; }
+.js .pin img { transition-delay: calc(var(--d, 0s) + .3s); }
+.listo .pin { --d: 0s; }
+
+/* Los mandos del zoom, abajo en el centro: − y +, y entre ellos una
+   barrita de píxeles por escalón, más alta cuanto más cerca (--h, de
+   js/mapa.js); la puesta, entera. Finos, pero cada uno con 28 px de
+   zona de clic. En difference, como el menú. */
 .zoom { display: none; }
 [data-vista="mapa"] .zoom {
   position: fixed;
-  right: var(--pad);
-  top: 50%;
+  bottom: .75rem;
+  left: 50%;
   z-index: 3;
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  color: #fff;
+  mix-blend-mode: difference;
+  transform: translateX(-50%);
 }
 
 .zoom button {
   display: block;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: 0;
-  font: inherit;
-  color: var(--ink);
+  font-size: 0;   /* el − y el + se dibujan, como píxeles */
+  color: inherit;
   background: none;
   cursor: pointer;
+  opacity: .6;
 }
 
-.zoom > button {
-  width: 34px;
-  height: 34px;
-  font-size: 20px;
-  line-height: 1;
-  border: 1px solid var(--dim);
-  border-radius: 10px;
-  background: var(--bg);
+.zoom > button { background: linear-gradient(currentColor, currentColor) center / 10px 2px no-repeat; }
+.zoom > button[data-step="1"] {
+  background:
+    linear-gradient(currentColor, currentColor) center / 10px 2px no-repeat,
+    linear-gradient(currentColor, currentColor) center / 2px 10px no-repeat;
 }
 
-.zoom .ticks {
-  display: grid;
-  justify-items: center;
-  padding: 6px 0;
-  border: 1px solid var(--dim);
-  border-radius: 10px;
-  background: var(--bg);
-}
-
-/* la raya se dibuja con un degradado; el botón entero es la zona de clic */
+.zoom .ticks { display: flex; align-items: center; }
 .zoom .ticks button {
-  width: 32px;
-  height: 12px;
-  background: linear-gradient(var(--dim), var(--dim)) center / 10px 1px no-repeat;
+  width: 12px;
+  background: linear-gradient(currentColor, currentColor) center / 4px var(--h) no-repeat;
+  opacity: .35;
 }
 
-.zoom .ticks button.on { background: linear-gradient(var(--ink), var(--ink)) center / 20px 1px no-repeat; }
+.zoom .ticks button.on { opacity: 1; }
 
 @media (hover: hover) {
-  .zoom > button:hover { border-color: var(--ink); }
+  .zoom button:hover { opacity: 1; }
 }
 
-/* La lista: cada proyecto, una franja de proporción fija con la
-   portada a un lado —uno a la izquierda, el siguiente a la derecha— y un
-   hilo de su color que sale de la foto y acaba en el título, al otro
-   lado. Dónde va cada cosa lo calcula build/build.mjs, en % de la
-   franja. El hilo se dibuja al enseñarse la lista. */
+/* ── la lista ────────────────────────────────────────────────────────
+
+   Cada proyecto, una franja de proporción fija con la portada a un lado
+   —uno a la izquierda, el siguiente a la derecha— y un hilo de su color
+   que sale de la foto y acaba en el título, al otro lado. Dónde va cada
+   cosa lo calcula build/build.mjs, en % de la franja. */
+
 #lista ol {
   display: grid;
   gap: clamp(1rem, 4vh, 3rem);
@@ -330,9 +321,50 @@ html:has(#about:target) #lista { display: none; }
   .row:hover h2 { color: var(--c); }
 }
 
-/* Una página a la que se llega desde otra nace tapada (la clase la pone
-   el <head>) hasta que js/transicion.js la destapa. Si ese script no
+/* ── los hilos ───────────────────────────────────────────────────────
+
+   Los del mapa y los de la lista: finos, del mismo grueso a cualquier
+   zoom, sin suavizar —se ven de píxeles— y se dibujan solos (cada uno
+   con su retraso, que pone js/mapa.js). La forma la da js/hilos.js. */
+
+.threads path,
+.row svg path {
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1.6s ease-out forwards;
+  transition: opacity .2s;
+}
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* PRUEBAS: la forma de los hilos (data-hilos, js/hilos.js). En diagonal y
+   liso se suavizan los bordes; en escalera y fina, píxel duro. */
+[data-hilos="diagonal"] :is(.threads, .row svg, .hilo) path,
+[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { shape-rendering: auto; }
+[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { stroke-linejoin: round; stroke-linecap: round; }
+
+/* ── la transición ───────────────────────────────────────────────────
+
+   Un lienzo a toda la pantalla donde se tapa y se destapa
+   (js/transicion.js). Una página a la que se llega desde otra nace
+   tapada (.tapada, del <head>) hasta que el script la destapa; si no
    llegara, a los 3 s se destapa sola. */
+
+.veil {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .tapada body::before {
   content: "";
   position: fixed;
@@ -344,35 +376,43 @@ html:has(#about:target) #lista { display: none; }
 
 @keyframes destapar { to { visibility: hidden; } }
 
-/* La tapa entre vistas y páginas: un lienzo a toda la pantalla donde
-   barre la ola de píxeles (js/transicion.js). */
-.veil {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+@media (prefers-reduced-motion: reduce) {
+  .threads path,
+  .row svg path { animation: none; stroke-dashoffset: 0; }
+  .js .pin { animation: none; }
+  .js img { transition: none !important; }
 }
 
 /* ── página de proyecto ──────────────────────────────────────────────
 
-   Una sola columna estrecha —800 px como mucho— centrada y con aire por
-   los cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
-   ancho. Nada va a sangre; el negro alrededor es parte de la página.
+   Una sola columna —800 px como mucho— centrada y con aire por los
+   cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
+   ancho. Por encima, un hilo de su color (js/hilo.js).
 
    Los 800 también los sabe build/build.mjs, que los pone en el `sizes`
    de cada foto: si cambian aquí, cambian allí. */
 
-.project { --col: 800px; }
+.project {
+  --col: 800px;
+  min-height: 100vh;
+}
 
-/* El hilo: baja por toda la página ondulando de lado a lado, de su
-   color y por encima de las fotos, y se va dibujando al bajar
-   (js/hilo.js). */
-.project { min-height: 100vh; }
+/* La columna, o todo el ancho menos el aire de los lados. La vuelta de
+   abajo va al ras de ella. */
+.project footer.bar,
+.project article {
+  width: min(var(--col), 100% - 2 * var(--pad));
+  margin-inline: auto;
+}
 
-.project article { position: relative; z-index: 1; }
+.project article {
+  position: relative;
+  z-index: 1;
+  padding-block: clamp(2rem, 7vh, 4.5rem) clamp(3rem, 10vh, 6rem);
+}
 
+/* El hilo: baja por toda la página ondulando de lado a lado, por encima
+   de las fotos, y se va dibujando al bajar. */
 .hilo {
   position: absolute;
   top: 0;
@@ -388,18 +428,6 @@ html:has(#about:target) #lista { display: none; }
   stroke-width: 3;
   stroke-linecap: square;
   shape-rendering: crispEdges;
-}
-
-/* La columna: 800 px, o todo el ancho menos el aire de los lados. La
-   vuelta de abajo va al ras de ella. */
-.project footer.bar,
-.project article {
-  width: min(var(--col), 100% - 2 * var(--pad));
-  margin-inline: auto;
-}
-
-.project article {
-  padding-block: clamp(2rem, 7vh, 4.5rem) clamp(3rem, 10vh, 6rem);
 }
 
 .bar {
@@ -424,28 +452,6 @@ html:has(#about:target) #lista { display: none; }
    mal. Las fotos sí la ocupan entera. */
 .ficha h1,
 .ficha p { max-width: 34rem; }
-
-/* PRUEBAS: el panel para elegir variantes (js/pruebas.js) */
-.pruebas {
-  position: fixed;
-  left: .75rem;
-  bottom: .75rem;
-  z-index: 20;
-  display: grid;
-  gap: .3rem;
-  padding: .6rem .7rem;
-  font-size: 12px;
-  color: #000;
-  background: #fff;
-  border: 1px solid #000;
-  text-transform: lowercase;
-}
-
-.pruebas div { display: flex; gap: .4rem; align-items: baseline; }
-.pruebas b { width: 6.5em; font-weight: 400; color: rgba(0, 0, 0, .5); }
-.pruebas button { padding: 0 .2em; border: 0; font: inherit; color: inherit; background: none; cursor: pointer; }
-.pruebas button[aria-pressed="true"] { color: #fff; background: #000; }
-.pruebas .x { position: absolute; top: .2rem; right: .3rem; }
 
 .ficha h1 {
   margin: 0 0 1.5rem;
@@ -484,10 +490,31 @@ html:has(#about:target) #lista { display: none; }
    frena, y entonces se quedan centradas antes que ampliarse y verse
    blandas. */
 .group figure { margin: 0 0 clamp(.75rem, 3vh, 2rem); }
-
 .group figure img { width: 100%; margin: 0 auto; }
 
 @media (max-width: 700px) {
-  .credits { grid-template-columns: 1fr; gap: 0 }
-  .credits dt { margin-top: .75rem }
+  .credits { grid-template-columns: 1fr; gap: 0; }
+  .credits dt { margin-top: .75rem; }
 }
+
+/* ── PRUEBAS: el panel para elegir variantes (js/pruebas.js) ──────── */
+
+.pruebas {
+  position: fixed;
+  left: .75rem;
+  top: calc(var(--bar) + .25rem);   /* arriba: abajo están los mandos del zoom */
+  z-index: 20;
+  display: grid;
+  gap: .3rem;
+  padding: .6rem .7rem;
+  font-size: 12px;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+}
+
+.pruebas div { display: flex; gap: .4rem; align-items: baseline; }
+.pruebas b { width: 6.5em; font-weight: 400; color: rgba(0, 0, 0, .5); }
+.pruebas button { padding: 0 .2em; border: 0; font: inherit; color: inherit; background: none; cursor: pointer; }
+.pruebas button[aria-pressed="true"] { color: #fff; background: #000; }
+.pruebas .x { position: absolute; top: .2rem; right: .3rem; }

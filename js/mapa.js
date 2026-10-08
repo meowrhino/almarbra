@@ -32,28 +32,6 @@
   const hits = (a, b, gap) =>
     a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
 
-  /* Un hilo de a a b: la recta, desviada por dos ondas —una larga, que
-     lo curva entero, y otra corta, que lo hace temblar— que se apagan en
-     los extremos para que salga y llegue justo al centro de cada foto.
-     Da los puntos; la forma (escalones, diagonal…) la pone js/hilos.js. */
-  function thread(a, b) {
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const len = Math.hypot(dx, dy) || 1;
-    const nx = -dy / len;
-    const ny = dx / len;
-    const waves = 0.5 + Math.random() * 1.5;
-    const amp = (0.06 + Math.random() * 0.12) * len * (Math.random() < 0.5 ? -1 : 1);
-    const wobble = Math.min(14, len * 0.04);
-    const phase = Math.random() * Math.PI * 2;
-    const n = Math.max(8, Math.ceil(len / 8));
-    return Array.from({ length: n + 1 }, (_, k) => {
-      const t = k / n;
-      const off = Math.sin(Math.PI * t) * (amp * Math.sin(Math.PI * waves * t + phase / 4) + wobble * Math.sin((t * len) / 35 + phase));
-      return { x: a.x + dx * t + nx * off, y: a.y + dy * t + ny * off };
-    });
-  }
-
   /* Pone (o vuelve a poner) la forma a un hilo a partir de sus puntos. */
   const shape = (el) => el.setAttribute('d', hilos.path(el.pts));
 
@@ -112,7 +90,7 @@
         }
         x = Math.max(MARGIN, Math.min(W - w - MARGIN, x));
         y = Math.max(MARGIN, Math.min(H - h - MARGIN, y));
-        const box = { x, y, w, h, p };
+        const box = { x, y, w, h, p, pin };
         if (t === 799 || !spots.some((b) => hits(box, b, gap))) spot = box;   // ponytail: plano lleno, se pisa; bajar DENSITY
       }
       if (!home) anchors.set(p, spot);
@@ -120,6 +98,18 @@
       pin.style.left = `${spot.x}px`;
       pin.style.top = `${spot.y}px`;
     }
+
+    /* La entrada: primero salen los huecos, del centro de la pantalla
+       hacia fuera (--d, el retraso de cada uno), y luego cada foto se
+       funde en el suyo cuando ha llegado (css/style.css). Pasado el
+       rato, las que lleguen tarde —al moverse por el plano— entran sin
+       esperar. */
+    const far = Math.hypot(W, H) / 2;
+    for (const s of spots) {
+      const d = Math.hypot(s.x + s.w / 2 - W / 2, s.y + s.h / 2 - H / 2) / far;
+      s.pin.style.setProperty('--d', `${Math.round(d * 1400)}ms`);
+    }
+    setTimeout(() => map.classList.add('listo'), 2600);
 
     /* Los hilos, en un SVG del tamaño del plano: cada foto se une a la
        más cercana de su proyecto de las que ya estaban, así que cada
@@ -138,13 +128,13 @@
       if (!before.length) continue;
       const from = before.reduce((a, b) => (Math.hypot(a.x - to.x, a.y - to.y) < Math.hypot(b.x - to.x, b.y - to.y) ? a : b));
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.pts = thread(from, to);
+      path.pts = hilos.wander(from, to);
       shape(path);
       path.setAttribute('pathLength', '1');
       path.ends = [from, to];
-      path.setAttribute('stroke', colorOf(pins.find((pin) => pin.dataset.p === s.p)));
+      path.setAttribute('stroke', colorOf(s.pin));
       path.dataset.p = s.p;
-      path.style.animationDelay = `${(Math.random() * 0.8).toFixed(2)}s`;
+      path.style.animationDelay = `${(0.4 + Math.random() * 0.8).toFixed(2)}s`;   // después de los huecos
       svg.append(path);
     }
 
@@ -163,7 +153,7 @@
       const on = el.dataset.p === p;
       el.classList.toggle('on', on);
       if (!on || !el.pts || still) continue;
-      el.pts = thread(...el.ends);
+      el.pts = hilos.wander(...el.ends);
       shape(el);
       el.style.animation = 'none';
       el.getBBox();   // para que la animación vuelva a empezar
@@ -197,20 +187,22 @@
 
   /* ── el zoom ───────────────────────────────────────────────────── */
 
-  /* A saltos, sin animación: cinco escalones, una raya cada uno en la
-     columna de la derecha. Acerca o aleja sobre el centro de la pantalla. */
+  /* A saltos, sin animación: cinco escalones, abajo en el centro, una
+     barrita de píxeles cada uno, más alta cuanto más cerca (--h).
+     Acerca o aleja sobre el centro de la pantalla. */
   const ZOOMS = [0.5, 0.7, 1, 1.4, 2];
   const zoomBox = document.querySelector('.zoom');
   const ticks = zoomBox.querySelector('.ticks');
   let zoom = 1;
 
-  for (const z of [...ZOOMS].reverse()) {
+  ZOOMS.forEach((z, i) => {
     const b = document.createElement('button');
     b.type = 'button';
     b.tabIndex = -1;
     b.dataset.z = z;
+    b.style.setProperty('--h', `${4 + i * 3}px`);
     ticks.append(b);
-  }
+  });
 
   function setZoom(z) {
     const cx = (map.scrollLeft + map.clientWidth / 2) / zoom;
