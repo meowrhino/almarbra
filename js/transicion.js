@@ -47,7 +47,19 @@
 
   const colorOf = (el) => el.style.getPropertyValue('--c').trim();
   const allColors = () => [...new Set([...document.querySelectorAll('[style*="--c"]')].map(colorOf).filter(Boolean))];
-  const pick = (colors) => colors[Math.floor(Math.random() * colors.length)];
+  const pick = (colors, rnd = Math.random) => colors[Math.floor(rnd() * colors.length)];
+
+  /* El azar de la transición sale de una semilla: con la misma semilla
+     y la misma pantalla, el mismo dibujo. Así destapar parte justo de lo
+     que dejó tapado la tapa —los mismos píxeles, del mismo color—, en
+     esta página o en la siguiente (la semilla pasa por sessionStorage). */
+  const seeded = (n) => () => {
+    n = (n + 0x6d2b79f5) | 0;
+    let t = Math.imul(n ^ (n >>> 15), 1 | n);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  let seed = 0;
   const bg = () => getComputedStyle(root).getPropertyValue('--bg');
 
   /* Dónde está una dirección: los proyectos, al fondo; en la portada, por
@@ -88,38 +100,38 @@
 
   /* Distancia al punto, en casillas, con un temblor para que el círculo
      no salga de compás. */
-  const ring = (o, C, wobble) => {
-    const phase = Math.random() * 6;
+  const ring = (o, C, wobble, rnd) => {
+    const phase = rnd() * 6;
     return (x, y) => Math.hypot(x - o.x, y - o.y) / C
-      + wobble * (Math.sin(Math.atan2(y - o.y, x - o.x) * 5 + phase) + Math.random());
+      + wobble * (Math.sin(Math.atan2(y - o.y, x - o.x) * 5 + phase) + rnd());
   };
 
   const STYLES = {
-    circulo({ colors, dir, o, W, H }) {
+    circulo({ colors, dir, o, W, H, rnd }) {
       const C = 12;
       const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - o.x, y - o.y))) / C + 3;
-      const dist = ring(o, C, 1);
+      const dist = ring(o, C, 1, rnd);
       const cells = grid(C, W, H, (x, y) => (dir.sign > 0 ? dist(x, y) : far - dist(x, y)));
-      for (const c of cells) c.tint = pick(colors);
+      for (const c of cells) c.tint = pick(colors, rnd);
       return { C, cells, band: BAND, back: true };
     },
-    barrido({ colors, dir, W, H }) {
+    barrido({ colors, dir, W, H, rnd }) {
       const C = 12;
       const along = Math.ceil((dir.axis === 'y' ? H : W) / C);
       const across = Math.ceil((dir.axis === 'y' ? W : H) / C);
-      const lag = Array.from({ length: across }, (_, i) => (dir.sign > 0 ? i : across - 1 - i) * 0.4 + Math.random() * 3);
+      const lag = Array.from({ length: across }, (_, i) => (dir.sign > 0 ? i : across - 1 - i) * 0.4 + rnd() * 3);
       const cells = grid(C, W, H, (x, y) => {
         const [a, b] = dir.axis === 'y' ? [y, x] : [x, y];
         const step = Math.floor(a / C);
         return (dir.sign > 0 ? step : along - 1 - step) + lag[Math.floor(b / C)];
       });
-      for (const c of cells) c.tint = pick(colors);
+      for (const c of cells) c.tint = pick(colors, rnd);
       return { C, cells, band: BAND };
     },
-    pixeles({ colors, W, H }) {
+    pixeles({ colors, W, H, rnd }) {
       const C = 24;
-      const cells = grid(C, W, H, () => Math.random());
-      for (const c of cells) if (Math.random() < 0.08) c.fill = pick(colors);
+      const cells = grid(C, W, H, () => rnd());
+      for (const c of cells) if (rnd() < 0.08) c.fill = pick(colors, rnd);
       return { C, cells, band: 0, frames: 70 };
     },
   };
@@ -203,7 +215,7 @@
     const frame = name === 'lineas'
       ? lineas({ colors, W, H })
       : (() => {
-        const g = STYLES[name]({ colors, dir, o, W, H });
+        const g = STYLES[name]({ colors, dir, o, W, H, rnd: seeded(seed) });
         frames = g.frames || FRAMES;
         const top = Math.max(...g.cells.map((c) => c.key));
         const end = top + g.band + 1;
@@ -230,11 +242,13 @@
 
   function cover(colors, dir, o = origin()) {
     last = o;
+    seed = Math.floor(Math.random() * 2 ** 31);
     return still ? Promise.resolve() : play({ colors, dir, o, cover: true });
   }
 
-  function uncover(colors, dir, o = last || origin()) {
+  function uncover(colors, dir, o = last || origin(), from = seed) {
     root.classList.remove('tapada');
+    seed = from;
     return still ? Promise.resolve() : play({ colors, dir, o, cover: false });
   }
 
@@ -249,7 +263,7 @@
     const o = pending?.at
       ? { x: pending.at.x * innerWidth, y: pending.at.y * innerHeight }
       : { x: innerWidth / 2, y: innerHeight / 2 };
-    uncover(colors, pending?.dir || { axis: 'y', sign: -1 }, o);
+    uncover(colors, pending?.dir || { axis: 'y', sign: -1 }, o, pending?.seed ?? 0);
   }
 
   /* Los enlaces a otra página de la web: se tapa, se apunta lo que falta
@@ -271,7 +285,7 @@
     const o = e.detail ? { x: e.clientX, y: e.clientY } : { x: box.left + box.width / 2, y: box.top + box.height / 2 };
     cover(colors, dir, o).then(() => {
       try {
-        sessionStorage.setItem(KEY, JSON.stringify({ colors, dir, at: { x: o.x / innerWidth, y: o.y / innerHeight } }));
+        sessionStorage.setItem(KEY, JSON.stringify({ colors, dir, seed, at: { x: o.x / innerWidth, y: o.y / innerHeight } }));
       } catch { /* sin él, se destapa igual, desde el centro */ }
       location.href = to.href;
     });
