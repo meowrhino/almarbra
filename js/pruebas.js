@@ -15,7 +15,7 @@
   const KEY = 'almarbra-pruebas';
   const OPTIONS = {
     hilos: ['escalera', 'fina', 'diagonal', 'liso'],
-    transicion: ['circulo', 'barrido', 'puntos', 'pixeles', 'lineas'],
+    transicion: ['circulo', 'barrido', 'pixeles', 'lineas'],
   };
   const DEFAULTS = { hilos: 'escalera', transicion: 'circulo' };
 

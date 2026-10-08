@@ -20,10 +20,10 @@ pantallas:
 
   **Siempre que se cambia de página o de vista**, una ola de píxeles de
   colores sale de donde se ha hecho clic y se abre en círculo, dejando
-  blanco detrás; se cambia, y en la página nueva otra ola sale del mismo
-  punto y la destapa (`js/transicion.js`). Hacia atrás —de un proyecto a la
-  portada, o hacia la izquierda del menú— es al revés: se cierra desde los
-  bordes hacia el punto. Al entrar o salir de un proyecto, de su color.
+  blanco detrás; se cambia, y en la página nueva ese blanco se cierra de
+  vuelta hacia el punto y deja ver la página (`js/transicion.js`). Hacia
+  atrás —de un proyecto a la portada, o hacia la izquierda del menú— es al
+  revés: el blanco entra desde los bordes hasta el punto y luego se abre. Al entrar o salir de un proyecto, de su color.
   También con atrás y adelante del navegador, desde el centro.
 
   En la portada, el nombre abre el **about** (`#about`): la foto de la
@@ -43,8 +43,8 @@ pantallas:
   × lo cierra) con la forma de los hilos —escalera, fina, diagonal o liso, en
   `js/hilos.js`, la misma para toda la web— y la transición —círculo,
   barrido (en diagonal: baja al entrar, sube al salir, de lado entre
-  vistas), puntos (punto de cruz desde el clic), píxeles o líneas—. Para
-  probar una sin panel, `?transicion=puntos`. Todo lo marcado `PRUEBAS` en
+  vistas), píxeles (despacio) o líneas—. Para probar una sin panel,
+  `?transicion=pixeles`. Todo lo marcado `PRUEBAS` en
   el código, y `js/pruebas.js`, se va cuando se decida.
 
   El hover «pespunte» y la columna de 640 están en el commit «Panel de
@@ -305,7 +305,8 @@ van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 La transición vive en `js/transicion.js`: un lienzo a toda la pantalla,
 `FRAMES` fotogramas para tapar y otros tantos para destapar. Casi todas son una
 rejilla de casillas, cada una con su turno (la distancia al clic, en el
-círculo): se tapa cuando le llega y se destapa en el mismo orden; las olas
+círculo): se tapa cuando le llega y se destapa en el mismo orden, o en el
+contrario en el círculo, para que el blanco se cierre; las olas
 llevan `BAND` casillas de color delante. Los enlaces a otra página de la web
 se interceptan: se tapa, se apunta en `sessionStorage` el sentido, los
 colores y el punto, y se va; la página nueva nace tapada (un `<script>` en el

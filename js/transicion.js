@@ -3,9 +3,10 @@
 
    La de por defecto, «círculo»: una ola de píxeles de colores sale de
    donde se ha hecho clic y se abre en círculo; detrás deja blanco. En la
-   página nueva otra ola sale del mismo punto y la destapa. Al volver (de
-   un proyecto a la portada, o hacia la izquierda en el menú) es al revés:
-   la ola se cierra desde los bordes hacia el punto.
+   página nueva ese blanco se vuelve a cerrar hacia el mismo punto, y
+   detrás de la ola ya se ve la página. Al volver (de un proyecto a la
+   portada, o hacia la izquierda en el menú) es al revés: el blanco entra
+   desde los bordes hasta el punto, y luego se abre desde él hacia fuera.
 
    El sentido dice adónde se va:
 
@@ -20,14 +21,13 @@
    sessionStorage, y el <head> la tapa antes de pintar (build/build.mjs).
    Con atrás y adelante del navegador, también, desde el centro.
 
-   PRUEBAS: cinco maneras, la de data-transicion en <html> (el panel de
+   PRUEBAS: cuatro maneras, la de data-transicion en <html> (el panel de
    js/pruebas.js):
 
-     circulo   la ola en círculo desde el clic (la de por defecto)
+     circulo   el círculo desde el clic (la de por defecto)
      barrido   la ola en diagonal: baja al entrar en un proyecto, sube al
-               salir, y de lado entre las vistas
-     puntos    punto de cruz: se borda de equis desde el clic
-     pixeles   se deshace en cuadrados, alguno de color
+               salir, y de lado entre las vistas; destapa siguiendo
+     pixeles   se deshace en cuadrados, alguno de color, despacio
      lineas    líneas que salen de los bordes y van torciendo
 
    La usa js/mapa.js para mapa, lista y about (window.transicion). */
@@ -75,7 +75,10 @@
 
      Casi todas son una rejilla de casillas, cada una con su turno
      (`key`): la casilla se tapa cuando le llega el turno y se destapa en
-     el mismo orden. Las olas llevan delante BAND casillas de color. */
+     el mismo orden, o en el contrario si la manera lleva `back` (el
+     círculo: lo último en taparse es lo primero en verse, y el blanco se
+     cierra). Las olas llevan delante BAND casillas de color. `frames`, si
+     la manera va a otro ritmo. */
 
   function grid(C, W, H, key) {
     const cells = [];
@@ -98,7 +101,7 @@
       const dist = ring(o, C, 1);
       const cells = grid(C, W, H, (x, y) => (dir.sign > 0 ? dist(x, y) : far - dist(x, y)));
       for (const c of cells) c.tint = pick(colors);
-      return { C, cells, band: BAND };
+      return { C, cells, band: BAND, back: true };
     },
     barrido({ colors, dir, W, H }) {
       const C = 12;
@@ -113,44 +116,28 @@
       for (const c of cells) c.tint = pick(colors);
       return { C, cells, band: BAND };
     },
-    puntos({ colors, o, W, H }) {
-      const C = 14;
-      const dist = ring(o, C, 0);
-      const cells = grid(C, W, H, (x, y) => dist(x, y) + Math.random() * 18);
-      for (const c of cells) c.cross = pick(colors);
-      return { C, cells, band: 0 };
-    },
     pixeles({ colors, W, H }) {
       const C = 24;
       const cells = grid(C, W, H, () => Math.random());
-      for (const c of cells) if (Math.random() < 0.12) c.fill = pick(colors);
-      return { C, cells, band: 0 };
+      for (const c of cells) if (Math.random() < 0.08) c.fill = pick(colors);
+      return { C, cells, band: 0, frames: 70 };
     },
   };
 
   /* Un fotograma de una rejilla: cada casilla, tapada (blanco, o su color
-     si lo tiene, con su equis si la lleva), en la ola (color) o abierta. */
-  function paint({ C, cells, band }, front, cover, white) {
+     si lo tiene), en la ola (color) o abierta. `top` es el último turno:
+     para destapar al revés, el turno se le resta. */
+  function paint({ C, cells, band, back }, front, cover, top, white) {
     const fills = new Map();
-    const crosses = new Map();
-    const add = (map, color) => map.get(color) || map.set(color, new Path2D()).get(color);
+    const add = (color) => fills.get(color) || fills.set(color, new Path2D()).get(color);
     for (const c of cells) {
-      const k = c.key;
+      const k = !cover && back ? top - c.key : c.key;
       const covered = cover ? k < front - band : k >= front;
       const inBand = band && k >= front - band && k < front;
-      if (inBand) add(fills, c.tint).rect(c.x, c.y, C, C);
-      else if (covered) {
-        add(fills, c.fill || white).rect(c.x, c.y, C, C);
-        if (c.cross) {
-          const p = add(crosses, c.cross);
-          p.moveTo(c.x + 3, c.y + 3); p.lineTo(c.x + C - 3, c.y + C - 3);
-          p.moveTo(c.x + C - 3, c.y + 3); p.lineTo(c.x + 3, c.y + C - 3);
-        }
-      }
+      if (inBand) add(c.tint).rect(c.x, c.y, C, C);
+      else if (covered) add(c.fill || white).rect(c.x, c.y, C, C);
     }
     for (const [color, p] of fills) { ctx.fillStyle = color; ctx.fill(p); }
-    ctx.lineWidth = 2;
-    for (const [color, p] of crosses) { ctx.strokeStyle = color; ctx.stroke(p); }
   }
 
   /* Las líneas no son rejilla: caminos que crecen, con la forma de los
@@ -212,14 +199,17 @@
       return new Promise((done) => setTimeout(() => { ctx.clearRect(0, 0, W, H); done(); }, 400));
     }
 
+    let frames = FRAMES;
     const frame = name === 'lineas'
       ? lineas({ colors, W, H })
       : (() => {
         const g = STYLES[name]({ colors, dir, o, W, H });
-        const top = Math.max(...g.cells.map((c) => c.key)) + g.band + 1;
+        frames = g.frames || FRAMES;
+        const top = Math.max(...g.cells.map((c) => c.key));
+        const end = top + g.band + 1;
         return (f) => {
           ctx.clearRect(0, 0, W, H);
-          paint(g, (f / FRAMES) * top, cover, white);
+          paint(g, (f / frames) * end, cover, top, white);
         };
       })();
 
@@ -228,7 +218,7 @@
       const step = () => {
         f += 1;
         frame(f);
-        if (f < FRAMES) requestAnimationFrame(step);
+        if (f < frames) requestAnimationFrame(step);
         else {
           if (!cover) { ctx.clearRect(0, 0, W, H); veil.style.opacity = 0; }
           done();
