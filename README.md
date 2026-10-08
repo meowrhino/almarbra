@@ -68,7 +68,15 @@ npm run ingest    # originals/ -> media/*.webp + content/projects/*.json
 npm run build     # content/ + media/ -> dist/
 npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
+npm run watch     # rehace dist/ cada vez que se guarda algo
 ```
+
+**Con Live Server de VS Code**: la web no está en la raíz, la escribe el
+build en `dist/`. `.vscode/settings.json` le dice a Live Server que sirva
+`dist/`, y `.vscode/tasks.json` arranca `npm run watch` al abrir la carpeta
+(la primera vez VS Code pregunta si se permiten tareas automáticas: sí). Así,
+al guardar se rehace `dist/` y Live Server recarga solo. Si no se permite la
+tarea, `npm run watch` en una terminal hace lo mismo.
 
 ## Estructura
 
@@ -91,6 +99,7 @@ build/formats.mjs       tamaño y calidad de los WebP, en un solo sitio
 build/slug.mjs          slugs y nombres legibles
 build/build.mjs         content/ + media/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/ (y de pruebas/)
+build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
 css/style.css           todo el estilo
 js/mapa.js              el mapa y la transición de líneas

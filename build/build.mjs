@@ -513,8 +513,10 @@ if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que 
 
 /* ── escribir ────────────────────────────────────────────────────── */
 
-rmSync(OUT, { recursive: true, force: true });
+/* Se vacía dist/ pero no se borra la carpeta: Live Server la está
+   sirviendo (build/watch.mjs) y si desaparece deja de mirarla. */
 mkdirSync(OUT, { recursive: true });
+for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true });
 for (const d of ['css', 'js', 'media']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
 cpSync(join(ROOT, '_headers'), join(OUT, '_headers'));
 
