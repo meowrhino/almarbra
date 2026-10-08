@@ -14,10 +14,12 @@ pantallas:
   fotos de todos los proyectos, más o menos por zonas (la `mezcla`), en un plano que se arrastra, con zoom
   (+ y −), y las de un mismo proyecto unidas por un hilo fino de su color, que
   serpentea y se dibuja al cargar. Al pasar por una foto se enciende su
-  proyecto. La lista: una franja por proyecto con la portada a un lado —una a la
+  proyecto y sus hilos se descosen y se vuelven a coser por otro camino. La lista: una franja por proyecto con la portada a un lado —una a la
   izquierda, la siguiente a la derecha— y un hilo de su color que sale de la
   foto y acaba en el título, al otro lado. Entre mapa y lista la pantalla se
-  llena de líneas que se dibujan solas; al entrar en un proyecto, de su color.
+  tapa con una transición —punto de cruz, píxeles, barrido o líneas, la que
+  diga `content/mapa.json`; para probar, `?transicion=pixeles` en la
+  dirección—; al entrar en un proyecto, de su color.
 
   En la portada, el nombre abre el **about** (`#about`): la foto de la
   portada y el texto de `content/about.json`.
@@ -28,7 +30,8 @@ pantallas:
   interfaz y las categorías, en `content/textos.json`.
 
   Los hilos van a escalones de 3 px: siguen la curva, pero se ve que están
-  hechos de píxeles.
+  hechos de píxeles. Solo cambian de casilla cuando la curva se ha ido tres
+  cuartos de una, para que no vayan y vuelvan entre dos (eso los dentaba).
 
   Las otras opciones que se probaron (fondo negro; lista en índice, hilo o
   muestrario; transición de telar u ovillo; fondo de proyecto con tinte o
@@ -51,7 +54,7 @@ publicado.
 |---|---|
 | `about.json` | el texto del about, en es / en / ca (vacío = sale el español) |
 | `textos.json` | las palabras del menú y el nombre de cada categoría, por idioma |
-| `mapa.json` | `mezcla`, de 0 (por zonas) a 100 (todo revuelto); ahora 50 |
+| `mapa.json` | `mezcla`, de 0 (por zonas) a 100 (todo revuelto); ahora 50. `transicion`: puntos, pixeles, barrido o lineas |
 | `proyectos.json` | por proyecto: `title`, `synopsis`, `short`, `cover`, `color`, `drop` |
 | `web.json` | título, dirección, idiomas, orden de categorías, colores |
 
@@ -270,10 +273,12 @@ cargar, cada uno con su retraso. La misma receta está en `build/build.mjs` para
 el hilo de la lista. Los mandos, arriba de `js/mapa.js`: `DENSITY` (lo juntas que
 van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
-La transición entre mapa y lista: 60 líneas salen de los bordes y van torciendo
-al azar, a escalones como los hilos, mientras el fondo se pone blanco; se
-cambia de vista y todo se funde (`LINES`, `FRAMES`). Entre mapa, lista y
-about.
+La transición entre mapa, lista y about, y al entrar en un proyecto: un lienzo
+tapa la pantalla en `FRAMES` fotogramas, se cambia y se funde. Cuatro maneras,
+en `js/mapa.js`: `puntos` (la pantalla se borda de equis del centro afuera),
+`pixeles` (se deshace en cuadrados, alguno de color), `barrido` (una ola de
+píxeles de colores baja en diagonal) y `lineas` (salen de los bordes y van
+torciendo).
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS

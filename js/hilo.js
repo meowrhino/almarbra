@@ -1,20 +1,17 @@
 /* El hilo de la página de un proyecto, de su color.
 
-   Empieza debajo de la ficha y baja hasta el final ondulando de lado a
-   lado, por encima de las fotos, con dos ondas —una larga y otra más corta— para que no se
+   Baja por toda la página ondulando de lado a lado, por encima de las
+   fotos, con dos ondas —una larga y otra más corta— para que no se
    repita. Va a escalones de STEP px, como los hilos del mapa, y se dibuja
    según se baja. */
 
 (() => {
   const root = document.documentElement;
-  const ficha = document.querySelector('.project .ficha');
-  if (!ficha) return;
+  if (!document.querySelector('.project article')) return;
 
   const STEP = 3;   // la casilla de la rejilla, en px
-  const snap = (v) => Math.round(v / STEP) * STEP;
   let svg = null;
   let marks = [];   // [y, largo del hilo hasta ahí], para dibujarlo según se baja
-  let start = 0;    // la y donde empieza: el pie de la ficha
 
   function draw() {
     svg?.remove();
@@ -24,14 +21,20 @@
     const p2 = Math.random() * 6;
 
     /* A pasos de una casilla en vertical: en cada uno, el hilo va a su x
-       en horizontal y baja una. */
+       en horizontal y baja una. Solo cambia de x cuando la curva ya se ha
+       ido tres cuartos de casilla, para que no vaya y vuelva entre dos
+       (como en js/mapa.js). */
     let d = '';
     let last = null;
     let len = 0;
     marks = [];
-    start = snap(ficha.getBoundingClientRect().bottom + scrollY);
-    for (let y = start; y <= H; y += STEP) {
-      const x = snap(W / 2 + (W / 2 - 24) * Math.sin(y / 500 + p1) * (0.75 + 0.25 * Math.sin(y / 230 + p2)));
+    let cell = null;
+    for (let y = 0; y <= H; y += STEP) {
+      const want = (W / 2 + (W / 2 - 24) * Math.sin(y / 500 + p1) * (0.75 + 0.25 * Math.sin(y / 230 + p2))) / STEP;
+      if (cell === null) cell = Math.round(want);
+      while (want - cell > 0.75) cell += 1;
+      while (cell - want > 0.75) cell -= 1;
+      const x = cell * STEP;
       d += last === null ? `M${x} ${y}` : `${x !== last ? `H${x}` : ''}V${y}`;
       len += last === null ? 0 : Math.abs(x - last) + STEP;
       marks.push([y, len]);
@@ -51,7 +54,7 @@
   /* El hilo llega hasta el fondo de la pantalla. */
   function reveal() {
     if (!svg) return;
-    const i = Math.max(0, Math.min(marks.length - 1, Math.floor((scrollY + innerHeight - start) / STEP)));
+    const i = Math.max(0, Math.min(marks.length - 1, Math.floor((scrollY + innerHeight) / STEP)));
     svg.firstChild.style.strokeDashoffset = marks[marks.length - 1][1] + 1 - marks[i][1];
   }
 

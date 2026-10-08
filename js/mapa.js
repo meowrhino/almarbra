@@ -36,11 +36,7 @@
   /* Un hilo de a a b: la recta, desviada por dos ondas —una larga, que
      lo curva entero, y otra corta, que lo hace temblar— que se apagan en
      los extremos para que salga y llegue justo al centro de cada foto.
-     Y a escalones, como en una pantalla de pocos píxeles: la curva se
-     recorre a pasos de STEP px, cada punto se pega a una rejilla de STEP
-     y de uno a otro se va en horizontal y luego en vertical. Como cada
-     paso es de una casilla, el escalón es fino y sigue la curva (igual
-     que build/build.mjs). */
+     Se recorre a pasos de STEP px y se pasa a escalones (`stairs`). */
   const STEP = 3;
   const snap = (v) => Math.round(v / STEP) * STEP;
 
@@ -55,17 +51,42 @@
     const wobble = Math.min(14, len * 0.04);
     const phase = Math.random() * Math.PI * 2;
     const n = Math.max(8, Math.ceil(len / STEP));
-    let d = '';
-    let last = null;
-    for (let k = 0; k <= n; k++) {
+    return stairs(Array.from({ length: n + 1 }, (_, k) => {
       const t = k / n;
-      const ends = Math.sin(Math.PI * t);
-      const off = ends * (amp * Math.sin(Math.PI * waves * t + phase / 4) + wobble * Math.sin((t * len) / 35 + phase));
-      const x = snap(a.x + dx * t + nx * off);
-      const y = snap(a.y + dy * t + ny * off);
-      if (!last) d = `M${x} ${y}`;
-      else d += `${x !== last.x ? `H${x}` : ''}${y !== last.y ? `V${y}` : ''}`;
-      last = { x, y };
+      const off = Math.sin(Math.PI * t) * (amp * Math.sin(Math.PI * waves * t + phase / 4) + wobble * Math.sin((t * len) / 35 + phase));
+      return { x: a.x + dx * t + nx * off, y: a.y + dy * t + ny * off };
+    }), STEP);
+  }
+
+  /* Una curva a escalones, como en una pantalla de pocos píxeles: va de
+     casilla en casilla de una rejilla de `g`, en horizontal y luego en
+     vertical. Para que no salga dentada, solo cambia de casilla cuando
+     la curva ya se ha ido tres cuartos de casilla: así no va y vuelve
+     entre dos cuando pasa justo por el borde. (Igual en build/build.mjs
+     y js/hilo.js.) */
+  function stairs(points, g) {
+    let d = '';
+    let cx = null;
+    let cy = null;
+    for (const p of points) {
+      const px = p.x / g;
+      const py = p.y / g;
+      if (cx === null) {
+        cx = Math.round(px);
+        cy = Math.round(py);
+        d = `M${cx * g} ${cy * g}`;
+        continue;
+      }
+      let nx = cx;
+      let ny = cy;
+      while (px - nx > 0.75) nx += 1;
+      while (nx - px > 0.75) nx -= 1;
+      while (py - ny > 0.75) ny += 1;
+      while (ny - py > 0.75) ny -= 1;
+      if (nx !== cx) d += `H${nx * g}`;
+      if (ny !== cy) d += `V${ny * g}`;
+      cx = nx;
+      cy = ny;
     }
     return d;
   }
@@ -146,6 +167,7 @@
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', thread(from, to));
       path.setAttribute('pathLength', '1');
+      path.ends = [from, to];
       path.setAttribute('stroke', colorOf(pins.find((pin) => pin.dataset.p === s.p)));
       path.dataset.p = s.p;
       path.style.animationDelay = `${(Math.random() * 0.8).toFixed(2)}s`;
@@ -155,13 +177,22 @@
     setZoom(1);
   }
 
-  /* Al pasar por una foto se enciende su proyecto y el resto se apaga. */
+  /* Al pasar por una foto se enciende su proyecto y el resto se apaga.
+     Y sus hilos se descosen y se vuelven a coser por otro camino: cada
+     vez que se pasa, salen con otra forma y se dibujan de nuevo. */
   let lit = null;
   function light(p) {
     if (p === lit) return;
     lit = p;
     map.classList.toggle('dim', p !== null);
-    for (const el of world.querySelectorAll('[data-p]')) el.classList.toggle('on', el.dataset.p === p);
+    for (const el of world.querySelectorAll('[data-p]')) {
+      el.classList.toggle('on', el.dataset.p === p);
+      if (el.dataset.p !== p || !el.ends || still) continue;
+      el.setAttribute('d', thread(...el.ends));
+      el.style.animation = 'none';
+      el.getBBox();   // para que la animación vuelva a empezar
+      el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
+    }
   }
   world.addEventListener('pointerover', (e) => light(e.target.closest('.pin')?.dataset.p ?? null));
   world.addEventListener('pointerleave', () => light(null));
@@ -224,30 +255,109 @@
     if (z !== zoom) setZoom(z);
   });
 
-  /* ── la transición: líneas que se dibujan solas ────────────────
+  /* ── la transición ─────────────────────────────────────────────
 
      Un lienzo a toda la pantalla tapa, se cambia de vista y se destapa.
-     Mientras tapa, el fondo se va poniendo del color de la página y
-     encima, cada línea sale de un borde hacia dentro y va torciendo al
-     azar, a escalones de STEP px como los hilos. */
+     Hay cuatro; cuál, lo dice «transicion» en content/mapa.json, y para
+     probar, ?transicion=… en la dirección. Al entrar en un proyecto, del
+     color de ese proyecto.
+
+       puntos   punto de cruz: la pantalla se borda de equis, del centro
+                hacia fuera
+       pixeles  se deshace en cuadrados, alguno de color
+       barrido  una ola de píxeles de colores baja en diagonal y deja la
+                página en blanco
+       lineas   líneas que salen de los bordes y van torciendo */
 
   const FRAMES = 30;   // fotogramas en tapar
-  const LINES = 60;    // cuántas líneas a la vez
 
   const veil = document.createElement('canvas');
   veil.className = 'veil';
   document.body.append(veil);
   const vctx = veil.getContext('2d');
+  const pick = (colors) => colors[Math.floor(Math.random() * colors.length)];
+  const bg = () => getComputedStyle(root).getPropertyValue('--bg');
+  const shuffle = (list) => list.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
 
-  function lines(colors, W, H) {
-    const walkers = Array.from({ length: LINES }, () => {
+  /* De una rejilla de C px, las casillas en el orden en que se tapan:
+     `order` da a cada una su turno (menor, antes). */
+  function cells(C, W, H, order) {
+    const list = [];
+    for (let y = 0; y < H; y += C) for (let x = 0; x < W; x += C) list.push({ x, y, t: order(x, y) });
+    return list.sort((a, b) => a.t - b.t);
+  }
+
+  /* Va sacando casillas de la lista, a partes iguales en cada fotograma. */
+  const share = (list, f, paint) => {
+    const from = Math.floor((list.length * (f - 1)) / FRAMES);
+    const to = Math.floor((list.length * f) / FRAMES);
+    for (let i = from; i < to; i++) paint(list[i]);
+  };
+
+  function puntos(colors, W, H) {
+    const C = 14;
+    const list = cells(C, W, H, (x, y) => Math.hypot(x - W / 2, y - H / 2) + Math.random() * 260);
+    const white = bg();
+    return (f) => share(list, f, ({ x, y }) => {
+      vctx.fillStyle = white;
+      vctx.fillRect(x, y, C, C);
+      vctx.strokeStyle = pick(colors);
+      vctx.beginPath();
+      vctx.moveTo(x + 3, y + 3); vctx.lineTo(x + C - 3, y + C - 3);
+      vctx.moveTo(x + C - 3, y + 3); vctx.lineTo(x + 3, y + C - 3);
+      vctx.stroke();
+    });
+  }
+
+  function pixeles(colors, W, H) {
+    const C = 24;
+    const list = shuffle(cells(C, W, H, () => 0));
+    const white = bg();
+    return (f) => share(list, f, ({ x, y }) => {
+      vctx.fillStyle = Math.random() < 0.12 ? pick(colors) : white;
+      vctx.fillRect(x, y, C, C);
+    });
+  }
+
+  function barrido(colors, W, H) {
+    const C = 12;
+    const BAND = 5;   // casillas de color en la ola
+    const cols = Array.from({ length: Math.ceil(W / C) }, (_, i) => ({
+      x: i * C,
+      lag: i * 0.5 + Math.random() * 3,
+      tint: Array.from({ length: BAND }, () => pick(colors)),
+    }));
+    const rows = Math.ceil(H / C);
+    const span = rows + BAND + cols.length * 0.5 + 3;
+    const white = bg();
+    return (f) => {
+      for (const col of cols) {
+        const front = Math.floor((f / FRAMES) * span - col.lag);
+        for (let k = 0; k < BAND; k++) {
+          const row = front - k;
+          if (row < 0 || row >= rows) continue;
+          vctx.fillStyle = col.tint[k];
+          vctx.fillRect(col.x, row * C, C, C);
+        }
+        const done = front - BAND;
+        if (done >= 0) {
+          vctx.fillStyle = white;
+          vctx.fillRect(col.x, 0, C, Math.min(rows, done + 1) * C);
+        }
+      }
+    };
+  }
+
+  function lineas(colors, W, H) {
+    const walkers = Array.from({ length: 60 }, () => {
       const side = Math.floor(Math.random() * 4);
       const x = side === 1 ? W : side === 3 ? 0 : Math.random() * W;
       const y = side === 2 ? H : side === 0 ? 0 : Math.random() * H;
       const angle = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - 0.5) * 1.6;
-      return { x: snap(x), y: snap(y), angle, turn: (Math.random() - 0.5) * 0.08, color: colors[Math.floor(Math.random() * colors.length)] };
+      return { x: snap(x), y: snap(y), angle, turn: (Math.random() - 0.5) * 0.08, color: pick(colors) };
     });
-    return () => {
+    return (f) => {
+      veil.style.backgroundColor = `color-mix(in srgb, var(--bg) ${Math.round((f / FRAMES) * 100)}%, transparent)`;
       for (const w of walkers) {
         vctx.strokeStyle = w.color;
         vctx.beginPath();
@@ -267,6 +377,9 @@
     };
   }
 
+  const STYLES = { puntos, pixeles, barrido, lineas };
+  const style = STYLES[new URLSearchParams(location.search).get('transicion')] || STYLES[map.dataset.transicion] || puntos;
+
   function cover(colors) {
     const dpr = devicePixelRatio || 1;
     veil.width = innerWidth * dpr;
@@ -277,13 +390,12 @@
     vctx.lineJoin = 'miter';
     veil.style.transition = 'none';
     veil.style.opacity = 1;
-    const draw = lines(colors, innerWidth, innerHeight);
+    const draw = style(colors, innerWidth, innerHeight);
 
     return new Promise((done) => {
       let frame = 0;
       const step = () => {
         frame += 1;
-        veil.style.backgroundColor = `color-mix(in srgb, var(--bg) ${Math.round((frame / FRAMES) * 100)}%, transparent)`;
         draw(frame);
         if (frame < FRAMES) requestAnimationFrame(step);
         else done();
@@ -326,7 +438,7 @@
     await uncover();
   });
 
-  /* Entrar en un proyecto: líneas de su color y luego se va. Al volver
+  /* Entrar en un proyecto: la transición, de su color, y luego se va. Al volver
      con atrás, la página sale de la caché tal cual, tapada: se destapa. */
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href^="projects/"]');

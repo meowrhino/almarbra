@@ -209,27 +209,43 @@ function wander(a, b) {
 }
 
 /* El hilo a escalones, como en una pantalla de pocos píxeles: la curva
-   se recorre a pasos de `g` como mucho, cada punto se pega a una
-   rejilla de `g` y de uno a otro se va en horizontal y luego en
-   vertical. Como los pasos son de una casilla, el escalón es fino y
-   sigue la curva. Igual que en js/mapa.js. */
+   se recorre a pasos de `g` como mucho y va de casilla en casilla de una
+   rejilla de `g`, en horizontal y luego en vertical. Para que no salga
+   dentada, solo cambia de casilla cuando la curva ya se ha ido tres
+   cuartos de casilla: así no va y vuelve entre dos cuando pasa justo por
+   el borde. Igual que en js/mapa.js. */
 const STEP = 3;
 
 function stairs(points, g = STEP) {
-  let d = '';
-  let last = null;
-  const put = (px, py) => {
-    const x = Math.round(px / g) * g;
-    const y = Math.round(py / g) * g;
-    if (!last) d = `M${x} ${y}`;
-    else d += `${x !== last.x ? `H${x}` : ''}${y !== last.y ? `V${y}` : ''}`;
-    last = { x, y };
-  };
-  points.forEach((p, i) => {
+  const dense = points.flatMap((p, i) => {
     const q = points[i - 1];
-    const n = q ? Math.ceil(Math.hypot(p.x - q.x, p.y - q.y) / g) : 1;
-    for (let k = 1; k <= n; k++) put(q ? q.x + ((p.x - q.x) * k) / n : p.x, q ? q.y + ((p.y - q.y) * k) / n : p.y);
+    if (!q) return [p];
+    const n = Math.ceil(Math.hypot(p.x - q.x, p.y - q.y) / g);
+    return Array.from({ length: n }, (_, k) => ({ x: q.x + ((p.x - q.x) * (k + 1)) / n, y: q.y + ((p.y - q.y) * (k + 1)) / n }));
   });
+  let d = '';
+  let cx = null;
+  let cy = null;
+  for (const p of dense) {
+    const px = p.x / g;
+    const py = p.y / g;
+    if (cx === null) {
+      cx = Math.round(px);
+      cy = Math.round(py);
+      d = `M${cx * g} ${cy * g}`;
+      continue;
+    }
+    let nx = cx;
+    let ny = cy;
+    while (px - nx > 0.75) nx += 1;
+    while (nx - px > 0.75) nx -= 1;
+    while (py - ny > 0.75) ny += 1;
+    while (ny - py > 0.75) ny -= 1;
+    if (nx !== cx) d += `H${nx * g}`;
+    if (ny !== cy) d += `V${ny * g}`;
+    cx = nx;
+    cy = ny;
+  }
   return d;
 }
 
@@ -308,7 +324,7 @@ function homePage(projects) {
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
 ${topBar('', true)}
 
-<section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}">
+<section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}" data-transicion="${attr(mapa.transicion || 'puntos')}">
 <div class="world">
 ${pins.join('\n')}
 </div>

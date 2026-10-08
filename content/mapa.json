@@ -1,4 +1,5 @@
 {
-  "_": "El mapa de la portada. «mezcla», de 0 a 100: con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto; en medio, cada foto se aleja de su zona tanto como diga.",
-  "mezcla": 50
+  "_": "El mapa de la portada. «mezcla», de 0 a 100: con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto; en medio, cada foto se aleja de su zona tanto como diga. «transicion», lo que tapa la pantalla al pasar de mapa a lista o al entrar en un proyecto: puntos (punto de cruz), pixeles, barrido o lineas.",
+  "mezcla": 50,
+  "transicion": "puntos"
 }
