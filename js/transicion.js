@@ -1,21 +1,34 @@
-/* La transición: siempre que se cambia de página o de vista, una ola de
-   píxeles de colores barre la pantalla y la deja en blanco; se cambia, y
-   otra ola sigue en el mismo sentido y destapa lo nuevo. Como si la tela
-   pasara por delante.
+/* La transición: siempre que se cambia de página o de vista, la pantalla
+   se tapa de blanco, se cambia y se destapa en la página nueva.
 
-   El sentido dice hacia dónde se va:
+   La de por defecto, «círculo»: una ola de píxeles de colores sale de
+   donde se ha hecho clic y se abre en círculo; detrás deja blanco. En la
+   página nueva otra ola sale del mismo punto y la destapa. Al volver (de
+   un proyecto a la portada, o hacia la izquierda en el menú) es al revés:
+   la ola se cierra desde los bordes hacia el punto.
 
-     entrar en un proyecto     baja (de arriba abajo)
-     volver de un proyecto     sube (al revés)
-     about · mapa · lista      de lado, en el orden del menú: hacia la
-                               derecha si vas a la de la derecha, y al
-                               revés
+   El sentido dice adónde se va:
+
+     entrar en un proyecto     hacia delante
+     volver de un proyecto     hacia atrás
+     about · mapa · lista      hacia delante si vas a la de la derecha
+                               del menú, hacia atrás si a la izquierda
 
    Los colores: los del proyecto si se entra o se sale de uno; si no, los
    de todos. Al cambiar de página, lo que falta (destapar) lo hace la
-   página nueva: el sentido y los colores pasan por sessionStorage, y el
-   <head> la tapa antes de pintar (build/build.mjs). Con atrás y adelante
-   del navegador, también, al revés.
+   página nueva: el sentido, los colores y el punto pasan por
+   sessionStorage, y el <head> la tapa antes de pintar (build/build.mjs).
+   Con atrás y adelante del navegador, también, desde el centro.
+
+   PRUEBAS: cinco maneras, la de data-transicion en <html> (el panel de
+   js/pruebas.js):
+
+     circulo   la ola en círculo desde el clic (la de por defecto)
+     barrido   la ola en diagonal: baja al entrar en un proyecto, sube al
+               salir, y de lado entre las vistas
+     puntos    punto de cruz: se borda de equis desde el clic
+     pixeles   se deshace en cuadrados, alguno de color
+     lineas    líneas que salen de los bordes y van torciendo
 
    La usa js/mapa.js para mapa, lista y about (window.transicion). */
 
@@ -25,8 +38,7 @@
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const FRAMES = 28;   // fotogramas en tapar, y otros tantos en destapar
-  const C = 12;        // lado de cada píxel
-  const BAND = 5;      // píxeles de color en la ola
+  const BAND = 5;      // píxeles de color en el frente de la ola
 
   const veil = document.createElement('canvas');
   veil.className = 'veil';
@@ -36,6 +48,7 @@
   const colorOf = (el) => el.style.getPropertyValue('--c').trim();
   const allColors = () => [...new Set([...document.querySelectorAll('[style*="--c"]')].map(colorOf).filter(Boolean))];
   const pick = (colors) => colors[Math.floor(Math.random() * colors.length)];
+  const bg = () => getComputedStyle(root).getPropertyValue('--bg');
 
   /* Dónde está una dirección: los proyectos, al fondo; en la portada, por
      el hash, en el orden del menú. */
@@ -44,61 +57,178 @@
     ? 'proyecto'
     : { '#about': 'about', '#lista': 'lista' }[url.hash] || 'mapa');
 
-  /* De un sitio a otro: eje y sentido. */
+  /* De un sitio a otro: eje (para el barrido) y sentido. */
   function way(from, to) {
     if (from === 'proyecto' || to === 'proyecto') return { axis: 'y', sign: to === 'proyecto' ? 1 : -1 };
     return { axis: 'x', sign: ORDER[to] >= ORDER[from] ? 1 : -1 };
   }
 
-  /* La ola. `cover`: detrás de ella queda blanco. `!cover`: la pantalla
-     empieza en blanco y detrás de la ola queda lo de debajo. Las líneas
-     van de través al avance, cada una un poco más tarde que la anterior
-     —por eso va en diagonal— y con algo de azar. */
-  function play({ colors, axis, sign, cover }) {
+  /* El último sitio donde se ha tocado la pantalla: de ahí sale la ola.
+     Si hace rato, o no hay, del centro. */
+  let touch = null;
+  addEventListener('pointerdown', (e) => { touch = { x: e.clientX, y: e.clientY, t: Date.now() }; }, true);
+  const origin = () => (touch && Date.now() - touch.t < 1500
+    ? { x: touch.x, y: touch.y }
+    : { x: innerWidth / 2, y: innerHeight / 2 });
+
+  /* ── las maneras ───────────────────────────────────────────────────
+
+     Casi todas son una rejilla de casillas, cada una con su turno
+     (`key`): la casilla se tapa cuando le llega el turno y se destapa en
+     el mismo orden. Las olas llevan delante BAND casillas de color. */
+
+  function grid(C, W, H, key) {
+    const cells = [];
+    for (let y = 0; y < H; y += C) for (let x = 0; x < W; x += C) cells.push({ x, y, key: key(x + C / 2, y + C / 2) });
+    return cells;
+  }
+
+  /* Distancia al punto, en casillas, con un temblor para que el círculo
+     no salga de compás. */
+  const ring = (o, C, wobble) => {
+    const phase = Math.random() * 6;
+    return (x, y) => Math.hypot(x - o.x, y - o.y) / C
+      + wobble * (Math.sin(Math.atan2(y - o.y, x - o.x) * 5 + phase) + Math.random());
+  };
+
+  const STYLES = {
+    circulo({ colors, dir, o, W, H }) {
+      const C = 12;
+      const far = Math.max(...[[0, 0], [W, 0], [0, H], [W, H]].map(([x, y]) => Math.hypot(x - o.x, y - o.y))) / C + 3;
+      const dist = ring(o, C, 1);
+      const cells = grid(C, W, H, (x, y) => (dir.sign > 0 ? dist(x, y) : far - dist(x, y)));
+      for (const c of cells) c.tint = pick(colors);
+      return { C, cells, band: BAND };
+    },
+    barrido({ colors, dir, W, H }) {
+      const C = 12;
+      const along = Math.ceil((dir.axis === 'y' ? H : W) / C);
+      const across = Math.ceil((dir.axis === 'y' ? W : H) / C);
+      const lag = Array.from({ length: across }, (_, i) => (dir.sign > 0 ? i : across - 1 - i) * 0.4 + Math.random() * 3);
+      const cells = grid(C, W, H, (x, y) => {
+        const [a, b] = dir.axis === 'y' ? [y, x] : [x, y];
+        const step = Math.floor(a / C);
+        return (dir.sign > 0 ? step : along - 1 - step) + lag[Math.floor(b / C)];
+      });
+      for (const c of cells) c.tint = pick(colors);
+      return { C, cells, band: BAND };
+    },
+    puntos({ colors, o, W, H }) {
+      const C = 14;
+      const dist = ring(o, C, 0);
+      const cells = grid(C, W, H, (x, y) => dist(x, y) + Math.random() * 18);
+      for (const c of cells) c.cross = pick(colors);
+      return { C, cells, band: 0 };
+    },
+    pixeles({ colors, W, H }) {
+      const C = 24;
+      const cells = grid(C, W, H, () => Math.random());
+      for (const c of cells) if (Math.random() < 0.12) c.fill = pick(colors);
+      return { C, cells, band: 0 };
+    },
+  };
+
+  /* Un fotograma de una rejilla: cada casilla, tapada (blanco, o su color
+     si lo tiene, con su equis si la lleva), en la ola (color) o abierta. */
+  function paint({ C, cells, band }, front, cover, white) {
+    const fills = new Map();
+    const crosses = new Map();
+    const add = (map, color) => map.get(color) || map.set(color, new Path2D()).get(color);
+    for (const c of cells) {
+      const k = c.key;
+      const covered = cover ? k < front - band : k >= front;
+      const inBand = band && k >= front - band && k < front;
+      if (inBand) add(fills, c.tint).rect(c.x, c.y, C, C);
+      else if (covered) {
+        add(fills, c.fill || white).rect(c.x, c.y, C, C);
+        if (c.cross) {
+          const p = add(crosses, c.cross);
+          p.moveTo(c.x + 3, c.y + 3); p.lineTo(c.x + C - 3, c.y + C - 3);
+          p.moveTo(c.x + C - 3, c.y + 3); p.lineTo(c.x + 3, c.y + C - 3);
+        }
+      }
+    }
+    for (const [color, p] of fills) { ctx.fillStyle = color; ctx.fill(p); }
+    ctx.lineWidth = 2;
+    for (const [color, p] of crosses) { ctx.strokeStyle = color; ctx.stroke(p); }
+  }
+
+  /* Las líneas no son rejilla: caminos que crecen, con la forma de los
+     hilos (js/hilos.js), mientras el fondo se va poniendo blanco. Para
+     destapar, se funde. */
+  function lineas({ colors, W, H }) {
+    const walkers = Array.from({ length: 60 }, () => {
+      const side = Math.floor(Math.random() * 4);
+      const x = side === 1 ? W : side === 3 ? 0 : Math.random() * W;
+      const y = side === 2 ? H : side === 0 ? 0 : Math.random() * H;
+      const angle = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - 0.5) * 1.6;
+      return { pts: [{ x, y }], angle, turn: (Math.random() - 0.5) * 0.08, color: pick(colors) };
+    });
+    ctx.lineWidth = 2;
+    return (f) => {
+      ctx.clearRect(0, 0, W, H);
+      ctx.globalAlpha = f / FRAMES;
+      ctx.fillStyle = bg();
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalAlpha = 1;
+      for (const w of walkers) {
+        for (let k = 0; k < 6; k++) {
+          const at = w.pts[w.pts.length - 1];
+          w.turn += (Math.random() - 0.5) * 0.04;
+          w.angle += w.turn / 2;
+          w.pts.push({ x: at.x + Math.cos(w.angle) * 7, y: at.y + Math.sin(w.angle) * 7 });
+        }
+        ctx.strokeStyle = w.color;
+        ctx.stroke(new Path2D(window.hilos ? hilos.path(w.pts) : w.pts.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${p.y}`).join('')));
+      }
+    };
+  }
+
+  /* ── tapar y destapar ─────────────────────────────────────────── */
+
+  const styleName = () => {
+    const asked = new URLSearchParams(location.search).get('transicion') || root.dataset.transicion;
+    return asked in STYLES || asked === 'lineas' ? asked : 'circulo';
+  };
+
+  let last = null;   // el punto de la última tapa, para destapar desde él
+
+  function play({ colors, dir, o, cover }) {
     const dpr = devicePixelRatio || 1;
     const W = innerWidth;
     const H = innerHeight;
     veil.width = W * dpr;
     veil.height = H * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    veil.style.transition = 'none';
     veil.style.opacity = 1;
+    const name = styleName();
+    const white = bg();
 
-    const along = Math.ceil((axis === 'y' ? H : W) / C);   // píxeles en el sentido del avance
-    const across = Math.ceil((axis === 'y' ? W : H) / C);
-    const lines = Array.from({ length: across }, (_, i) => ({
-      lag: (sign > 0 ? i : across - 1 - i) * 0.4 + Math.random() * 3,
-      tint: Array.from({ length: BAND }, () => pick(colors)),
-    }));
-    const span = along + BAND + across * 0.4 + 3;
-    const bg = getComputedStyle(root).getPropertyValue('--bg');
+    /* Las líneas destapan fundiéndose. */
+    if (name === 'lineas' && !cover) {
+      veil.style.transition = 'opacity .4s';
+      veil.style.opacity = 0;
+      return new Promise((done) => setTimeout(() => { ctx.clearRect(0, 0, W, H); done(); }, 400));
+    }
 
-    /* Un tramo [a, b) de la línea i, en píxeles, ya del derecho. */
-    const rect = (i, a, b) => {
-      if (b <= a) return;
-      const p = sign > 0 ? a : along - b;
-      if (axis === 'y') ctx.fillRect(i * C, p * C, C, (b - a) * C);
-      else ctx.fillRect(p * C, i * C, (b - a) * C, C);
-    };
+    const frame = name === 'lineas'
+      ? lineas({ colors, W, H })
+      : (() => {
+        const g = STYLES[name]({ colors, dir, o, W, H });
+        const top = Math.max(...g.cells.map((c) => c.key)) + g.band + 1;
+        return (f) => {
+          ctx.clearRect(0, 0, W, H);
+          paint(g, (f / FRAMES) * top, cover, white);
+        };
+      })();
 
     return new Promise((done) => {
-      let frame = 0;
+      let f = 0;
       const step = () => {
-        frame += 1;
-        ctx.clearRect(0, 0, W, H);
-        lines.forEach((line, i) => {
-          const front = Math.floor((frame / FRAMES) * span - line.lag);
-          const tail = Math.max(0, Math.min(along, front - BAND));
-          ctx.fillStyle = bg;
-          if (cover) rect(i, 0, tail);
-          else rect(i, Math.max(0, Math.min(along, front)), along);
-          for (let k = 0; k < BAND; k++) {
-            const at = front - BAND + k;
-            if (at < 0 || at >= along) continue;
-            ctx.fillStyle = line.tint[k];
-            rect(i, at, at + 1);
-          }
-        });
-        if (frame < FRAMES) requestAnimationFrame(step);
+        f += 1;
+        frame(f);
+        if (f < FRAMES) requestAnimationFrame(step);
         else {
           if (!cover) { ctx.clearRect(0, 0, W, H); veil.style.opacity = 0; }
           done();
@@ -108,20 +238,28 @@
     });
   }
 
-  const cover = (colors, dir) => (still ? Promise.resolve() : play({ colors, ...dir, cover: true }));
-  const uncover = (colors, dir) => {
+  function cover(colors, dir, o = origin()) {
+    last = o;
+    return still ? Promise.resolve() : play({ colors, dir, o, cover: true });
+  }
+
+  function uncover(colors, dir, o = last || origin()) {
     root.classList.remove('tapada');
-    return still ? Promise.resolve() : play({ colors, ...dir, cover: false });
-  };
+    return still ? Promise.resolve() : play({ colors, dir, o, cover: false });
+  }
 
   /* Al llegar a una página tapada (el <head> pone .tapada): se destapa en
-     el sentido en que se venía; con atrás o adelante, hacia arriba. */
+     el sentido en que se venía y desde el mismo punto; con atrás o
+     adelante, hacia atrás y desde el centro. */
   function arrive() {
     let pending = null;
     try { pending = JSON.parse(sessionStorage.getItem(KEY)); sessionStorage.removeItem(KEY); } catch { /* nada */ }
     if (!root.classList.contains('tapada')) return;
     const colors = pending?.colors?.length ? pending.colors : allColors();
-    uncover(colors, pending?.dir || { axis: 'y', sign: -1 });
+    const o = pending?.at
+      ? { x: pending.at.x * innerWidth, y: pending.at.y * innerHeight }
+      : { x: innerWidth / 2, y: innerHeight / 2 };
+    uncover(colors, pending?.dir || { axis: 'y', sign: -1 }, o);
   }
 
   /* Los enlaces a otra página de la web: se tapa, se apunta lo que falta
@@ -135,24 +273,27 @@
     if (to.origin !== location.origin) return;
     if (to.pathname === location.pathname && to.search === location.search) return;
     e.preventDefault();
-    const here = place(new URL(location.href));
-    const there = place(to);
     const own = colorOf(a) || colorOf(document.body);
     const colors = own ? [own] : allColors();
-    const dir = way(here, there);
-    cover(colors, dir).then(() => {
-      try { sessionStorage.setItem(KEY, JSON.stringify({ colors, dir })); } catch { /* sin él, se destapa igual */ }
+    const dir = way(place(new URL(location.href)), place(to));
+    /* Con teclado no hay punto: del centro del enlace. */
+    const box = a.getBoundingClientRect();
+    const o = e.detail ? { x: e.clientX, y: e.clientY } : { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+    cover(colors, dir, o).then(() => {
+      try {
+        sessionStorage.setItem(KEY, JSON.stringify({ colors, dir, at: { x: o.x / innerWidth, y: o.y / innerHeight } }));
+      } catch { /* sin él, se destapa igual, desde el centro */ }
       location.href = to.href;
     });
   });
 
   /* Volver con atrás a una página que el navegador guardó tal cual: está
-     tapada, se destapa hacia arriba. */
+     tapada, se destapa hacia atrás. */
   addEventListener('pageshow', (e) => {
-    if (e.persisted) uncover(allColors(), { axis: 'y', sign: -1 });
+    if (e.persisted) uncover(allColors(), { axis: 'y', sign: -1 }, { x: innerWidth / 2, y: innerHeight / 2 });
   });
 
   arrive();
 
-  window.transicion = { cover, uncover, way, colors: allColors };
+  window.transicion = { cover, uncover, way };
 })();

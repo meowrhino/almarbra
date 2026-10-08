@@ -19,11 +19,12 @@ pantallas:
   foto y acaba en el título, al otro lado.
 
   **Siempre que se cambia de página o de vista**, una ola de píxeles de
-  colores barre la pantalla y la deja en blanco; se cambia, y otra ola sigue
-  en el mismo sentido y destapa lo nuevo (`js/transicion.js`). El sentido
-  dice adónde se va: al entrar en un proyecto baja, al volver sube; entre
-  about, mapa y lista va de lado, en el orden del menú. Al entrar o salir de
-  un proyecto, de su color. También con atrás y adelante del navegador.
+  colores sale de donde se ha hecho clic y se abre en círculo, dejando
+  blanco detrás; se cambia, y en la página nueva otra ola sale del mismo
+  punto y la destapa (`js/transicion.js`). Hacia atrás —de un proyecto a la
+  portada, o hacia la izquierda del menú— es al revés: se cierra desde los
+  bordes hacia el punto. Al entrar o salir de un proyecto, de su color.
+  También con atrás y adelante del navegador, desde el centro.
 
   En la portada, el nombre abre el **about** (`#about`): la foto de la
   portada y el texto de `content/about.json`.
@@ -39,12 +40,15 @@ pantallas:
 
   **Panel de pruebas**: `?pruebas` en la dirección abre abajo a la izquierda
   un panel con lo que aún se está decidiendo (se recuerda en el navegador; la
-  × lo cierra) con la forma de los hilos: escalera, fina, diagonal o liso, en
-  `js/hilos.js`, la misma para toda la web. Todo lo marcado `PRUEBAS` en el
-  código, y `js/pruebas.js`, se va cuando se decida.
+  × lo cierra) con la forma de los hilos —escalera, fina, diagonal o liso, en
+  `js/hilos.js`, la misma para toda la web— y la transición —círculo,
+  barrido (en diagonal: baja al entrar, sube al salir, de lado entre
+  vistas), puntos (punto de cruz desde el clic), píxeles o líneas—. Para
+  probar una sin panel, `?transicion=puntos`. Todo lo marcado `PRUEBAS` en
+  el código, y `js/pruebas.js`, se va cuando se decida.
 
-  Otras transiciones (punto de cruz, píxeles, líneas), el hover «pespunte» y
-  la columna de 640 están en el commit «Panel de pruebas otra vez…».
+  El hover «pespunte» y la columna de 640 están en el commit «Panel de
+  pruebas otra vez…».
 
   Las otras opciones que se probaron (fondo negro; lista en índice, hilo o
   muestrario; transición de telar u ovillo; fondo de proyecto con tinte o
@@ -116,7 +120,7 @@ build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
 css/style.css           todo el estilo
 js/mapa.js              el mapa, la lista y el about
-js/transicion.js        la ola de píxeles al cambiar de página o de vista
+js/transicion.js        la transición al cambiar de página o de vista
 js/hilos.js             la forma de todos los hilos de la web
 js/hilo.js              el hilo de fondo de la página de un proyecto
 js/pruebas.js           PRUEBAS: el panel de ?pruebas
@@ -298,11 +302,13 @@ cargar, cada uno con su retraso. La misma receta está en `build/build.mjs` para
 el hilo de la lista. Los mandos, arriba de `js/mapa.js`: `DENSITY` (lo juntas que
 van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
-La transición vive en `js/transicion.js`: un lienzo a toda la pantalla donde
-barre la ola, `FRAMES` fotogramas para tapar y otros tantos para destapar, en
-píxeles de `C` px con `BAND` de color en el frente. Los enlaces a otra página
-de la web se interceptan: se tapa, se apunta en `sessionStorage` el sentido y
-los colores, y se va; la página nueva nace tapada (un `<script>` en el
+La transición vive en `js/transicion.js`: un lienzo a toda la pantalla,
+`FRAMES` fotogramas para tapar y otros tantos para destapar. Casi todas son una
+rejilla de casillas, cada una con su turno (la distancia al clic, en el
+círculo): se tapa cuando le llega y se destapa en el mismo orden; las olas
+llevan `BAND` casillas de color delante. Los enlaces a otra página de la web
+se interceptan: se tapa, se apunta en `sessionStorage` el sentido, los
+colores y el punto, y se va; la página nueva nace tapada (un `<script>` en el
 `<head>` le pone `.tapada`) y se destapa en ese sentido. Si el script no
 llegara, el CSS la destapa sola a los 3 s. Mapa, lista y about son la misma
 página: ahí la llama `js/mapa.js` al cambiar el hash.

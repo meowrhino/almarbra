@@ -5,6 +5,8 @@
    se avisa con el evento `pruebas` a quien tenga que rehacer algo.
 
      hilos       la forma de todos los hilos (js/hilos.js)
+     transicion  cómo se tapa y se destapa al cambiar de página
+                 (js/transicion.js)
 
    Lo que no se toque, lo que haya por defecto. Cuando se decida, este archivo se va. */
 
@@ -13,8 +15,9 @@
   const KEY = 'almarbra-pruebas';
   const OPTIONS = {
     hilos: ['escalera', 'fina', 'diagonal', 'liso'],
+    transicion: ['circulo', 'barrido', 'puntos', 'pixeles', 'lineas'],
   };
-  const DEFAULTS = { hilos: 'escalera' };
+  const DEFAULTS = { hilos: 'escalera', transicion: 'circulo' };
 
   const store = (key, value) => {
     try {
