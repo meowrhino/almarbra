@@ -15,124 +15,124 @@
   "credits": {},
   "images": [
     {
-      "src": "img/textil/corporea/corporea-01.webp",
+      "src": "media/corporea/corporea-01.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/01.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-02.webp",
+      "src": "media/corporea/corporea-02.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/02.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-03.webp",
+      "src": "media/corporea/corporea-03.webp",
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/03.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-04.webp",
+      "src": "media/corporea/corporea-04.webp",
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/04.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-05.webp",
+      "src": "media/corporea/corporea-05.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/05.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-06.webp",
+      "src": "media/corporea/corporea-06.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/06.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-07.webp",
+      "src": "media/corporea/corporea-07.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/07.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-08.webp",
+      "src": "media/corporea/corporea-08.webp",
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/08.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-09.webp",
+      "src": "media/corporea/corporea-09.webp",
       "w": 2000,
       "h": 1333,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/09.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-10.webp",
+      "src": "media/corporea/corporea-10.webp",
       "w": 2000,
       "h": 1333,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/10.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-11.webp",
+      "src": "media/corporea/corporea-11.webp",
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/11.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-12.webp",
+      "src": "media/corporea/corporea-12.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/12.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-13.webp",
+      "src": "media/corporea/corporea-13.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/0013 - 2024.8.29 - Almudena González Martín - Kodak Gold 200-8.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-14.webp",
+      "src": "media/corporea/corporea-14.webp",
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/0013 - 2024.8.292 - Almudena González Martín - Kodak Gold 200-6.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-15.webp",
+      "src": "media/corporea/corporea-15.webp",
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/13.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-16.webp",
+      "src": "media/corporea/corporea-16.webp",
       "w": 2000,
       "h": 1508,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/14.jpg",
       "alt": ""
     },
     {
-      "src": "img/textil/corporea/corporea-17.webp",
+      "src": "media/corporea/corporea-17.webp",
       "w": 1350,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/15.jpg",
       "alt": ""
     }
   ],
-  "cover": "img/textil/corporea/corporea-04.webp"
+  "cover": "media/corporea/corporea-04.webp"
 }

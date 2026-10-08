@@ -1,10 +1,19 @@
-/* content/ -> .html
+/* content/ + media/ -> dist/
 
    Dos plantillas y ya:
 
-     index.html          portada: la foto con «entrar» y, debajo, los
-                         proyectos
-     <slug>/index.html   ficha técnica y galería en scroll vertical
+     dist/index.html                    portada: la foto con «entrar» y,
+                                        debajo, los proyectos
+     dist/projects/<slug>/index.html    ficha técnica y galería en scroll
+                                        vertical
+
+   Más lo que pide un sitio estático: 404.html, sitemap.xml, robots.txt,
+   .nojekyll y _headers, y una copia de css/, js/ y media/. dist/ no se
+   commitea: lo publica la Action (.github/workflows/deploy.yml).
+
+   Antes de escribir nada, valida: un JSON roto, una foto que no está o un
+   `cover` que no es de ninguna foto paran el build con un mensaje, y la
+   web publicada se queda como estaba.
 
    El sitio funciona entero sin JavaScript: «entrar» es un enlace a un
    ancla y el desplazamiento suave lo hace el navegador. El único script,
@@ -13,20 +22,35 @@
 
      node build/build.mjs      (npm run build)
 
-   Las páginas se generan; no se editan a mano. Lo que se edita es
-   content/. */
+   Lo que se edita es content/. */
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync,
+} from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { WIDTHS, variant } from './formats.mjs';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
+const OUT = join(ROOT, 'dist');
 
-const read = (file) => JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
+const fail = (msg) => { console.error(`\n✗ ${msg}\n`); process.exit(1); };
+
+/** Un JSON roto para el build diciendo cuál y dónde. */
+function read(file) {
+  const text = readFileSync(join(ROOT, file), 'utf8');
+  try { return JSON.parse(text); } catch (e) { fail(`${file} no es un JSON válido: ${e.message}`); }
+}
+
 const site = read('content/site.json');
+if (!site.url) fail('falta "url" en content/site.json: la dirección donde se publica la web');
+
+/* Las páginas se enlazan entre sí con rutas relativas; solo lo que se lee
+   desde fuera —canonical, og:image, sitemap— y la 404 necesitan la
+   dirección entera. */
+const abs = (path) => new URL(path, site.url).href;
 const lang = site.lang || 'es';
 const home = site.home || {};
 
@@ -44,7 +68,7 @@ const t = (field) => (field ? field[lang] ?? Object.values(field)[0] ?? null : n
 
 /* ── imágenes ────────────────────────────────────────────────────── */
 
-/* De cada foto hay varias anchuras en img/ (ver build/ingest.mjs). El
+/* De cada foto hay varias anchuras en media/ (ver build/ingest.mjs). El
    srcset lista solo las que existen: de un original pequeño no se genera
    una variante más ancha que él. */
 function srcset(image, base) {
@@ -80,15 +104,31 @@ function version(file) {
   return hashes.get(file);
 }
 
-function page({ title, body, base = '', bodyClass = null, scripts = [] }) {
+/* `path` es la dirección de la página dentro del sitio ('' la portada,
+   'projects/roma/' un proyecto); sin ella no hay canonical ni og, que es
+   lo que pasa en la 404. `image` es la que sale al compartir el enlace. */
+function page({ title, body, base = '', bodyClass = null, scripts = [], path = null, description = null, image = null }) {
+  const full = title ? `${title} — ${site.title}` : site.title;
+  const desc = description || site.description || '';
+  const share = path === null ? '' : `<link rel="canonical" href="${attr(abs(path))}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="${attr(site.title)}">
+<meta property="og:title" content="${attr(full)}">
+<meta property="og:description" content="${attr(desc)}">
+<meta property="og:url" content="${attr(abs(path))}">
+${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
+<meta property="og:image:width" content="${image.w}">
+<meta property="og:image:height" content="${image.h}">
+` : ''}<meta name="twitter:card" content="summary_large_image">
+`;
   return `<!DOCTYPE html>
 <html lang="${attr(lang)}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${esc(title ? `${title} — ${site.title}` : site.title)}</title>
-<meta name="description" content="${attr(site.description || '')}">
-${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
+<title>${esc(full)}</title>
+<meta name="description" content="${attr(desc)}">
+${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
 </head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}>
 ${body}
@@ -111,7 +151,7 @@ function homePage(projects) {
      no cabe (ver content/overrides.json). */
   const items = projects.map((project) => {
     const cover = coverOf(project);
-    return `<li><a href="${attr(project.slug)}/">
+    return `<li><a href="projects/${attr(project.slug)}/">
 ${cover ? img(cover, { sizes: '(max-width: 700px) 25vw, 12vw' }) : ''}
 <span>${esc(t(project.short) || t(project.title) || project.slug)}</span>
 </a></li>`;
@@ -119,6 +159,8 @@ ${cover ? img(cover, { sizes: '(max-width: 700px) 25vw, 12vw' }) : ''}
 
   return page({
     title: null,
+    path: '',
+    image: hero,
     bodyClass: 'home',
     scripts: ['js/scatter.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
@@ -153,6 +195,12 @@ function credits(list) {
   return `<dl class="credits">\n${rows.join('\n')}\n</dl>`;
 }
 
+/** El primer párrafo de la sinopsis, cortado para el meta description. */
+function summary(text) {
+  const first = (text || '').split(/\n{2,}/)[0].replace(/\s+/g, ' ').trim();
+  return first.length > 160 ? `${first.slice(0, 157).replace(/\s+\S*$/, '').replace(/[\s.,;:]+$/, '')}…` : first;
+}
+
 const synopsis = (text) =>
   text ? text.split(/\n{2,}/).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('\n') : '';
 
@@ -180,7 +228,7 @@ function groups(project) {
 const GALLERY_SIZES = '(min-width: 896px) 800px, 100vw';
 
 function projectPage(project) {
-  const base = '../';   // las páginas cuelgan de <slug>/
+  const base = '../../';   // las páginas cuelgan de projects/<slug>/
 
   /* La primera foto se carga con prioridad; las demás, según hagan falta. */
   const gallery = groups(project).map(({ name, images }, g) =>
@@ -193,6 +241,9 @@ function projectPage(project) {
 
   return page({
     title: t(project.title),
+    path: `projects/${project.slug}/`,
+    description: summary(t(project.synopsis)),
+    image: coverOf(project),
     base,
     bodyClass: 'project',
     body: `<header class="bar">
@@ -215,6 +266,29 @@ ${gallery.join('\n\n')}
   });
 }
 
+/* La 404 la sirve el hosting en cualquier dirección que no exista, a
+   cualquier profundidad: por eso sus enlaces parten de la raíz del sitio
+   (la ruta de `url`, que en GitHub Pages es /almarbra/) y no de donde
+   esté. */
+function notFoundPage() {
+  const base = new URL(site.url).pathname;
+  return page({
+    title: 'no encontrada',
+    base,
+    bodyClass: 'project',
+    body: `<header class="bar">
+<a href="${attr(base)}">${esc(site.title)}</a>
+</header>
+
+<article>
+<div class="ficha">
+<h1>esta página no existe</h1>
+<p><a href="${attr(base)}#proyectos">ver los proyectos</a></p>
+</div>
+</article>`,
+  });
+}
+
 /* ── build ───────────────────────────────────────────────────────── */
 
 const dir = join(ROOT, 'content', 'projects');
@@ -226,23 +300,59 @@ const rank = (category) => {
 
 const projects = readdirSync(dir)
   .filter((n) => n.endsWith('.json'))
-  .map((n) => JSON.parse(readFileSync(join(dir, n), 'utf8')))
+  .map((n) => read(`content/projects/${n}`))
   .sort((a, b) => rank(a.category) - rank(b.category)
     || a.category.localeCompare(b.category)
     || a.slug.localeCompare(b.slug));
 
-writeFileSync(join(ROOT, 'index.html'), homePage(projects));
+/* ── validar, antes de tocar dist/ ───────────────────────────────── */
+
+const errors = [];
+const seen = new Set();
+if (!existsSync(join(ROOT, hero.src))) errors.push(`no encuentro la foto de la portada: ${hero.src}`);
+for (const project of projects) {
+  if (seen.has(project.slug)) errors.push(`hay dos proyectos con el slug «${project.slug}»`);
+  seen.add(project.slug);
+  if (!project.images?.length) errors.push(`${project.slug}: no tiene fotos`);
+  for (const image of project.images || []) {
+    if (!existsSync(join(ROOT, image.src))) errors.push(`${project.slug}: no encuentro ${image.src}`);
+  }
+  if (project.cover && !project.images?.some((i) => i.src === project.cover)) {
+    errors.push(`${project.slug}: el cover ${project.cover} no es ninguna de sus fotos (content/overrides.json)`);
+  }
+}
+if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que se arregle.`);
+
+/* ── escribir ────────────────────────────────────────────────────── */
+
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
+for (const d of ['css', 'js', 'media']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
+cpSync(join(ROOT, '_headers'), join(OUT, '_headers'));
+
+writeFileSync(join(OUT, 'index.html'), homePage(projects));
 console.log('index.html'.padEnd(32) + `${projects.length} proyectos`);
 
 for (const project of projects) {
-  mkdirSync(join(ROOT, project.slug), { recursive: true });
-  writeFileSync(join(ROOT, project.slug, 'index.html'), projectPage(project));
-  console.log(`${project.slug}/`.padEnd(32) + `${project.images.length} fotos`);
+  mkdirSync(join(OUT, 'projects', project.slug), { recursive: true });
+  writeFileSync(join(OUT, 'projects', project.slug, 'index.html'), projectPage(project));
+  console.log(`projects/${project.slug}/`.padEnd(32) + `${project.images.length} fotos`);
 }
 
+writeFileSync(join(OUT, '404.html'), notFoundPage());
+
+writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${['', ...projects.map((p) => `projects/${p.slug}/`)].map((p) => `  <url><loc>${esc(abs(p))}</loc></url>`).join('\n')}
+</urlset>
+`);
+
 writeFileSync(
-  join(ROOT, 'robots.txt'),
-  site.noindex ? 'User-agent: *\nDisallow: /\n' : 'User-agent: *\nAllow: /\n'
+  join(OUT, 'robots.txt'),
+  site.noindex ? 'User-agent: *\nDisallow: /\n' : `User-agent: *\nAllow: /\nSitemap: ${abs('sitemap.xml')}\n`
 );
 
-console.log(`\n${projects.length + 1} páginas.`);
+// GitHub Pages: servir los archivos tal cual, sin pasar por Jekyll
+writeFileSync(join(OUT, '.nojekyll'), '');
+
+console.log(`\n✓ dist/: ${projects.length + 1} páginas, 404, sitemap y robots.`);

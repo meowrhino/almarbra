@@ -1,8 +1,9 @@
 # almarbra
 
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
-JSON, un script escupe un `.html` por proyecto, y el navegador solo recibe HTML,
-CSS e imágenes. **Cero dependencias y cero JavaScript de navegador.**
+JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
+recibe HTML, CSS e imágenes. Sigue la receta de
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias y cero JavaScript de navegador.**
 
 Dos pantallas:
 
@@ -10,14 +11,14 @@ Dos pantallas:
   entera en la primera pantalla y «entrar» encima. Debajo, otra pantalla de
   100dvh en negro con la firma arriba y los proyectos desperdigados. «Entrar» es
   un ancla y el desplazamiento suave lo hace el navegador.
-- **proyecto** (`/<slug>/`): una columna de 800 px centrada y con aire alrededor
+- **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con aire alrededor
   —ficha técnica arriba, galería en scroll vertical debajo—. Nada va a sangre: el
   negro de los lados es parte de la página.
 
 ```bash
-npm run ingest    # originals/ -> img/*.webp + content/projects/*.json
-npm run build     # content/ -> *.html
-npm run serve     # http://localhost:8000
+npm run ingest    # originals/ -> media/*.webp + content/projects/*.json
+npm run build     # content/ + media/ -> dist/
+npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
 ```
 
@@ -28,31 +29,42 @@ originals/              material de la clienta — FUERA DE GIT
   <CATEGORÍA>/<PROYECTO>/…/*.jpg + FICHA <PROYECTO>.rtf
   PORTADA/*.png                    la foto de la portada, aparte
 
-content/site.json       título, idioma, meta
+content/site.json       título, url, idioma, meta
 content/home.json       GENERADO: la foto de la portada y sus medidas
 content/overrides.json  correcciones a mano
 content/projects/*.json GENERADO por la ingesta
 
-build/ingest.mjs        originals/ -> img/ + content/projects/
+build/ingest.mjs        originals/ -> media/ + content/projects/
 build/ficha.mjs         lector de las FICHAS .rtf
 build/formats.mjs       tamaño y calidad de los WebP, en un solo sitio
 build/slug.mjs          slugs y nombres legibles
-build/build.mjs         content/ -> *.html
-build/serve.mjs         servidor local
+build/build.mjs         content/ + media/ -> dist/, validando antes
+build/serve.mjs         servidor local de dist/ (y de pruebas/)
 
 css/style.css           todo el estilo
 js/scatter.js           desperdiga los proyectos de la portada (lo único de navegador)
-img/<categoría>/<slug>/ GENERADO: 825 webp, 133 MB
-img/portada/            GENERADO: la foto de la portada
-index.html              GENERADO — no editar a mano
-<slug>/index.html       GENERADO — no editar a mano
+media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
+media/portada/          GENERADO: la foto de la portada
+
+_headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
+wrangler.jsonc          para cuando pase a Cloudflare Workers
+.github/workflows/      build y publicación en cada push a main
+
+dist/                   GENERADO por el build — FUERA DE GIT
+  index.html
+  projects/<slug>/index.html
+  404.html  sitemap.xml  robots.txt  .nojekyll  _headers
+  css/  js/  media/                copia tal cual
 ```
+
+En git va **solo el fuente**: `content/`, `media/` y el código. Las páginas no se
+commitean; las escribe la Action.
 
 ## La ingesta
 
 `npm run ingest` se come `originals/` entero:
 
-1. convierte cada foto a WebP a `img/<categoría>/<proyecto>/<proyecto>-NN.webp`,
+1. convierte cada foto a WebP a `media/<proyecto>/<proyecto>-NN.webp`,
    más tres variantes pequeñas para el `srcset` —400, 800 y 1400 px de ancho—
    (946 MB → 133 MB);
 2. lee la FICHA `.rtf` con `textutil` y saca título, sinopsis y créditos
@@ -60,7 +72,7 @@ index.html              GENERADO — no editar a mano
 3. escribe `content/projects/<proyecto>.json`.
 
 `originals/PORTADA/` no es una categoría: es la foto que abre el sitio. Sale a
-`img/portada/portada.webp` y a `content/home.json`. Cambiar la portada es dejar
+`media/portada/portada.webp` y a `content/home.json`. Cambiar la portada es dejar
 otra foto ahí y volver a ingerir. Es un PNG con transparencia y `cwebp` la
 conserva: en la web se ve la pieza recortada sobre el fondo de la página, con los
 flecos al aire.
@@ -68,7 +80,7 @@ flecos al aire.
 Es idempotente: se apoya en `content/.media-cache.json` y solo reconvierte lo que
 haya cambiado. Sin cambios tarda menos de un segundo. `npm run ingest -- --force`
 rehace todo. Al terminar cada proyecto borra los `.webp` que ya no genera, así que
-quitar una foto del original o cambiar el tamaño no deja huérfanos en `img/`.
+quitar una foto del original o cambiar el tamaño no deja huérfanos en `media/`.
 
 **La conversión es la de `meowrhino/imgToWeb`**, que es la de todos los sitios:
 calidad **0.85** y el **lado largo** topado a **2000 px**, con la proporción
@@ -82,7 +94,7 @@ real para que no se amplíe en pantallas grandes.
 No genera una variante más ancha que el original, así que el `srcset` de cada foto
 lista solo los anchos que existen de verdad.
 
-**Los originales no están en git.** Si se pierde `originals/`, `img/` sigue ahí
+**Los originales no están en git.** Si se pierde `originals/`, `media/` sigue ahí
 pero ya no se puede volver a generar en otra calidad. Copia de seguridad aparte.
 
 ### Un proyecto
@@ -96,7 +108,7 @@ pero ya no se puede volver a generar en otra calidad. Copia de seguridad aparte.
   "synopsis": { "es": "Ruinas, base para construir…", "en": "…" },
   "credits":  { "es": [ { "role": "Fotografía", "name": "…", "url": "https://…" } ] },
   "groups":   [ { "slug": "laocoonte", "name": "Laocoonte" } ],   // subcarpetas de PIEZAS
-  "images":   [ { "src": "img/textil/roma/roma-01.webp", "w": 2000, "h": 3016,
+  "images":   [ { "src": "media/roma/roma-01.webp", "w": 2000, "h": 3016,
                   "source": "originals/…/7047 - ….jpg", "alt": "", "group": "laocoonte" } ]
 }
 ```
@@ -114,7 +126,7 @@ encima del JSON recién generado:
   "roma": {
     "title": { "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN" },
     "short": { "es": "roma" },                     // nombre corto para la portada
-    "cover": "img/textil/roma/roma-12.webp"        // la foto que lo representa
+    "cover": "media/roma/roma-12.webp"        // la foto que lo representa
   }
 }
 ```
@@ -130,8 +142,33 @@ pantalla).
 
 ## El build
 
-`build/build.mjs` genera `index.html` y un `<slug>/index.html` por proyecto, así
-que las direcciones quedan `/roma/`, `/sicky-magazine/`… Son dos plantillas y ya.
+`build/build.mjs` escribe `dist/` entera desde cero: `index.html` y un
+`projects/<slug>/index.html` por proyecto, así que las direcciones quedan
+`/projects/roma/`, `/projects/sicky-magazine/`… Son dos plantillas y ya. Cada
+página lleva su `title`, `description` (el primer párrafo de la sinopsis),
+`canonical` y `og:*` con la foto de portada del proyecto, para que al compartir un
+enlace se vea ese proyecto y no la portada genérica. Más `404.html`,
+`sitemap.xml` y `robots.txt`.
+
+**Antes de escribir nada, valida.** Un JSON con una coma de menos, una foto que no
+está en `media/` o un `cover` que no es de ninguna foto paran el build con el
+archivo y lo que pasa:
+
+```
+✗ content/projects/helen.json no es un JSON válido: … (line 3 column 3)
+✗ helen: no encuentro media/helen/helen-99.webp
+```
+
+En la Action eso sale en rojo y la web publicada se queda como estaba.
+
+### Publicar
+
+Cada push a `main` lanza `.github/workflows/deploy.yml`: `node build/build.mjs` y
+sube `dist/` a GitHub Pages. La ingesta no corre ahí (necesita `originals/`,
+`cwebp` y `sips`): `media/` y `content/` llegan ya hechos. Tarda un par de minutos;
+en la pestaña **Actions** de GitHub, verde es publicado.
+
+En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
 
 Lo que se cambia sin tocar código, en `content/site.json`:
 
@@ -165,7 +202,14 @@ El CSS se enlaza con `?v=<hash>` de su contenido: un deploy nunca deja a nadie c
 estilos viejos en caché.
 
 Todas las páginas llevan `noindex` y `robots.txt` bloquea el sitio, hasta que haya
-web de verdad. Se controla con `noindex` en `content/site.json`.
+web de verdad. **Al lanzar**, en `content/site.json`:
+
+- `"url"`: la dirección definitiva (ahora `https://meowrhino.github.io/almarbra/`).
+  De ahí salen el canonical, las `og:image`, el sitemap y los enlaces de la 404.
+- `"noindex": false`: quita el meta y abre `robots.txt` con su `Sitemap:`.
+
+Si pasa a Cloudflare, `wrangler.jsonc` y `_headers` ya están: en Workers Builds,
+comando `node build/build.mjs`.
 
 ## Los 13 proyectos
 
@@ -200,6 +244,8 @@ Fuera del sitio y fuera del build: `pruebas/` son tres maquetas para enseñarle 
 clienta, que pidió «algo como un visualizador de nodos» donde los proyectos formen
 un tejido. `node pruebas/datos.mjs` saca de `content/` lo que necesitan y lo deja en
 `pruebas/datos.js` (un global, para que abran también con doble clic).
+No se publican: no entran en `dist/`. Con `npm run serve` se abren en
+`/pruebas/` y sus enlaces a los proyectos llevan a las páginas de `dist/`.
 
 El hilo no es decorativo: sale de las fichas. Dos proyectos van unidos si comparten
 a alguien del equipo —28 personas, 22 uniones— y cada persona tiene su color, el

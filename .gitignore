@@ -1,5 +1,9 @@
 .DS_Store
 
+# La web generada: la escribe `npm run build` y la publica la Action
+dist/
+.wrangler/
+
 # Material original de la clienta (946 MB). Vive fuera de git: de aquí
 # sale img/ con `npm run ingest`. Copia de seguridad aparte, por favor.
 originals/

@@ -1,11 +1,11 @@
 /* Ingesta del material de la clienta.
 
      originals/<CATEGORÍA>/<PROYECTO>/…/foto.jpg   +   FICHA <PROYECTO>.rtf
-        ->  img/<categoría>/<proyecto>/<proyecto>-NN[-400|-800|-1400].webp
+        ->  media/<proyecto>/<proyecto>-NN[-400|-800|-1400].webp
         ->  content/projects/<proyecto>.json
 
      originals/PORTADA/<foto>                     (no es una categoría)
-        ->  img/portada/portada[-400|-800|-1400].webp
+        ->  media/portada/portada[-400|-800|-1400].webp
         ->  content/home.json
 
    Convierte cada foto a WebP —el tamaño y la calidad, en formats.mjs—
@@ -38,7 +38,7 @@ const run = promisify(execFile);
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 
 const SOURCE = join(ROOT, 'originals');
-const IMG = join(ROOT, 'img');
+const MEDIA = join(ROOT, 'media');
 const PROJECTS = join(ROOT, 'content', 'projects');
 const HOME = join(ROOT, 'content', 'home.json');
 const CACHE = join(ROOT, 'content', '.media-cache.json');
@@ -140,7 +140,7 @@ async function convert(source, dir, name, cache) {
 }
 
 /* Borra los .webp que la ingesta ya no genera. Sin esto, cambiar el
-   tamaño o quitar una foto del original deja huérfanos en img/ que nadie
+   tamaño o quitar una foto del original deja huérfanos en media/ que nadie
    sirve pero que sí se commitean. */
 function sweep(dir, images) {
   const keep = new Set();
@@ -192,7 +192,7 @@ function applyOverride(project, override) {
 async function ingestProject(categoryDir, categorySlug, name, cache) {
   const dir = join(categoryDir, name);
   const slug = slugify(name);
-  const outDir = join(IMG, categorySlug, slug);
+  const outDir = join(MEDIA, slug);
   mkdirSync(outDir, { recursive: true });
 
   const files = photosUnder(dir);
@@ -229,7 +229,7 @@ async function ingestProject(categoryDir, categorySlug, name, cache) {
 }
 
 /* La foto de la portada. Vive en originals/PORTADA/ y no pertenece a
-   ningún proyecto, así que sale a img/portada/ y a su propio JSON. Si la
+   ningún proyecto, así que sale a media/portada/ y a su propio JSON. Si la
    carpeta no está, se deja content/home.json como esté: quitarla no
    debería dejar la portada sin foto. */
 async function ingestCover(cache) {
@@ -242,7 +242,7 @@ async function ingestCover(cache) {
     console.warn(`${COVER_DIR}/ tiene ${files.length} fotos; se usa la primera.`);
   }
 
-  const outDir = join(IMG, 'portada');
+  const outDir = join(MEDIA, 'portada');
   mkdirSync(outDir, { recursive: true });
 
   const { cached, ...hero } = await convert(files[0], outDir, 'portada', cache);

@@ -15,5 +15,5 @@ export const QUALITY = 85;
 /** Variantes pequeñas del srcset. Estas sí van por ancho. */
 export const WIDTHS = [400, 800, 1400];
 
-/** Ruta de una variante: img/foo.webp + 800 -> img/foo-800.webp */
+/** Ruta de una variante: media/foo.webp + 800 -> media/foo-800.webp */
 export const variant = (src, width) => src.replace(/\.webp$/, `-${width}.webp`);

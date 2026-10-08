@@ -139,7 +139,7 @@
   /* ── 3. las pasadas de trama: un proyecto cada una ──────────────── */
   const pasadas = proyectos.map((p, i) => {
     const y = yDe(i);
-    const g = el('a', { class: 'pasada', href: `../${p.slug}/` });
+    const g = el('a', { class: 'pasada', href: `../projects/${p.slug}/` });
 
     g.appendChild(el('rect', { x: 8, y: y + 4, width: W - 26, height: FILA - 12 }));
 

@@ -79,8 +79,8 @@
 <a class="volver" href="index.html">pruebas</a>
 
 <section class="hero">
-  <img src="../img/portada/portada.webp"
-       srcset="../img/portada/portada-400.webp 400w, ../img/portada/portada-800.webp 800w, ../img/portada/portada.webp 1333w"
+  <img src="../media/portada/portada.webp"
+       srcset="../media/portada/portada-400.webp 400w, ../media/portada/portada-800.webp 800w, ../media/portada/portada.webp 1333w"
        sizes="100vw" width="1333" height="2000" alt="" fetchpriority="high" decoding="async">
   <a class="enter" href="#proyectos">entrar</a>
 </section>
@@ -106,7 +106,7 @@
   const NS = 'http://www.w3.org/2000/svg';
 
   list.innerHTML = proyectos.map((p) => `
-    <li><a href="../${p.slug}/">
+    <li><a href="../projects/${p.slug}/">
       <img src="../${p.mini}" alt="" loading="lazy" decoding="async">
       <span>${p.corto}</span>
     </a></li>`).join('');

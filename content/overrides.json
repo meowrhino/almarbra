@@ -6,7 +6,7 @@
       "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN",
       "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION"
     },
-    "cover": "img/textil/roma/roma-12.webp",
+    "cover": "media/roma/roma-12.webp",
     "short": {
       "es": "roma",
       "en": "rome",
@@ -22,10 +22,10 @@
     }
   },
   "cuerpo-esquema": {
-    "cover": "img/textil/cuerpo-esquema/cuerpo-esquema-76.webp",
+    "cover": "media/cuerpo-esquema/cuerpo-esquema-76.webp",
     "_nota": "La primera imagen es una captura de pantalla; de portada va una pieza."
   },
   "corporea": {
-    "cover": "img/textil/corporea/corporea-04.webp"
+    "cover": "media/corporea/corporea-04.webp"
   }
 }

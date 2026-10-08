@@ -3,10 +3,8 @@
   "configurations": [
     {
       "name": "almarbra",
-      "runtimeExecutable": "node",
-      "runtimeArgs": [
-        "build/serve.mjs"
-      ],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
       "port": 8000
     }
   ]

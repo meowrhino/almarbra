@@ -103,7 +103,7 @@
     const a = i / proyectos.length * Math.PI * 2;
     const el = document.createElement('a');
     el.className = 'nudo';
-    el.href = `../${p.slug}/`;
+    el.href = `../projects/${p.slug}/`;
     el.innerHTML = `<img src="../${p.mini}" alt="" loading="lazy"><b>${p.corto}</b>`;
     tela.appendChild(el);
     return {

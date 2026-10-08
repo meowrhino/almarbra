@@ -2,7 +2,7 @@
   "name": "almarbra",
   "version": "1.0.0",
   "private": true,
-  "description": "Portfolio de Almudena González: contenido en JSON, HTML estático generado, imágenes en WebP",
+  "description": "Portfolio de Almudena González: contenido en JSON, HTML estático generado en dist/, imágenes en WebP",
   "type": "module",
   "scripts": {
     "ingest": "node build/ingest.mjs",
