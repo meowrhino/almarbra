@@ -136,6 +136,12 @@ const IDIOMA_HEAD = `<script>try { document.documentElement.dataset.idioma = loc
 document.documentElement.dataset.idioma ||= ${JSON.stringify(lang)};</script>
 `;
 
+/* Si se llega desde otra página de la web (o con atrás y adelante), la
+   página nace tapada, para que la transición la destape (js/transicion.js).
+   Si ese script no llegara, el CSS la destapa sola a los 3 s. */
+const TAPADA_HEAD = `<script>try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (sessionStorage.getItem('almarbra-transicion') || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) document.documentElement.classList.add('tapada'); } catch {}</script>
+`;
+
 /* PRUEBAS: lo que se haya elegido en el panel (js/pruebas.js), en
    <html> antes de pintar. Sin nada elegido manda lo de content/. */
 const PRUEBAS_HEAD = `<script>try { Object.assign(document.documentElement.dataset, JSON.parse(localStorage.getItem('almarbra-pruebas'))); } catch {}</script>
@@ -166,10 +172,10 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
-${IDIOMA_HEAD}${PRUEBAS_HEAD}${head}</head>
+${IDIOMA_HEAD}${TAPADA_HEAD}${PRUEBAS_HEAD}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
-${['js/hilos.js', ...scripts, 'js/idioma.js', 'js/pruebas.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
+${['js/hilos.js', 'js/transicion.js', ...scripts, 'js/idioma.js', 'js/pruebas.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -330,7 +336,7 @@ function homePage(projects) {
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
 ${topBar('', true)}
 
-<section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}" data-transicion="${attr(mapa.transicion || 'puntos')}">
+<section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}">
 <div class="world">
 ${pins.join('\n')}
 </div>
@@ -395,10 +401,10 @@ function groups(project) {
   }));
 }
 
-/* Las fotos del proyecto van en una columna de 640 px como mucho, con
-   aire a los lados; por debajo de ahí ocupan el ancho que quede. El 640
+/* Las fotos del proyecto van en una columna de 800 px como mucho, con
+   aire a los lados; por debajo de ahí ocupan el ancho que quede. El 800
    sale de `--col` en css/style.css: si cambia allí, cambia aquí. */
-const GALLERY_SIZES = '(min-width: 736px) 640px, 100vw';
+const GALLERY_SIZES = '(min-width: 896px) 800px, 100vw';
 
 function projectPage(project) {
   const base = '../../';   // las páginas cuelgan de projects/<slug>/

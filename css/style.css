@@ -193,16 +193,6 @@ html:has(#about:target) #lista { display: none; }
 [data-hilos="liso"] :is(.threads, .row svg, .hilo) path { shape-rendering: auto; }
 [data-hilos="liso"] :is(.threads, .row svg, .hilo) path { stroke-linejoin: round; stroke-linecap: round; }
 
-/* PRUEBAS: hover «pespunte»: el hilo del proyecto se vuelve un pespunte
-   que corre. --puntada la pone js/mapa.js: 5 px en el largo del hilo. */
-.threads path.pespunte {
-  stroke-dasharray: var(--puntada) var(--puntada);
-  stroke-dashoffset: 0;
-  animation: pespunte .35s linear infinite;
-}
-
-@keyframes pespunte { to { stroke-dashoffset: calc(-2 * var(--puntada)); } }
-
 @media (prefers-reduced-motion: reduce) {
   .threads path,
   .row svg path { animation: none; stroke-dashoffset: 0; }
@@ -340,8 +330,22 @@ html:has(#about:target) #lista { display: none; }
   .row:hover h2 { color: var(--c); }
 }
 
-/* La tapa entre vistas: un lienzo a toda la pantalla donde se dibujan
-   las líneas (js/mapa.js). */
+/* Una página a la que se llega desde otra nace tapada (la clase la pone
+   el <head>) hasta que js/transicion.js la destapa. Si ese script no
+   llegara, a los 3 s se destapa sola. */
+.tapada body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  background: var(--bg);
+  animation: destapar 0s 3s forwards;
+}
+
+@keyframes destapar { to { visibility: hidden; } }
+
+/* La tapa entre vistas y páginas: un lienzo a toda la pantalla donde
+   barre la ola de píxeles (js/transicion.js). */
 .veil {
   position: fixed;
   inset: 0;
@@ -353,15 +357,14 @@ html:has(#about:target) #lista { display: none; }
 
 /* ── página de proyecto ──────────────────────────────────────────────
 
-   Una sola columna estrecha —640 px como mucho— centrada y con aire por
+   Una sola columna estrecha —800 px como mucho— centrada y con aire por
    los cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
    ancho. Nada va a sangre; el negro alrededor es parte de la página.
 
-   Los 640 también los sabe build/build.mjs, que los pone en el `sizes`
+   Los 800 también los sabe build/build.mjs, que los pone en el `sizes`
    de cada foto: si cambian aquí, cambian allí. */
 
-.project { --col: 640px; }
-[data-columna="800"] .project { --col: 800px; }   /* PRUEBAS */
+.project { --col: 800px; }
 
 /* El hilo: baja por toda la página ondulando de lado a lado, de su
    color y por encima de las fotos, y se va dibujando al bajar
@@ -387,7 +390,7 @@ html:has(#about:target) #lista { display: none; }
   shape-rendering: crispEdges;
 }
 
-/* La columna: 640 px, o todo el ancho menos el aire de los lados. La
+/* La columna: 800 px, o todo el ancho menos el aire de los lados. La
    vuelta de abajo va al ras de ella. */
 .project footer.bar,
 .project article {
@@ -417,7 +420,7 @@ html:has(#about:target) #lista { display: none; }
 
 .ficha { margin: 0 0 clamp(2.5rem, 9vh, 5.5rem); }
 
-/* El texto, más estrecho que la columna: una línea de 640 px se lee
+/* El texto, más estrecho que la columna: una línea de 800 px se lee
    mal. Las fotos sí la ocupan entera. */
 .ficha h1,
 .ficha p { max-width: 34rem; }

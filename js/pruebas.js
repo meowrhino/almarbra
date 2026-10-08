@@ -5,32 +5,16 @@
    se avisa con el evento `pruebas` a quien tenga que rehacer algo.
 
      hilos       la forma de todos los hilos (js/hilos.js)
-     transicion  lo que tapa la pantalla al cambiar de vista (js/mapa.js)
-     mezcla      cuánto se mezclan los proyectos en el mapa (js/mapa.js)
-     hover       qué hacen los hilos al pasar por una foto (js/mapa.js)
-     columna     el ancho de la columna de un proyecto (css/style.css)
 
-   Lo que no se toque sale de content/mapa.json o de lo que haya por
-   defecto. Cuando se decida, este archivo se va. */
+   Lo que no se toque, lo que haya por defecto. Cuando se decida, este archivo se va. */
 
 (() => {
   const root = document.documentElement;
   const KEY = 'almarbra-pruebas';
-  const map = document.getElementById('mapa');
   const OPTIONS = {
     hilos: ['escalera', 'fina', 'diagonal', 'liso'],
-    transicion: ['puntos', 'pixeles', 'barrido', 'lineas'],
-    mezcla: ['0', '25', '50', '75', '100'],
-    hover: ['recoser', 'pespunte', 'nada'],
-    columna: ['640', '800'],
   };
-  const DEFAULTS = {
-    hilos: 'escalera',
-    transicion: map?.dataset.transicion || 'puntos',
-    mezcla: map?.dataset.mezcla || '50',
-    hover: 'recoser',
-    columna: '640',
-  };
+  const DEFAULTS = { hilos: 'escalera' };
 
   const store = (key, value) => {
     try {

@@ -7,10 +7,9 @@
    las líneas de anaelleblin.com y se dibuja al cargar. Todo cae en un
    sitio distinto en cada carga. Los botones + y − acercan y alejan.
 
-   La vista la dice el hash: #mapa, #lista o #about (el nombre). El menú son enlaces a esos
-   hashes, así que atrás y adelante funcionan solos. Al cambiar, la
-   pantalla se llena de líneas que se van dibujando solas, se cambia y se
-   funde. Al entrar en un proyecto, las líneas son de su color.
+   La vista la dice el hash: #mapa, #lista o #about (el nombre). El menú
+   son enlaces a esos hashes, así que atrás y adelante funcionan solos.
+   Al cambiar, la transición de js/transicion.js, de lado.
 
    Sin este archivo la portada es la lista (ver css/style.css). */
 
@@ -85,11 +84,10 @@
        alrededor de la suya, a REACH px como mucho. Las zonas se tocan y
        se mezclan un poco por los bordes. Si no hay hueco se va aflojando.
 
-       La mezcla (content/mapa.json, de 0 a 100, en data-mezcla; el panel
-       de pruebas la pisa en <html>) tira de
+       La mezcla (content/mapa.json, de 0 a 100, en data-mezcla) tira de
        cada foto desde su zona hacia un sitio cualquiera del plano: con 0
        son zonas limpias; con 100, todo revuelto. */
-    const mix = Number(root.dataset.mezcla ?? map.dataset.mezcla ?? 50) / 100;
+    const mix = Number(map.dataset.mezcla ?? 50) / 100;
     const anywhere = (size, of) => MARGIN + Math.random() * (of - size - 2 * MARGIN);
     const first = pins.map((pin, i) => i === 0 || pins[i - 1].dataset.p !== pin.dataset.p);
     const order = [...pins.keys()].sort((a, b) => first[b] - first[a]);
@@ -154,39 +152,22 @@
   }
 
   /* Al pasar por una foto se enciende su proyecto y el resto se apaga.
-     Y sus hilos hacen algo; PRUEBAS: lo que diga data-hover en <html>:
-       recoser   se descosen y se vuelven a coser por otro camino: cada
-                 vez que se pasa, salen con otra forma y se dibujan
-       pespunte  se vuelven un pespunte que corre, como la máquina
-       nada      solo se encienden */
+     Y sus hilos se descosen y se vuelven a coser por otro camino: cada
+     vez que se pasa, salen con otra forma y se dibujan de nuevo. */
   let lit = null;
   function light(p) {
     if (p === lit) return;
     lit = p;
-    const hover = root.dataset.hover || 'recoser';
     map.classList.toggle('dim', p !== null);
     for (const el of world.querySelectorAll('[data-p]')) {
       const on = el.dataset.p === p;
       el.classList.toggle('on', on);
-      if (!el.pts) continue;
-      if (!on && el.classList.contains('pespunte')) {
-        el.classList.remove('pespunte');
-        el.style.animation = 'none';
-        el.style.strokeDashoffset = '0';
-      }
-      if (!on || still) continue;
-      if (hover === 'recoser') {
-        el.pts = thread(...el.ends);
-        shape(el);
-        el.style.strokeDashoffset = '';
-        el.style.animation = 'none';
-        el.getBBox();   // para que la animación vuelva a empezar
-        el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
-      } else if (hover === 'pespunte') {
-        el.style.setProperty('--puntada', 5 / (el.getTotalLength() || 1));
-        el.style.animation = '';
-        el.classList.add('pespunte');
-      }
+      if (!on || !el.pts || still) continue;
+      el.pts = thread(...el.ends);
+      shape(el);
+      el.style.animation = 'none';
+      el.getBBox();   // para que la animación vuelva a empezar
+      el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
     }
   }
   world.addEventListener('pointerover', (e) => light(e.target.closest('.pin')?.dataset.p ?? null));
@@ -250,163 +231,6 @@
     if (z !== zoom) setZoom(z);
   });
 
-  /* ── la transición ─────────────────────────────────────────────
-
-     Un lienzo a toda la pantalla tapa, se cambia de vista y se destapa.
-     Hay cuatro; cuál, lo dice «transicion» en content/mapa.json, y para
-     probar, ?transicion=… en la dirección o el panel de pruebas. Al entrar en un proyecto, del
-     color de ese proyecto.
-
-       puntos   punto de cruz: la pantalla se borda de equis, del centro
-                hacia fuera
-       pixeles  se deshace en cuadrados, alguno de color
-       barrido  una ola de píxeles de colores baja en diagonal y deja la
-                página en blanco
-       lineas   líneas que salen de los bordes y van torciendo */
-
-  const FRAMES = 30;   // fotogramas en tapar
-
-  const veil = document.createElement('canvas');
-  veil.className = 'veil';
-  document.body.append(veil);
-  const vctx = veil.getContext('2d');
-  const pick = (colors) => colors[Math.floor(Math.random() * colors.length)];
-  const bg = () => getComputedStyle(root).getPropertyValue('--bg');
-  const shuffle = (list) => list.map((v) => [Math.random(), v]).sort((a, b) => a[0] - b[0]).map(([, v]) => v);
-
-  /* De una rejilla de C px, las casillas en el orden en que se tapan:
-     `order` da a cada una su turno (menor, antes). */
-  function cells(C, W, H, order) {
-    const list = [];
-    for (let y = 0; y < H; y += C) for (let x = 0; x < W; x += C) list.push({ x, y, t: order(x, y) });
-    return list.sort((a, b) => a.t - b.t);
-  }
-
-  /* Va sacando casillas de la lista, a partes iguales en cada fotograma. */
-  const share = (list, f, paint) => {
-    const from = Math.floor((list.length * (f - 1)) / FRAMES);
-    const to = Math.floor((list.length * f) / FRAMES);
-    for (let i = from; i < to; i++) paint(list[i]);
-  };
-
-  function puntos(colors, W, H) {
-    const C = 14;
-    const list = cells(C, W, H, (x, y) => Math.hypot(x - W / 2, y - H / 2) + Math.random() * 260);
-    const white = bg();
-    return (f) => share(list, f, ({ x, y }) => {
-      vctx.fillStyle = white;
-      vctx.fillRect(x, y, C, C);
-      vctx.strokeStyle = pick(colors);
-      vctx.beginPath();
-      vctx.moveTo(x + 3, y + 3); vctx.lineTo(x + C - 3, y + C - 3);
-      vctx.moveTo(x + C - 3, y + 3); vctx.lineTo(x + 3, y + C - 3);
-      vctx.stroke();
-    });
-  }
-
-  function pixeles(colors, W, H) {
-    const C = 24;
-    const list = shuffle(cells(C, W, H, () => 0));
-    const white = bg();
-    return (f) => share(list, f, ({ x, y }) => {
-      vctx.fillStyle = Math.random() < 0.12 ? pick(colors) : white;
-      vctx.fillRect(x, y, C, C);
-    });
-  }
-
-  function barrido(colors, W, H) {
-    const C = 12;
-    const BAND = 5;   // casillas de color en la ola
-    const cols = Array.from({ length: Math.ceil(W / C) }, (_, i) => ({
-      x: i * C,
-      lag: i * 0.5 + Math.random() * 3,
-      tint: Array.from({ length: BAND }, () => pick(colors)),
-    }));
-    const rows = Math.ceil(H / C);
-    const span = rows + BAND + cols.length * 0.5 + 3;
-    const white = bg();
-    return (f) => {
-      for (const col of cols) {
-        const front = Math.floor((f / FRAMES) * span - col.lag);
-        for (let k = 0; k < BAND; k++) {
-          const row = front - k;
-          if (row < 0 || row >= rows) continue;
-          vctx.fillStyle = col.tint[k];
-          vctx.fillRect(col.x, row * C, C, C);
-        }
-        const done = front - BAND;
-        if (done >= 0) {
-          vctx.fillStyle = white;
-          vctx.fillRect(col.x, 0, C, Math.min(rows, done + 1) * C);
-        }
-      }
-    };
-  }
-
-  /* Cada línea es un camino de puntos que crece; en cada fotograma se
-     pinta entero con la forma de los hilos (js/hilos.js). */
-  function lineas(colors, W, H) {
-    const walkers = Array.from({ length: 60 }, () => {
-      const side = Math.floor(Math.random() * 4);
-      const x = side === 1 ? W : side === 3 ? 0 : Math.random() * W;
-      const y = side === 2 ? H : side === 0 ? 0 : Math.random() * H;
-      const angle = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - 0.5) * 1.6;
-      return { pts: [{ x, y }], angle, turn: (Math.random() - 0.5) * 0.08, color: pick(colors) };
-    });
-    return (f) => {
-      veil.style.backgroundColor = `color-mix(in srgb, var(--bg) ${Math.round((f / FRAMES) * 100)}%, transparent)`;
-      for (const w of walkers) {
-        for (let k = 0; k < 6; k++) {
-          const at = w.pts[w.pts.length - 1];
-          w.turn += (Math.random() - 0.5) * 0.04;
-          w.angle += w.turn / 2;
-          w.pts.push({ x: at.x + Math.cos(w.angle) * 7, y: at.y + Math.sin(w.angle) * 7 });
-        }
-        vctx.strokeStyle = w.color;
-        vctx.stroke(new Path2D(hilos.path(w.pts)));
-      }
-    };
-  }
-
-  const STYLES = { puntos, pixeles, barrido, lineas };
-  const style = () => STYLES[new URLSearchParams(location.search).get('transicion')]
-    || STYLES[root.dataset.transicion] || STYLES[map.dataset.transicion] || puntos;
-
-  function cover(colors) {
-    const dpr = devicePixelRatio || 1;
-    veil.width = innerWidth * dpr;
-    veil.height = innerHeight * dpr;
-    vctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    vctx.lineWidth = 2;
-    vctx.lineCap = 'square';
-    vctx.lineJoin = 'miter';
-    veil.style.transition = 'none';
-    veil.style.opacity = 1;
-    const draw = style()(colors, innerWidth, innerHeight);
-
-    return new Promise((done) => {
-      let frame = 0;
-      const step = () => {
-        frame += 1;
-        draw(frame);
-        if (frame < FRAMES) requestAnimationFrame(step);
-        else done();
-      };
-      step();
-    });
-  }
-
-  /** Destapa: lo dibujado se funde y se borra. */
-  function uncover() {
-    veil.style.transition = 'opacity .4s';
-    veil.style.opacity = 0;
-    return new Promise((done) => setTimeout(() => {
-      vctx.clearRect(0, 0, veil.width, veil.height);
-      veil.style.backgroundColor = 'transparent';
-      done();
-    }, 400));
-  }
-
   /* ── la vista ──────────────────────────────────────────────────── */
 
   const wanted = () => ({ '#lista': 'lista', '#about': 'about' }[location.hash] || 'mapa');
@@ -422,32 +246,17 @@
   addEventListener('resize', () => { if (root.dataset.vista === 'mapa') build(); });
 
   /* PRUEBAS: lo que cambia el panel (js/pruebas.js). */
-  addEventListener('pruebas', (e) => {
-    if (e.detail === 'hilos') reshape();
-    if (e.detail === 'mezcla') {
-      built = false;
-      world.querySelector('.threads')?.remove();
-      world.style.zoom = '';
-      if (root.dataset.vista === 'mapa') build();
-    }
-  });
+  addEventListener('pruebas', (e) => { if (e.detail === 'hilos') reshape(); });
 
+  /* Cambiar de vista: la transición (js/transicion.js), de lado, en el
+     orden del menú. */
   addEventListener('hashchange', async () => {
     const view = wanted();
-    if (view === root.dataset.vista) return;
-    if (still) { show(view); return; }
-    await cover(palette);
+    const from = root.dataset.vista;
+    if (view === from) return;
+    const dir = transicion.way(from, view);
+    await transicion.cover(palette, dir);
     show(view);
-    await uncover();
+    await transicion.uncover(palette, dir);
   });
-
-  /* Entrar en un proyecto: la transición, de su color, y luego se va. Al volver
-     con atrás, la página sale de la caché tal cual, tapada: se destapa. */
-  document.addEventListener('click', (e) => {
-    const a = e.target.closest('a[href^="projects/"]');
-    if (!a || still || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-    e.preventDefault();
-    cover([colorOf(a)]).then(() => { location.href = a.href; });
-  });
-  addEventListener('pageshow', (e) => { if (e.persisted) uncover(); });
 })();
