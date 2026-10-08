@@ -217,14 +217,20 @@ otro.
 
 El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
 (las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
-pisarse y sin agruparlas por proyecto. Debajo pinta el mapa de calor con
-píxeles sueltos: el plano se parte en casillas de 11 px, cada una toma el color
-del proyecto que más le llega —cada foto calienta su alrededor, más cuanto más
-cerca— y lleva un píxel o ninguno, más probable cuanto más calor. El píxel no va
-en el centro de la casilla sino corrido al azar, para que no se vea la
-cuadrícula. Un solo lienzo a media resolución, que el CSS estira sin suavizar.
-Los mandos, arriba de `js/mapa.js`: `STEP` (separación), `DOT` (tamaño), `FILL`
-(cuánto se llena donde más calor hay) y `REACH` (cuánto se extiende).
+pisarse y sin agruparlas por proyecto. Debajo, píxeles del color de cada
+proyecto, de dos clases:
+
+- **el halo**: alrededor de cada foto, muchos y apretados, que se van soltando
+  al alejarse. Como mucho uno por casilla de 11 px, corrido al azar dentro de
+  ella para que no se vea la rejilla.
+- **los caminos**: como las líneas de anaelleblin.com, unen las fotos de un
+  mismo proyecto —cada una con la más cercana de las que ya estaban, así que
+  cada proyecto es un árbol—. Son curvas en S hechas de píxeles sueltos, mucho
+  menos densas que el halo.
+
+Un solo lienzo a media resolución, que el CSS estira sin suavizar. Los mandos,
+arriba de `js/mapa.js`: `DOT` (tamaño), `HALO` y `FADE` (lo lleno y lo ancho del
+halo), `GAIT` y `TRAIL` (cada cuánto hay un píxel en los caminos).
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS

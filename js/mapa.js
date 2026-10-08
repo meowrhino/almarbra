@@ -2,10 +2,12 @@
 
    El mapa son las fotos de todos los proyectos, mezcladas, por un plano
    más grande que la pantalla, que se arrastra con el ratón y se recorre
-   con el dedo o la rueda (es un scroll normal). Debajo, un mapa de calor
-   de píxeles sueltos: cada uno toma el color del proyecto que más cerca
-   le queda, y hay más cuanto más cerca está. Todo cae en un sitio
-   distinto en cada carga. Los botones + y − acercan y alejan.
+   con el dedo o la rueda (es un scroll normal). Debajo, píxeles del
+   color de cada proyecto: muchos alrededor de cada foto, que se van
+   soltando al alejarse, y caminos curvos de píxeles sueltos que unen las
+   fotos de un mismo proyecto, como las líneas de anaelleblin.com. Todo
+   cae en un sitio distinto en cada carga. Los botones + y − acercan y
+   alejan.
 
    La vista la dice el hash: #mapa o #lista. El menú son enlaces a esos
    hashes, así que atrás y adelante funcionan solos. Al cambiar, la
@@ -24,10 +26,12 @@
   const colorOf = (el) => el.style.getPropertyValue('--c');
   const palette = [...new Set(pins.map(colorOf))];
 
-  const STEP = 11;       // separación media entre píxeles del calor, en px
-  const DOT = 6;         // lado de un píxel del calor, en px
-  const FILL = 0.45;     // qué parte de los huecos se llena donde más calor hay
-  const REACH = 110;     // cuánto se extiende el calor de una foto, en px
+  const DOT = 6;         // lado de un píxel, en px
+  const STEP = 11;       // en el halo, como mucho un píxel por casilla de STEP px
+  const HALO = 0.7;      // qué parte de las casillas se llena pegado a la foto
+  const FADE = 35;       // en cuántos px se suelta el halo (a 3×FADE ya casi no queda)
+  const GAIT = 18;       // en los caminos, un paso cada GAIT px...
+  const TRAIL = 0.45;    // ...y en cada paso, la probabilidad de que haya píxel
   const DENSITY = 0.11;  // cuánto del plano tapan las fotos
   const MARGIN = 60;     // aire entre las fotos y el borde del plano
 
@@ -37,7 +41,7 @@
     a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
 
   let built = false;
-  let paint = () => {};   // vuelve a pintar el calor; lo define build()
+  let paint = () => {};   // vuelve a pintar los píxeles; lo define build()
   let lit = null;         // el proyecto encendido al pasar por encima
 
   /* Sin tamaño (pestaña aún sin pintar, oculta) no se monta: el plano
@@ -71,53 +75,62 @@
       pin.style.top = `${spot.y}px`;
     });
 
-    /* El calor: por cada píxel, cuánto le llega de cada proyecto (sumando
-       sus fotos, y más cuanto más cerca) y quién gana. */
+    /* Los píxeles, por proyecto. `r` es la tirada de cada uno: al
+       cargar se van encendiendo de menor a mayor. */
+    const dots = [];
+    const add = (p, x, y) => (dots[p] ||= []).push({ x: x - DOT / 2, y: y - DOT / 2, r: Math.random() });
+
+    /* El halo: el plano en casillas de STEP px y, en cada una, un píxel o
+       ninguno, más probable cuanto más cerca de la foto, corrido al azar
+       dentro de la casilla para que no se vea la rejilla. Una casilla
+       solo se llena una vez, aunque le lleguen dos fotos. */
     const cols = Math.ceil(W / STEP);
     const rows = Math.ceil(H / STEP);
-    const projects = Math.max(...spots.map((s) => s.p)) + 1;
-    const heat = new Float32Array(projects * cols * rows);
-
+    const taken = new Uint8Array(cols * rows);
     for (const s of spots) {
-      const x0 = Math.max(0, Math.floor((s.x - 3 * REACH) / STEP));
-      const x1 = Math.min(cols - 1, Math.ceil((s.x + s.w + 3 * REACH) / STEP));
-      const y0 = Math.max(0, Math.floor((s.y - 3 * REACH) / STEP));
-      const y1 = Math.min(rows - 1, Math.ceil((s.y + s.h + 3 * REACH) / STEP));
-      const base = s.p * cols * rows;
+      const x0 = Math.max(0, Math.floor((s.x - 4 * FADE) / STEP));
+      const x1 = Math.min(cols - 1, Math.ceil((s.x + s.w + 4 * FADE) / STEP));
+      const y0 = Math.max(0, Math.floor((s.y - 4 * FADE) / STEP));
+      const y1 = Math.min(rows - 1, Math.ceil((s.y + s.h + 4 * FADE) / STEP));
       for (let y = y0; y <= y1; y++) {
-        const cy = (y + 0.5) * STEP;
-        const dy = Math.max(s.y - cy, 0, cy - s.y - s.h);
         for (let x = x0; x <= x1; x++) {
-          const cx = (x + 0.5) * STEP;
-          const dx = Math.max(s.x - cx, 0, cx - s.x - s.w);
-          heat[base + y * cols + x] += Math.exp(-(dx * dx + dy * dy) / (REACH * REACH));
+          const c = y * cols + x;
+          if (taken[c]) continue;
+          const cx = (x + Math.random()) * STEP;
+          const cy = (y + Math.random()) * STEP;
+          const d = Math.hypot(Math.max(s.x - cx, 0, cx - s.x - s.w), Math.max(s.y - cy, 0, cy - s.y - s.h));
+          if (Math.random() < HALO * Math.exp(-d / FADE)) { taken[c] = 1; add(s.p, cx, cy); }
         }
       }
     }
 
-    const owner = new Uint8Array(cols * rows);
-    const level = new Float32Array(cols * rows);
-    for (let c = 0; c < cols * rows; c++) {
-      for (let p = 0; p < projects; p++) {
-        const v = heat[p * cols * rows + c];
-        if (v > level[c]) { level[c] = v; owner[c] = p; }
+    /* Los caminos: cada foto se une a la más cercana de su proyecto de
+       las que ya estaban, así que cada proyecto es un árbol. El camino es
+       una curva en S (Bézier con los dos tiradores desviados a lados al
+       azar) y se recorre a pasos, dejando un píxel en algunos. */
+    const byProject = new Map();
+    for (const s of spots) {
+      const center = { x: s.x + s.w / 2, y: s.y + s.h / 2 };
+      const before = byProject.get(s.p) || [];
+      if (before.length) {
+        const from = before.reduce((a, b) => (Math.hypot(a.x - center.x, a.y - center.y) < Math.hypot(b.x - center.x, b.y - center.y) ? a : b));
+        const dx = center.x - from.x;
+        const dy = center.y - from.y;
+        const len = Math.hypot(dx, dy);
+        const bend = () => (Math.random() * 2 - 1) * 0.45;   // cuánto se curva, en largos del camino
+        const c1 = { x: from.x + dx / 3 - dy * bend(), y: from.y + dy / 3 + dx * bend() };
+        const c2 = { x: from.x + (2 * dx) / 3 - dy * bend(), y: from.y + (2 * dy) / 3 + dx * bend() };
+        const steps = Math.ceil(len / GAIT);
+        for (let k = 0; k <= steps; k++) {
+          if (Math.random() >= TRAIL) continue;
+          const t = k / steps;
+          const u = 1 - t;
+          add(s.p,
+            u * u * u * from.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t * t * t * center.x + (Math.random() - 0.5) * 4,
+            u * u * u * from.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t * t * t * center.y + (Math.random() - 0.5) * 4);
+        }
       }
-    }
-
-    /* Los píxeles: en cada casilla, uno o ninguno —más probable cuanto
-       más calor—, y no en el centro de la casilla sino corrido al azar,
-       para que no se vea la cuadrícula. `r` es su tirada: decide si sale
-       y cuándo, al encenderse. */
-    const dots = [];
-    for (let c = 0; c < cols * rows; c++) {
-      const chance = Math.min(1, level[c]) * FILL;
-      const r = Math.random();
-      if (r >= chance) continue;
-      (dots[owner[c]] ||= []).push({
-        x: ((c % cols) + Math.random()) * STEP - DOT / 2,
-        y: (Math.floor(c / cols) + Math.random()) * STEP - DOT / 2,
-        r: r / chance,
-      });
+      byProject.set(s.p, [...before, center]);
     }
 
     const colors = [];
