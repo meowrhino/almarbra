@@ -187,6 +187,22 @@ html:has(#about:target) #lista { display: none; }
 
 @keyframes draw { to { stroke-dashoffset: 0; } }
 
+/* PRUEBAS: la forma de los hilos (data-hilos, js/hilos.js). En diagonal y
+   liso se suavizan los bordes; en escalera y fina, píxel duro. */
+[data-hilos="diagonal"] :is(.threads, .row svg, .hilo) path,
+[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { shape-rendering: auto; }
+[data-hilos="liso"] :is(.threads, .row svg, .hilo) path { stroke-linejoin: round; stroke-linecap: round; }
+
+/* PRUEBAS: hover «pespunte»: el hilo del proyecto se vuelve un pespunte
+   que corre. --puntada la pone js/mapa.js: 5 px en el largo del hilo. */
+.threads path.pespunte {
+  stroke-dasharray: var(--puntada) var(--puntada);
+  stroke-dashoffset: 0;
+  animation: pespunte .35s linear infinite;
+}
+
+@keyframes pespunte { to { stroke-dashoffset: calc(-2 * var(--puntada)); } }
+
 @media (prefers-reduced-motion: reduce) {
   .threads path,
   .row svg path { animation: none; stroke-dashoffset: 0; }
@@ -345,6 +361,7 @@ html:has(#about:target) #lista { display: none; }
    de cada foto: si cambian aquí, cambian allí. */
 
 .project { --col: 640px; }
+[data-columna="800"] .project { --col: 800px; }   /* PRUEBAS */
 
 /* El hilo: baja por toda la página ondulando de lado a lado, de su
    color y por encima de las fotos, y se va dibujando al bajar
@@ -404,6 +421,28 @@ html:has(#about:target) #lista { display: none; }
    mal. Las fotos sí la ocupan entera. */
 .ficha h1,
 .ficha p { max-width: 34rem; }
+
+/* PRUEBAS: el panel para elegir variantes (js/pruebas.js) */
+.pruebas {
+  position: fixed;
+  left: .75rem;
+  bottom: .75rem;
+  z-index: 20;
+  display: grid;
+  gap: .3rem;
+  padding: .6rem .7rem;
+  font-size: 12px;
+  color: #000;
+  background: #fff;
+  border: 1px solid #000;
+  text-transform: lowercase;
+}
+
+.pruebas div { display: flex; gap: .4rem; align-items: baseline; }
+.pruebas b { width: 6.5em; font-weight: 400; color: rgba(0, 0, 0, .5); }
+.pruebas button { padding: 0 .2em; border: 0; font: inherit; color: inherit; background: none; cursor: pointer; }
+.pruebas button[aria-pressed="true"] { color: #fff; background: #000; }
+.pruebas .x { position: absolute; top: .2rem; right: .3rem; }
 
 .ficha h1 {
   margin: 0 0 1.5rem;

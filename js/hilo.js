@@ -2,64 +2,50 @@
 
    Baja por toda la página ondulando de lado a lado, por encima de las
    fotos, con dos ondas —una larga y otra más corta— para que no se
-   repita. Va a escalones de STEP px, como los hilos del mapa, y se dibuja
-   según se baja. */
+   repita. La forma (escalones, diagonal…) la pone js/hilos.js, como a
+   todos los hilos de la web. Se dibuja según se baja. */
 
 (() => {
   const root = document.documentElement;
   if (!document.querySelector('.project article')) return;
 
-  const STEP = 3;   // la casilla de la rejilla, en px
   let svg = null;
-  let marks = [];   // [y, largo del hilo hasta ahí], para dibujarlo según se baja
+  let curve = [];   // los puntos, cada 3 px de alto
+  const p1 = Math.random() * 6;
+  const p2 = Math.random() * 6;
 
   function draw() {
     svg?.remove();
     const W = root.clientWidth;
     const H = root.scrollHeight;
-    const p1 = Math.random() * 6;
-    const p2 = Math.random() * 6;
-
-    /* A pasos de una casilla en vertical: en cada uno, el hilo va a su x
-       en horizontal y baja una. Solo cambia de x cuando la curva ya se ha
-       ido tres cuartos de casilla, para que no vaya y vuelva entre dos
-       (como en js/mapa.js). */
-    let d = '';
-    let last = null;
-    let len = 0;
-    marks = [];
-    let cell = null;
-    for (let y = 0; y <= H; y += STEP) {
-      const want = (W / 2 + (W / 2 - 24) * Math.sin(y / 500 + p1) * (0.75 + 0.25 * Math.sin(y / 230 + p2))) / STEP;
-      if (cell === null) cell = Math.round(want);
-      while (want - cell > 0.75) cell += 1;
-      while (cell - want > 0.75) cell -= 1;
-      const x = cell * STEP;
-      d += last === null ? `M${x} ${y}` : `${x !== last ? `H${x}` : ''}V${y}`;
-      len += last === null ? 0 : Math.abs(x - last) + STEP;
-      marks.push([y, len]);
-      last = x;
+    curve = [];
+    for (let y = 0; y <= H; y += 3) {
+      curve.push({ x: W / 2 + (W / 2 - 24) * Math.sin(y / 500 + p1) * (0.75 + 0.25 * Math.sin(y / 230 + p2)), y });
     }
-
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'hilo');
     svg.setAttribute('width', W);
     svg.setAttribute('height', H);
     svg.setAttribute('aria-hidden', 'true');
-    svg.innerHTML = `<path d="${d}" stroke-dasharray="${len + 1}"/>`;
+    svg.innerHTML = `<path d="${hilos.path(curve)}"/>`;
     document.body.prepend(svg);
+    const total = svg.firstChild.getTotalLength();
+    svg.firstChild.style.strokeDasharray = total + 1;
+    svg.total = total;
     reveal();
   }
 
-  /* El hilo llega hasta el fondo de la pantalla. */
+  /* El hilo llega hasta el fondo de la pantalla: la parte del largo que
+     toca a esa altura de la página. */
   function reveal() {
     if (!svg) return;
-    const i = Math.max(0, Math.min(marks.length - 1, Math.floor((scrollY + innerHeight) / STEP)));
-    svg.firstChild.style.strokeDashoffset = marks[marks.length - 1][1] + 1 - marks[i][1];
+    const shown = Math.min(1, (scrollY + innerHeight) / root.scrollHeight);
+    svg.firstChild.style.strokeDashoffset = (svg.total + 1) * (1 - shown);
   }
 
   addEventListener('scroll', reveal, { passive: true });
   addEventListener('resize', draw);
   addEventListener('load', draw);
+  addEventListener('pruebas', (e) => { if (e.detail === 'hilos') draw(); });
   draw();
 })();

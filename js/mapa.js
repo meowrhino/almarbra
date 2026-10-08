@@ -36,10 +36,7 @@
   /* Un hilo de a a b: la recta, desviada por dos ondas —una larga, que
      lo curva entero, y otra corta, que lo hace temblar— que se apagan en
      los extremos para que salga y llegue justo al centro de cada foto.
-     Se recorre a pasos de STEP px y se pasa a escalones (`stairs`). */
-  const STEP = 3;
-  const snap = (v) => Math.round(v / STEP) * STEP;
-
+     Da los puntos; la forma (escalones, diagonal…) la pone js/hilos.js. */
   function thread(a, b) {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
@@ -50,46 +47,23 @@
     const amp = (0.06 + Math.random() * 0.12) * len * (Math.random() < 0.5 ? -1 : 1);
     const wobble = Math.min(14, len * 0.04);
     const phase = Math.random() * Math.PI * 2;
-    const n = Math.max(8, Math.ceil(len / STEP));
-    return stairs(Array.from({ length: n + 1 }, (_, k) => {
+    const n = Math.max(8, Math.ceil(len / 8));
+    return Array.from({ length: n + 1 }, (_, k) => {
       const t = k / n;
       const off = Math.sin(Math.PI * t) * (amp * Math.sin(Math.PI * waves * t + phase / 4) + wobble * Math.sin((t * len) / 35 + phase));
       return { x: a.x + dx * t + nx * off, y: a.y + dy * t + ny * off };
-    }), STEP);
+    });
   }
 
-  /* Una curva a escalones, como en una pantalla de pocos píxeles: va de
-     casilla en casilla de una rejilla de `g`, en horizontal y luego en
-     vertical. Para que no salga dentada, solo cambia de casilla cuando
-     la curva ya se ha ido tres cuartos de casilla: así no va y vuelve
-     entre dos cuando pasa justo por el borde. (Igual en build/build.mjs
-     y js/hilo.js.) */
-  function stairs(points, g) {
-    let d = '';
-    let cx = null;
-    let cy = null;
-    for (const p of points) {
-      const px = p.x / g;
-      const py = p.y / g;
-      if (cx === null) {
-        cx = Math.round(px);
-        cy = Math.round(py);
-        d = `M${cx * g} ${cy * g}`;
-        continue;
-      }
-      let nx = cx;
-      let ny = cy;
-      while (px - nx > 0.75) nx += 1;
-      while (nx - px > 0.75) nx -= 1;
-      while (py - ny > 0.75) ny += 1;
-      while (ny - py > 0.75) ny -= 1;
-      if (nx !== cx) d += `H${nx * g}`;
-      if (ny !== cy) d += `V${ny * g}`;
-      cx = nx;
-      cy = ny;
-    }
-    return d;
-  }
+  /* Pone (o vuelve a poner) la forma a un hilo a partir de sus puntos. */
+  const shape = (el) => el.setAttribute('d', hilos.path(el.pts));
+
+  /* Los hilos de la lista los escribe el build con sus puntos en
+     data-pts; aquí se les pone la forma que toque. */
+  const listPaths = [...document.querySelectorAll('.row svg path[data-pts]')];
+  for (const el of listPaths) el.pts = el.dataset.pts.split(' ').map((xy) => { const [x, y] = xy.split(','); return { x: +x, y: +y }; });
+  const reshape = () => { for (const el of [...listPaths, ...world.querySelectorAll('.threads path')]) shape(el); };
+  reshape();
 
   let built = false;
 
@@ -111,10 +85,11 @@
        alrededor de la suya, a REACH px como mucho. Las zonas se tocan y
        se mezclan un poco por los bordes. Si no hay hueco se va aflojando.
 
-       La mezcla (content/mapa.json, de 0 a 100, en data-mezcla) tira de
+       La mezcla (content/mapa.json, de 0 a 100, en data-mezcla; el panel
+       de pruebas la pisa en <html>) tira de
        cada foto desde su zona hacia un sitio cualquiera del plano: con 0
        son zonas limpias; con 100, todo revuelto. */
-    const mix = Number(map.dataset.mezcla ?? 50) / 100;
+    const mix = Number(root.dataset.mezcla ?? map.dataset.mezcla ?? 50) / 100;
     const anywhere = (size, of) => MARGIN + Math.random() * (of - size - 2 * MARGIN);
     const first = pins.map((pin, i) => i === 0 || pins[i - 1].dataset.p !== pin.dataset.p);
     const order = [...pins.keys()].sort((a, b) => first[b] - first[a]);
@@ -165,7 +140,8 @@
       if (!before.length) continue;
       const from = before.reduce((a, b) => (Math.hypot(a.x - to.x, a.y - to.y) < Math.hypot(b.x - to.x, b.y - to.y) ? a : b));
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute('d', thread(from, to));
+      path.pts = thread(from, to);
+      shape(path);
       path.setAttribute('pathLength', '1');
       path.ends = [from, to];
       path.setAttribute('stroke', colorOf(pins.find((pin) => pin.dataset.p === s.p)));
@@ -178,20 +154,39 @@
   }
 
   /* Al pasar por una foto se enciende su proyecto y el resto se apaga.
-     Y sus hilos se descosen y se vuelven a coser por otro camino: cada
-     vez que se pasa, salen con otra forma y se dibujan de nuevo. */
+     Y sus hilos hacen algo; PRUEBAS: lo que diga data-hover en <html>:
+       recoser   se descosen y se vuelven a coser por otro camino: cada
+                 vez que se pasa, salen con otra forma y se dibujan
+       pespunte  se vuelven un pespunte que corre, como la máquina
+       nada      solo se encienden */
   let lit = null;
   function light(p) {
     if (p === lit) return;
     lit = p;
+    const hover = root.dataset.hover || 'recoser';
     map.classList.toggle('dim', p !== null);
     for (const el of world.querySelectorAll('[data-p]')) {
-      el.classList.toggle('on', el.dataset.p === p);
-      if (el.dataset.p !== p || !el.ends || still) continue;
-      el.setAttribute('d', thread(...el.ends));
-      el.style.animation = 'none';
-      el.getBBox();   // para que la animación vuelva a empezar
-      el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
+      const on = el.dataset.p === p;
+      el.classList.toggle('on', on);
+      if (!el.pts) continue;
+      if (!on && el.classList.contains('pespunte')) {
+        el.classList.remove('pespunte');
+        el.style.animation = 'none';
+        el.style.strokeDashoffset = '0';
+      }
+      if (!on || still) continue;
+      if (hover === 'recoser') {
+        el.pts = thread(...el.ends);
+        shape(el);
+        el.style.strokeDashoffset = '';
+        el.style.animation = 'none';
+        el.getBBox();   // para que la animación vuelva a empezar
+        el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
+      } else if (hover === 'pespunte') {
+        el.style.setProperty('--puntada', 5 / (el.getTotalLength() || 1));
+        el.style.animation = '';
+        el.classList.add('pespunte');
+      }
     }
   }
   world.addEventListener('pointerover', (e) => light(e.target.closest('.pin')?.dataset.p ?? null));
@@ -259,7 +254,7 @@
 
      Un lienzo a toda la pantalla tapa, se cambia de vista y se destapa.
      Hay cuatro; cuál, lo dice «transicion» en content/mapa.json, y para
-     probar, ?transicion=… en la dirección. Al entrar en un proyecto, del
+     probar, ?transicion=… en la dirección o el panel de pruebas. Al entrar en un proyecto, del
      color de ese proyecto.
 
        puntos   punto de cruz: la pantalla se borda de equis, del centro
@@ -348,37 +343,34 @@
     };
   }
 
+  /* Cada línea es un camino de puntos que crece; en cada fotograma se
+     pinta entero con la forma de los hilos (js/hilos.js). */
   function lineas(colors, W, H) {
     const walkers = Array.from({ length: 60 }, () => {
       const side = Math.floor(Math.random() * 4);
       const x = side === 1 ? W : side === 3 ? 0 : Math.random() * W;
       const y = side === 2 ? H : side === 0 ? 0 : Math.random() * H;
       const angle = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - 0.5) * 1.6;
-      return { x: snap(x), y: snap(y), angle, turn: (Math.random() - 0.5) * 0.08, color: pick(colors) };
+      return { pts: [{ x, y }], angle, turn: (Math.random() - 0.5) * 0.08, color: pick(colors) };
     });
     return (f) => {
       veil.style.backgroundColor = `color-mix(in srgb, var(--bg) ${Math.round((f / FRAMES) * 100)}%, transparent)`;
       for (const w of walkers) {
-        vctx.strokeStyle = w.color;
-        vctx.beginPath();
-        vctx.moveTo(w.x, w.y);
-        for (let k = 0; k < 14; k++) {
-          w.turn += (Math.random() - 0.5) * 0.02;
-          w.angle += w.turn / 4;
-          const x = snap(w.x + Math.cos(w.angle) * STEP);
-          const y = snap(w.y + Math.sin(w.angle) * STEP);
-          vctx.lineTo(x, w.y);
-          vctx.lineTo(x, y);
-          w.x = x;
-          w.y = y;
+        for (let k = 0; k < 6; k++) {
+          const at = w.pts[w.pts.length - 1];
+          w.turn += (Math.random() - 0.5) * 0.04;
+          w.angle += w.turn / 2;
+          w.pts.push({ x: at.x + Math.cos(w.angle) * 7, y: at.y + Math.sin(w.angle) * 7 });
         }
-        vctx.stroke();
+        vctx.strokeStyle = w.color;
+        vctx.stroke(new Path2D(hilos.path(w.pts)));
       }
     };
   }
 
   const STYLES = { puntos, pixeles, barrido, lineas };
-  const style = STYLES[new URLSearchParams(location.search).get('transicion')] || STYLES[map.dataset.transicion] || puntos;
+  const style = () => STYLES[new URLSearchParams(location.search).get('transicion')]
+    || STYLES[root.dataset.transicion] || STYLES[map.dataset.transicion] || puntos;
 
   function cover(colors) {
     const dpr = devicePixelRatio || 1;
@@ -390,7 +382,7 @@
     vctx.lineJoin = 'miter';
     veil.style.transition = 'none';
     veil.style.opacity = 1;
-    const draw = style(colors, innerWidth, innerHeight);
+    const draw = style()(colors, innerWidth, innerHeight);
 
     return new Promise((done) => {
       let frame = 0;
@@ -428,6 +420,17 @@
   show(wanted());
 
   addEventListener('resize', () => { if (root.dataset.vista === 'mapa') build(); });
+
+  /* PRUEBAS: lo que cambia el panel (js/pruebas.js). */
+  addEventListener('pruebas', (e) => {
+    if (e.detail === 'hilos') reshape();
+    if (e.detail === 'mezcla') {
+      built = false;
+      world.querySelector('.threads')?.remove();
+      world.style.zoom = '';
+      if (root.dataset.vista === 'mapa') build();
+    }
+  });
 
   addEventListener('hashchange', async () => {
     const view = wanted();

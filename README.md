@@ -33,6 +33,14 @@ pantallas:
   hechos de píxeles. Solo cambian de casilla cuando la curva se ha ido tres
   cuartos de una, para que no vayan y vuelvan entre dos (eso los dentaba).
 
+  **Panel de pruebas**: `?pruebas` en la dirección abre abajo a la izquierda
+  un panel con lo que aún se está decidiendo (se recuerda en el navegador; la
+  × lo cierra): la forma de los hilos (escalera, fina, diagonal, liso, en
+  `js/hilos.js`, la misma para toda la web), la transición, la mezcla, qué
+  hacen los hilos al pasar por una foto (recoser, pespunte, nada) y el ancho
+  de la columna de un proyecto. Todo lo marcado `PRUEBAS` en el código, y
+  `js/pruebas.js`, se va cuando se decida.
+
   Las otras opciones que se probaron (fondo negro; lista en índice, hilo o
   muestrario; transición de telar u ovillo; fondo de proyecto con tinte o
   trama) están en el commit «Pruebas con panel…», abriendo `?pruebas`.
@@ -103,7 +111,9 @@ build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
 css/style.css           todo el estilo
 js/mapa.js              el mapa y la transición de líneas
+js/hilos.js             la forma de todos los hilos de la web
 js/hilo.js              el hilo de fondo de la página de un proyecto
+js/pruebas.js           PRUEBAS: el panel de ?pruebas
 js/idioma.js            el selector de idioma
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
 media/portada/          GENERADO: la foto que sale al compartir la portada

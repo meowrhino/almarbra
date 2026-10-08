@@ -136,6 +136,11 @@ const IDIOMA_HEAD = `<script>try { document.documentElement.dataset.idioma = loc
 document.documentElement.dataset.idioma ||= ${JSON.stringify(lang)};</script>
 `;
 
+/* PRUEBAS: lo que se haya elegido en el panel (js/pruebas.js), en
+   <html> antes de pintar. Sin nada elegido manda lo de content/. */
+const PRUEBAS_HEAD = `<script>try { Object.assign(document.documentElement.dataset, JSON.parse(localStorage.getItem('almarbra-pruebas'))); } catch {}</script>
+`;
+
 /* `path` es la dirección de la página dentro del sitio ('' la portada,
    'projects/roma/' un proyecto); sin ella no hay canonical ni og, que es
    lo que pasa en la 404. `image` es la que sale al compartir el enlace. */
@@ -161,10 +166,10 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
-${IDIOMA_HEAD}${head}</head>
+${IDIOMA_HEAD}${PRUEBAS_HEAD}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
-${[...scripts, 'js/idioma.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
+${['js/hilos.js', ...scripts, 'js/idioma.js', 'js/pruebas.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -249,8 +254,6 @@ function stairs(points, g = STEP) {
   return d;
 }
 
-const thread = (a, b) => stairs(wander(a, b));
-
 const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
 const meta = (project) => `${tr(textos.categorias?.[project.category]) || esc(project.category.replace(/-/g, ' '))} · ${project.images.length}`;
 
@@ -271,10 +274,13 @@ function listRow(project, i) {
   const y = (ROW.h - h) / 2;
   const end = { x: flip ? ROW.side + 10 : ROW.w - ROW.side - 10, y: ROW.h * (0.3 + Math.random() * 0.4) };
 
+  /* Los puntos del hilo van también en data-pts: js/mapa.js le pone la
+     forma con js/hilos.js. Sin JavaScript, la escalera de aquí. */
+  const pts = wander({ x: x + w / 2, y: y + h / 2 }, end);
   const edge = flip ? `left:${pct(ROW.side, ROW.w)}` : `right:${pct(ROW.side, ROW.w)}`;
 
   return `<li><a class="row${flip ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${thread({ x: x + w / 2, y: y + h / 2 }, end)}"/></svg>
+<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${stairs(pts)}" data-pts="${pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/></svg>
 <div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
 <h2 style="${edge};top:${pct(end.y, ROW.h)}">${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></h2>
 </a></li>`;
