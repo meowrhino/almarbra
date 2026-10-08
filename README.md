@@ -36,10 +36,10 @@ pantallas:
 
   Lo de píxeles (mapa de calor, halos, ruido de color, lista con cuadrados) se
   quedó en la rama `pixel`.
-- **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con aire alrededor
-  —ficha técnica arriba, galería en scroll vertical debajo—. Por detrás, un
-  hilo grueso de su color baja de lado a lado y entra y sale de la columna,
-  por encima y por debajo, como una costura; se dibuja al bajar.
+- **proyecto** (`/projects/<slug>/`): una columna de 640 px centrada y con aire alrededor
+  —ficha técnica arriba, galería en scroll vertical debajo—. Un
+  hilo de su color baja por los márgenes y cruza la columna solo por el hueco
+  entre dos fotos, cosiéndolas, con un agujero donde entra y sale; se dibuja al bajar.
 
 ## Lo que se cambia sin tocar código
 
@@ -246,7 +246,7 @@ lo dice.
 La foto de `originals/PORTADA/` ya no sale en la web: es la `og:image` de la
 portada, la que se ve al compartir el enlace.
 
-El ancho de la columna de un proyecto —800 px— vive en `--col`, en
+El ancho de la columna de un proyecto —640 px— vive en `--col`, en
 `css/style.css`, y `build/build.mjs` lo repite en el `sizes` de cada foto para
 que el navegador no se baje una más grande de la cuenta. Si cambia uno, cambia el
 otro.

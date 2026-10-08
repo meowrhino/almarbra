@@ -332,48 +332,51 @@ html:has(#about:target) #lista { display: none; }
 
 /* ── página de proyecto ──────────────────────────────────────────────
 
-   Una sola columna estrecha —800 px como mucho— centrada y con aire por
+   Una sola columna estrecha —640 px como mucho— centrada y con aire por
    los cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
    ancho. Nada va a sangre; el negro alrededor es parte de la página.
    El cuadrado junto al título es el color del proyecto en el mapa.
 
-   Los 800 también los sabe build/build.mjs, que los pone en el `sizes`
+   Los 640 también los sabe build/build.mjs, que los pone en el `sizes`
    de cada foto: si cambian aquí, cambian allí. */
 
-.project { --col: 800px; }
+.project { --col: 640px; }
 
-/* Por detrás, un hilo grueso de su color baja de lado a lado, entra y
-   sale de la columna —por encima y por debajo, como una costura— y se va
-   dibujando al bajar (js/hilo.js). La columna es lisa, del color de la
-   página, para que el hilo pase por debajo. */
+/* El hilo: baja por los márgenes, de su color, y cruza la columna solo
+   por el hueco entre una foto y la siguiente, de un lado al otro, como si
+   las cosiera. Donde entra y sale de la columna, un cuadradito: el
+   agujero de la aguja. Se va dibujando al bajar (js/hilo.js). */
 .project { min-height: 100vh; }
 
-.project article {
-  position: relative;
-  z-index: 1;
-  background: var(--bg);
-}
+.project article { position: relative; z-index: 1; }
 
 .hilo {
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 2;
   overflow: visible;
   pointer-events: none;
-  stroke: var(--c);
 }
-
-.hilo.encima { z-index: 2; }
 
 .hilo path {
   fill: none;
-  stroke-width: 4;
+  stroke: var(--c);
+  stroke-width: 3;
   stroke-linecap: square;
   shape-rendering: crispEdges;
-  stroke-dasharray: 1;
 }
 
-/* La columna: 800 px, o todo el ancho menos el aire de los lados. La
+.hilo rect {
+  fill: var(--c);
+  shape-rendering: crispEdges;
+  opacity: 0;
+  transition: opacity .3s;
+}
+
+.hilo rect.on { opacity: 1; }
+
+/* La columna: 640 px, o todo el ancho menos el aire de los lados. La
    vuelta de abajo va al ras de ella. */
 .project footer.bar,
 .project article {
@@ -403,7 +406,7 @@ html:has(#about:target) #lista { display: none; }
 
 .ficha { margin: 0 0 clamp(2.5rem, 9vh, 5.5rem); }
 
-/* El texto, más estrecho que la columna: una línea de 800 px se lee
+/* El texto, más estrecho que la columna: una línea de 640 px se lee
    mal. Las fotos sí la ocupan entera. */
 .ficha h1,
 .ficha p { max-width: 34rem; }
@@ -453,7 +456,7 @@ html:has(#about:target) #lista { display: none; }
    estrechas: el `max-width` que les pone el build con su ancho real las
    frena, y entonces se quedan centradas antes que ampliarse y verse
    blandas. */
-.group figure { margin: 0 0 clamp(.75rem, 3vh, 2rem); }
+.group figure { margin: 0 0 clamp(1.25rem, 4vh, 2.5rem); }
 
 .group figure img { width: 100%; margin: 0 auto; }
 
