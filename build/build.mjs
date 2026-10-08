@@ -157,42 +157,49 @@ function mapImages(project) {
   return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
 }
 
-/* Una fila de la lista: una franja de proporción fija (1000×600) con la
-   portada a un lado y, alrededor, cuadrados del color del proyecto,
-   apretados junto a la foto y cada vez más sueltos al alejarse. Todo va
-   en coordenadas de la franja —el SVG y la foto, en %—, así que los
-   cuadrados quedan alrededor de la foto a cualquier ancho. Sale distinto
-   en cada build. */
-const ROW = { w: 1000, h: 600, side: 60, sq: 20 };
+/* Un hilo de a a b, como los del mapa (js/mapa.js): la recta desviada
+   por una onda larga y otra corta, que se apagan en los extremos. */
+function thread(a, b) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const len = Math.hypot(dx, dy) || 1;
+  const amp = (0.06 + Math.random() * 0.12) * len * (Math.random() < 0.5 ? -1 : 1);
+  const waves = 0.5 + Math.random() * 1.5;
+  const phase = Math.random() * Math.PI * 2;
+  const n = Math.ceil(len / 8);
+  let d = '';
+  for (let k = 0; k <= n; k++) {
+    const t = k / n;
+    const off = Math.sin(Math.PI * t) * (amp * Math.sin(Math.PI * waves * t + phase / 4) + 12 * Math.sin((t * len) / 35 + phase));
+    d += `${k ? 'L' : 'M'}${(a.x + dx * t - (dy / len) * off).toFixed(1)} ${(a.y + dy * t + (dx / len) * off).toFixed(1)}`;
+  }
+  return d;
+}
+
+/* Una fila de la lista: una franja de proporción fija (1000×500) con la
+   portada a un lado y, del centro de la foto al otro lado, un hilo de su
+   color que acaba en el título. Todo va en coordenadas de la franja —el
+   SVG, la foto y el título, en %—, así que el hilo llega a su sitio a
+   cualquier ancho. Sale distinto en cada build. */
+const ROW = { w: 1000, h: 500, side: 50 };
 
 function listRow(project, i) {
   const cover = coverOf(project);
-  let h = 470;
+  let h = 400;
   let w = (h * cover.w) / cover.h;
-  if (w > 560) { w = 560; h = (w * cover.h) / cover.w; }
-  const x = i % 2 ? ROW.w - ROW.side - w : ROW.side;
+  if (w > 520) { w = 520; h = (w * cover.h) / cover.w; }
+  const flip = i % 2 === 1;
+  const x = flip ? ROW.w - ROW.side - w : ROW.side;
   const y = (ROW.h - h) / 2;
-  const S = ROW.sq;
-
-  const squares = [];
-  for (let n = 0; n < 6000; n++) {
-    const sx = Math.round(Math.random() * (ROW.w - S));
-    const sy = Math.round(Math.random() * (ROW.h - S));
-    if (sx > x && sy > y && sx + S < x + w && sy + S < y + h) continue;   // tapado por la foto
-    const dx = Math.max(x - sx - S / 2, 0, sx + S / 2 - x - w);
-    const dy = Math.max(y - sy - S / 2, 0, sy + S / 2 - y - h);
-    if (Math.random() > 0.006 + 0.8 * Math.exp(-Math.hypot(dx, dy) / 60)) continue;
-    if (squares.some(([qx, qy]) => Math.abs(qx - sx) < S + 6 && Math.abs(qy - sy) < S + 6)) continue;
-    squares.push([sx, sy]);
-  }
+  const end = { x: flip ? ROW.side + 10 : ROW.w - ROW.side - 10, y: ROW.h * (0.3 + Math.random() * 0.4) };
 
   const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
-  const edge = i % 2 ? `right:${pct(ROW.w - x - w, ROW.w)}` : `left:${pct(x, ROW.w)}`;
+  const edge = flip ? `left:${pct(ROW.side, ROW.w)}` : `right:${pct(ROW.side, ROW.w)}`;
 
-  return `<li><a class="row${i % 2 ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path d="${squares.map(([qx, qy]) => `M${qx} ${qy}h${S}v${S}h-${S}z`).join('')}"/></svg>
+  return `<li><a class="row${flip ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${thread({ x: x + w / 2, y: y + h / 2 }, end)}"/></svg>
 <div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
-<h2 style="${edge};top:${pct(y + h, ROW.h)}">${esc(t(project.title) || project.slug)} <small>${esc(project.category.replace(/-/g, ' '))} · ${project.images.length}</small></h2>
+<h2 style="${edge};top:${pct(end.y, ROW.h)}">${esc(t(project.title) || project.slug)} <small>${esc(project.category.replace(/-/g, ' '))} · ${project.images.length}</small></h2>
 </a></li>`;
 }
 
@@ -245,9 +252,9 @@ ${pins.join('\n')}
 </section>
 
 <div class="zoom" aria-hidden="true">
-<button type="button" data-step="1" tabindex="-1"><svg viewBox="0 0 5 5"><path d="M2 0h1v5h-1zM0 2h5v1h-5z"/></svg></button>
+<button type="button" data-step="1" tabindex="-1">+</button>
 <div class="ticks"></div>
-<button type="button" data-step="-1" tabindex="-1"><svg viewBox="0 0 5 5"><path d="M0 2h5v1h-5z"/></svg></button>
+<button type="button" data-step="-1" tabindex="-1">−</button>
 </div>
 
 <section id="lista">

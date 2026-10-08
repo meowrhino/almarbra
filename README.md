@@ -11,13 +11,15 @@ El menú va arriba en todas las páginas: el nombre a la izquierda, **mapa** y
 - **portada** (`/`): el **mapa** (`#mapa`) o la **lista** (`#lista`), como el
   túnel y la lista de oriol-colomer. El mapa es la idea de anaelleblin.com: las
   fotos de todos los proyectos, por zonas, en un plano que se arrastra, con zoom
-  (+ y −), y en vez de líneas, ruido de píxeles del color de cada
-  proyecto. Al pasar por una foto se enciende su proyecto. La lista: una franja
-  por proyecto con la portada a un lado —una a la izquierda, la siguiente a la
-  derecha— y cuadrados de su color alrededor, apretados junto a la foto y cada
-  vez más sueltos al alejarse. Se hornean en el build (un SVG por franja). Entre
-  mapa y lista la pantalla se tapa de píxeles de colores; al entrar en un
-  proyecto, de píxeles de su color.
+  (+ y −), y las de un mismo proyecto unidas por un hilo fino de su color, que
+  serpentea y se dibuja al cargar. Al pasar por una foto se enciende su
+  proyecto. La lista: una franja por proyecto con la portada a un lado —una a la
+  izquierda, la siguiente a la derecha— y un hilo de su color que sale de la
+  foto y acaba en el título, al otro lado. Entre mapa y lista la pantalla se
+  llena de líneas que se dibujan solas; al entrar en un proyecto, de su color.
+
+  Lo de píxeles (mapa de calor, halos, ruido de color, lista con cuadrados) se
+  quedó en la rama `pixel`.
 - **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con aire alrededor
   —ficha técnica arriba, galería en scroll vertical debajo—. Nada va a sangre: el
   negro de los lados es parte de la página.
@@ -49,7 +51,7 @@ build/build.mjs         content/ + media/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/ (y de pruebas/)
 
 css/style.css           todo el estilo
-js/mapa.js              el mapa y la transición de píxeles (lo único de navegador)
+js/mapa.js              el mapa y la transición de líneas (lo único de navegador)
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
 media/portada/          GENERADO: la foto que sale al compartir la portada
 
@@ -219,22 +221,20 @@ El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
 (las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
 pisarse y por zonas: primero la primera foto de cada proyecto, separadas entre
 sí, y luego el resto alrededor de la suya (`REACH`). Las zonas se tocan y se
-mezclan un poco por los bordes. Debajo, ruido de píxeles del color de cada
-proyecto —cada píxel de uno de ocho tonos, del oscuro al claro—, de dos clases:
+mezclan un poco por los bordes.
 
-- **el halo**: alrededor de cada foto, mucho y apretado, que se va soltando al
-  alejarse. Como mucho un píxel por casilla de 6 px, corrido al azar dentro de
-  ella para que no se vea la rejilla.
-- **las franjas**: como las líneas de anaelleblin.com, unen las fotos de un
-  mismo proyecto —cada una con la más cercana de las que ya estaban, así que
-  cada proyecto es un árbol—. Siguen una curva en S, salen anchas de cada foto
-  y se estrechan hacia la mitad, y son mucho menos densas que el halo.
+Las fotos de un mismo proyecto van unidas por hilos —cada una con la más
+cercana de las que ya estaban, así que cada proyecto es un árbol—. Cada hilo es
+la recta entre los dos centros desviada por dos ondas, una larga que lo curva
+entero y otra corta que lo hace temblar, apagadas en los extremos. Van en un SVG
+del tamaño del plano, con el grueso fijo a cualquier zoom, y se dibujan solos al
+cargar, cada uno con su retraso. La misma receta está en `build/build.mjs` para
+el hilo de la lista. Los mandos, arriba de `js/mapa.js`: `DENSITY` (lo juntas que
+van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
-Un solo lienzo a media resolución, que el CSS estira sin suavizar. Los mandos,
-arriba de `js/mapa.js`: `DOT` (tamaño), `HALO` y `FADE` (lo lleno y lo ancho del
-halo), `BAND` y `BAND_FILL` (ancho de las franjas al salir y a medio camino, y lo
-llenas que van), `SHADES` (cuántos tonos), `DENSITY` (lo juntas que van las
-fotos) y `REACH` (lo ancha que es la zona de un proyecto).
+La transición entre mapa y lista: 60 líneas salen de los bordes y van torciendo
+al azar mientras el fondo se oscurece; se cambia de vista y todo se funde
+(`LINES`, `FRAMES`, `STRIDE`).
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS

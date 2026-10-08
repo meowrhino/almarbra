@@ -6,7 +6,7 @@
    galería).
 
    La página funciona entera sin JavaScript: sin él la portada es la
-   lista. js/mapa.js monta el mapa y la transición de píxeles. */
+   lista. js/mapa.js monta el mapa y la transición de líneas. */
 
 :root {
   --bg: #000;
@@ -97,13 +97,34 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .world { position: relative; margin: auto; }
 
-/* el mapa de calor: un píxel del lienzo es un cuadrado de pantalla */
-.world canvas {
+/* los hilos: finos y del mismo grueso a cualquier zoom, y se dibujan
+   solos al cargar (cada uno con su retraso, que pone js/mapa.js) */
+.threads {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  image-rendering: pixelated;
+  overflow: visible;
+}
+
+.threads path,
+.row svg path {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1.6s ease-out forwards;
+  transition: opacity .2s;
+}
+
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .threads path,
+  .row svg path { animation: none; stroke-dashoffset: 0; }
 }
 
 .pin {
@@ -128,12 +149,12 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .pin,
 .pin span { transition: opacity .2s; }
 
-.dim .pin:not(.on) { opacity: .15; }
+.dim .pin:not(.on),
+.dim .threads path:not(.on) { opacity: .15; }
 .pin:hover span { opacity: 1; }
 
-/* El zoom, a la derecha: + arriba, − abajo y en medio un cuadrado por
-   escalón, lleno el que está puesto. Botones con las esquinas mordidas,
-   como de juego viejo; los signos son píxeles (un SVG de 5×5). */
+/* El zoom, a la derecha, como en anaelleblin.com: + arriba, − abajo y
+   en medio una raya por escalón, más larga la que está puesta. */
 .zoom { display: none; }
 [data-vista="mapa"] .zoom {
   position: fixed;
@@ -142,7 +163,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   z-index: 3;
   display: grid;
   justify-items: center;
-  gap: 10px;
+  gap: 8px;
   transform: translateY(-50%);
 }
 
@@ -150,48 +171,49 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   display: block;
   padding: 0;
   border: 0;
-  color: var(--bg);
-  background: var(--ink);
+  font: inherit;
+  color: var(--ink);
+  background: none;
   cursor: pointer;
 }
 
 .zoom > button {
-  width: 36px;
-  height: 36px;
-  clip-path: polygon(4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px),
-    calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px),
-    0 calc(100% - 4px), 0 4px, 4px 4px);
-}
-
-.zoom svg {
-  display: block;
-  width: 15px;
-  height: 15px;
-  margin: auto;
-  fill: currentColor;
-  shape-rendering: crispEdges;
-}
-
-.zoom .ticks { display: grid; gap: 6px; padding-block: 4px; }
-
-.zoom .ticks button {
-  width: 10px;
-  height: 10px;
+  width: 34px;
+  height: 34px;
+  font-size: 20px;
+  line-height: 1;
+  border: 1px solid var(--dim);
+  border-radius: 10px;
   background: var(--bg);
-  box-shadow: inset 0 0 0 2px var(--ink);
 }
 
-.zoom .ticks button.on { background: var(--ink); }
+.zoom .ticks {
+  display: grid;
+  justify-items: center;
+  padding: 6px 0;
+  border: 1px solid var(--dim);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+/* la raya se dibuja con un degradado; el botón entero es la zona de clic */
+.zoom .ticks button {
+  width: 32px;
+  height: 12px;
+  background: linear-gradient(var(--dim), var(--dim)) center / 10px 1px no-repeat;
+}
+
+.zoom .ticks button.on { background: linear-gradient(var(--ink), var(--ink)) center / 20px 1px no-repeat; }
 
 @media (hover: hover) {
-  .zoom > button:hover { background: var(--dim); }
+  .zoom > button:hover { border-color: var(--ink); }
 }
 
 /* La lista: cada proyecto, una franja de proporción fija con la
-   portada a un lado —uno a la izquierda, el siguiente a la derecha— y
-   cuadrados de su color alrededor, más juntos cuanto más cerca de la
-   foto. Dónde va cada cosa lo calcula build/build.mjs, en % de la
-   franja. */
+   portada a un lado —uno a la izquierda, el siguiente a la derecha— y un
+   hilo de su color que sale de la foto y acaba en el título, al otro
+   lado. Dónde va cada cosa lo calcula build/build.mjs, en % de la
+   franja. El hilo se dibuja al enseñarse la lista. */
 #lista ol {
   display: grid;
   gap: clamp(1rem, 4vh, 3rem);
@@ -203,7 +225,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .row {
   position: relative;
   display: block;
-  aspect-ratio: 1000 / 600;
+  aspect-ratio: 1000 / 500;
 }
 
 .row svg {
@@ -211,34 +233,34 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   inset: 0;
   width: 100%;
   height: 100%;
-  fill: var(--c);
-  shape-rendering: crispEdges;
+  overflow: visible;
+  stroke: var(--c);
 }
 
 .row .pic { position: absolute; }
 .row .pic img { width: 100%; }
 
-/* el título, bajo la foto y al ras de su borde de fuera, sobre un
-   recorte negro para leerse encima de los cuadrados */
+/* el título, donde acaba el hilo, al ras del borde de la franja */
 .row h2 {
   position: absolute;
-  margin: .5em 0 0;
+  margin: 0;
   padding: .15em .35em;
   font-size: clamp(.9rem, 2vw, 1.5rem);
   font-weight: 700;
   line-height: 1.15;
   background: var(--bg);
+  transform: translateY(-50%);
 }
 
-.row.flip h2 { text-align: right; }
+.row:not(.flip) h2 { text-align: right; }
 .row h2 small { display: block; font-size: .6em; font-weight: 400; color: var(--dim); }
 
 @media (hover: hover) {
   .row:hover h2 { color: var(--c); }
 }
 
-/* La tapa de píxeles entre vistas: un lienzo pequeño estirado a toda la
-   pantalla, sin suavizar. */
+/* La tapa entre vistas: un lienzo a toda la pantalla donde se dibujan
+   las líneas (js/mapa.js). */
 .veil {
   position: fixed;
   inset: 0;
@@ -246,7 +268,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   width: 100%;
   height: 100%;
   pointer-events: none;
-  image-rendering: pixelated;
 }
 
 /* ── página de proyecto ──────────────────────────────────────────────
