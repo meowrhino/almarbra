@@ -342,10 +342,9 @@ html:has(#about:target) #lista { display: none; }
 
 .project { --col: 640px; }
 
-/* El hilo: baja por los márgenes, de su color, y cruza la columna solo
-   por el hueco entre una foto y la siguiente, de un lado al otro, como si
-   las cosiera. Donde entra y sale de la columna, un cuadradito: el
-   agujero de la aguja. Se va dibujando al bajar (js/hilo.js). */
+/* El hilo: baja por toda la página ondulando de lado a lado, de su
+   color y por encima de las fotos, y se va dibujando al bajar
+   (js/hilo.js). */
 .project { min-height: 100vh; }
 
 .project article { position: relative; z-index: 1; }
@@ -366,15 +365,6 @@ html:has(#about:target) #lista { display: none; }
   stroke-linecap: square;
   shape-rendering: crispEdges;
 }
-
-.hilo rect {
-  fill: var(--c);
-  shape-rendering: crispEdges;
-  opacity: 0;
-  transition: opacity .3s;
-}
-
-.hilo rect.on { opacity: 1; }
 
 /* La columna: 640 px, o todo el ancho menos el aire de los lados. La
    vuelta de abajo va al ras de ella. */
@@ -456,7 +446,7 @@ html:has(#about:target) #lista { display: none; }
    estrechas: el `max-width` que les pone el build con su ancho real las
    frena, y entonces se quedan centradas antes que ampliarse y verse
    blandas. */
-.group figure { margin: 0 0 clamp(1.25rem, 4vh, 2.5rem); }
+.group figure { margin: 0 0 clamp(.75rem, 3vh, 2rem); }
 
 .group figure img { width: 100%; margin: 0 auto; }
 

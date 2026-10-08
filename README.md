@@ -38,8 +38,8 @@ pantallas:
   quedó en la rama `pixel`.
 - **proyecto** (`/projects/<slug>/`): una columna de 640 px centrada y con aire alrededor
   —ficha técnica arriba, galería en scroll vertical debajo—. Un
-  hilo de su color baja por los márgenes y cruza la columna solo por el hueco
-  entre dos fotos, cosiéndolas, con un agujero donde entra y sale; se dibuja al bajar.
+  hilo de su color baja ondulando de lado a lado, por encima de las fotos, y
+  se dibuja al bajar.
 
 ## Lo que se cambia sin tocar código
 
