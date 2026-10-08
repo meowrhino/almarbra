@@ -1,4 +1,4 @@
-/* La portada: el mapa, la lista y el paso de una a otra.
+/* La portada: el mapa, la lista, el about y el paso de una a otra.
 
    El mapa son las fotos de todos los proyectos, por zonas, en un plano
    más grande que la pantalla, que se arrastra con el ratón y se recorre
@@ -6,8 +6,9 @@
    proyecto van unidas por un hilo fino de su color, que serpentea como
    las líneas de anaelleblin.com y se dibuja al cargar. Todo cae en un
    sitio distinto en cada carga. Los botones + y − acercan y alejan.
+   Detrás del about, un telar de hilos que se tejen y destejen.
 
-   La vista la dice el hash: #mapa, #lista o #about (el nombre). El menú
+   La vista la dice el hash: #mapa, #lista o #about. El menú
    son enlaces a esos hashes, así que atrás y adelante funcionan solos.
    Al cambiar, la transición de js/transicion.js, de lado.
 
@@ -35,18 +36,12 @@
   /* Pone (o vuelve a poner) la forma a un hilo a partir de sus puntos. */
   const shape = (el) => el.setAttribute('d', hilos.path(el.pts));
 
-  /* Los hilos de la lista los escribe el build con sus puntos en
-     data-pts; aquí se les pone la forma que toque. */
-  const listPaths = [...document.querySelectorAll('.row svg path[data-pts]')];
-  for (const el of listPaths) el.pts = el.dataset.pts.split(' ').map((xy) => { const [x, y] = xy.split(','); return { x: +x, y: +y }; });
   /* En la lista, lo mismo que en el mapa: al pasar por una fila su hilo
-     se vuelve a coser. */
-  for (const el of listPaths) {
-    el.ends = [el.pts[0], el.pts[el.pts.length - 1]];
+     se vuelve a coser entre sus extremos (data-ends, del build). */
+  for (const el of document.querySelectorAll('.row svg path[data-ends]')) {
+    el.ends = el.dataset.ends.split(' ').map((xy) => { const [x, y] = xy.split(','); return { x: +x, y: +y }; });
     el.closest('.row').addEventListener('pointerenter', () => redraw(el));
   }
-  const reshape = () => { for (const el of [...listPaths, ...world.querySelectorAll('.threads path')]) shape(el); };
-  reshape();
 
   let built = false;
 
@@ -169,7 +164,7 @@
     for (const el of world.querySelectorAll('[data-p]')) {
       const on = el.dataset.p === p;
       el.classList.toggle('on', on);
-      if (on && el.pts) redraw(el);
+      if (on && el.ends) redraw(el);
     }
   }
   world.addEventListener('pointerover', (e) => light(e.target.closest('.pin')?.dataset.p ?? null));
@@ -336,8 +331,6 @@
 
   addEventListener('resize', () => { if (root.dataset.vista === 'mapa') build(); });
 
-  /* PRUEBAS: lo que cambia el panel (js/pruebas.js). */
-  addEventListener('pruebas', (e) => { if (e.detail === 'hilos') reshape(); });
 
   /* Cambiar de vista: la transición (js/transicion.js), de lado, en el
      orden del menú. */

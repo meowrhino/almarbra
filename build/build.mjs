@@ -2,8 +2,8 @@
 
    Dos plantillas y ya:
 
-     dist/index.html                    portada: el mapa y la lista de
-                                        proyectos, con el menú arriba
+     dist/index.html                    portada: el mapa, la lista de
+                                        proyectos y el about
      dist/projects/<slug>/index.html    ficha técnica y galería en scroll
                                         vertical
 
@@ -145,15 +145,13 @@ function version(file) {
      .tapada       se llega desde otra página de la web, o con atrás y
                    adelante: la página nace tapada para que la transición
                    la destape (js/transicion.js); si ese script no llegara,
-                   el CSS la destapa sola a los 3 s
-     data-hilos…   PRUEBAS: lo elegido en el panel (js/pruebas.js) */
+                   el CSS la destapa sola a los 3 s */
 const HEAD_SCRIPT = `<script>{
 const html = document.documentElement;
 html.classList.add('js');
 try { html.dataset.idioma = localStorage.getItem('almarbra-idioma') || ''; } catch {}
 html.dataset.idioma ||= ${JSON.stringify(lang)};
 try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (sessionStorage.getItem('almarbra-transicion') || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) html.classList.add('tapada'); } catch {}
-try { Object.assign(html.dataset, JSON.parse(localStorage.getItem('almarbra-pruebas'))); } catch {}
 }</script>
 `;
 
@@ -187,7 +185,7 @@ ${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : 
 ${HEAD_SCRIPT}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
-${['js/hilos.js', 'js/transicion.js', ...scripts, 'js/idioma.js', 'js/pruebas.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
+${['js/hilos.js', 'js/transicion.js', ...scripts, 'js/idioma.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -233,13 +231,14 @@ function listRow(project, i) {
   const y = (ROW.h - h) / 2;
   const end = { x: flip ? ROW.side + 10 : ROW.w - ROW.side - 10, y: ROW.h * (0.3 + Math.random() * 0.4) };
 
-  /* Los puntos del hilo van también en data-pts, para que js/mapa.js le
-     ponga la forma que toque. Sin JavaScript, la de por defecto. */
+  /* Los extremos van también en data-ends, para que js/mapa.js lo vuelva
+     a coser entre ellos al pasar por encima. */
   const pts = hilos.wander({ x: x + w / 2, y: y + h / 2 }, end);
+  const ends = [pts[0], pts[pts.length - 1]].map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   const edge = flip ? `left:${pct(ROW.side, ROW.w)}` : `right:${pct(ROW.side, ROW.w)}`;
 
   return `<li><a class="row${flip ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${hilos.path(pts)}" data-pts="${pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')}"/></svg>
+<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${hilos.path(pts)}" data-ends="${ends}"/></svg>
 <div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
 <h2 style="${edge};top:${pct(end.y, ROW.h)}">${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></h2>
 </a></li>`;
@@ -269,7 +268,7 @@ const VIEW_SCRIPT = `<script>document.documentElement.dataset.vista = { '#lista'
 
 function homePage(projects) {
   /* El mapa: las fotos de cada proyecto, sin posición. js/mapa.js las
-     reparte en cada carga y las une con píxeles del color del proyecto.
+     reparte en cada carga y las une con hilos del color del proyecto.
      Es solo para la vista: quien navega con teclado o lector de
      pantalla tiene la lista. */
   const pins = projects.flatMap((project, p) => mapImages(project).map((image, i) => {

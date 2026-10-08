@@ -1,5 +1,5 @@
 /* Los hilos, los mismos en toda la web: los del mapa, los de la lista,
-   el de la página de un proyecto y las líneas de la transición.
+   el del about y el de la página de un proyecto.
 
      hilos.wander(a, b)   la curva de a a b, en puntos
      hilos.path(puntos)   el `d` de un <path> con esa curva, ya con su forma
@@ -8,24 +8,14 @@
    los hilos de la lista sin JavaScript: por eso se cuelga de globalThis y
    no toca el documento si no lo hay.
 
-   Para que no salgan dientes, el hilo solo cambia de casilla cuando la
-   curva ya se ha ido tres cuartos de una: así no va y vuelve entre dos
-   cuando pasa justo por el borde.
-
-   PRUEBAS: cuatro formas, la de data-hilos en <html> (js/pruebas.js):
-     fina      a escalones de 2 px, en horizontal y luego en vertical:
-               el escalón casi no se ve (la de por defecto)
-     escalera  lo mismo a 3 px
-     diagonal  de casilla en casilla de 3 px, pero cada escalón suelto se
-               corta en diagonal: se ve pixel, sin dientes
-     liso      la curva tal cual, sin rejilla */
+   La forma: a escalones de GRID px, en horizontal y luego en vertical;
+   el escalón casi no se ve, pero se nota que está hecho de píxeles. Para
+   que no salgan dientes, el hilo solo cambia de casilla cuando la curva
+   ya se ha ido tres cuartos de una: así no va y vuelve entre dos cuando
+   pasa justo por el borde. */
 
 globalThis.hilos = (() => {
-  const GRID = { escalera: 3, fina: 2, diagonal: 3, liso: 0 };
-  const mode = () => {
-    const m = globalThis.document?.documentElement.dataset.hilos;
-    return m in GRID ? m : 'fina';
-  };
+  const GRID = 2;
 
   /* La recta de a a b, desviada por dos ondas —una larga, que la curva
      entera, y otra corta, que la hace temblar— que se apagan en los
@@ -84,26 +74,17 @@ globalThis.hilos = (() => {
     return out;
   }
 
-  function path(points, m = mode()) {
-    const g = GRID[m];
+  function path(points) {
+    const g = GRID;
     if (!points.length) return '';
-    if (!g) return points.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('');
     const c = cells(points, g);
     const steps = [];   // [orden, valor]; dos H o dos V seguidas son una
-    const put = (cmd, v) => {
-      const last = steps[steps.length - 1];
-      if (cmd !== 'L' && last?.[0] === cmd) last[1] = v;
-      else steps.push([cmd, v]);
-    };
     for (let i = 1; i < c.length; i++) {
-      const [a, b, n] = [c[i - 1], c[i], c[i + 1]];
-      /* diagonal: un escalón de una casilla en cada sentido (a → b → n,
-         con b en la esquina) se corta en diagonal de a a n. */
-      if (m === 'diagonal' && n && Math.abs(n[0] - a[0]) === 1 && Math.abs(n[1] - a[1]) === 1) {
-        put('L', `${n[0] * g} ${n[1] * g}`);
-        i += 1;
-      } else if (b[0] !== a[0]) put('H', b[0] * g);
-      else put('V', b[1] * g);
+      const [a, b] = [c[i - 1], c[i]];
+      const [cmd, v] = b[0] !== a[0] ? ['H', b[0] * g] : ['V', b[1] * g];
+      const last = steps[steps.length - 1];
+      if (last?.[0] === cmd) last[1] = v;
+      else steps.push([cmd, v]);
     }
     return `M${c[0][0] * g} ${c[0][1] * g}${steps.map(([cmd, v]) => cmd + v).join('')}`;
   }

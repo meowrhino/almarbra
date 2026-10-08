@@ -356,12 +356,6 @@ html:has(#about:target) #lista { display: none; }
 /* los del about se tejen y destejen solos, despacio (js/mapa.js) */
 .fondo path { animation: none; }
 
-/* PRUEBAS: la forma de los hilos (data-hilos, js/hilos.js). En diagonal y
-   liso se suavizan los bordes; en escalera y fina, píxel duro. */
-[data-hilos="diagonal"] :is(.threads, .row svg, .hilo, .fondo) path,
-[data-hilos="liso"] :is(.threads, .row svg, .hilo, .fondo) path { shape-rendering: auto; }
-[data-hilos="liso"] :is(.threads, .row svg, .hilo, .fondo) path { stroke-linejoin: round; stroke-linecap: round; }
-
 /* ── la transición ───────────────────────────────────────────────────
 
    Un lienzo a toda la pantalla donde se tapa y se destapa
@@ -425,16 +419,19 @@ html:has(#about:target) #lista { display: none; }
   padding-block: clamp(2rem, 7vh, 4.5rem) clamp(3rem, 10vh, 6rem);
 }
 
-/* El hilo: baja por toda la página ondulando de lado a lado, por encima
-   de las fotos, y se va tejiendo al bajar (js/hilo.js). */
+/* El hilo: baja ondulando de lado a lado y se va tejiendo (js/hilo.js).
+   Va dos veces: entero por debajo de las fotos y el texto —se ve en el
+   blanco— y apagado por encima, que se adivina sobre ellos. */
 .hilo {
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 2;
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
 }
+
+.hilo.encima { z-index: 2; opacity: .2; }
 
 .hilo path {
   fill: none;
@@ -455,6 +452,8 @@ html:has(#about:target) #lista { display: none; }
 
 /* El «back», al final de todo, centrado y con aire. */
 .project footer.bar {
+  position: relative;
+  z-index: 1;
   justify-content: center;
   padding-block: clamp(3rem, 12vh, 8rem) clamp(4rem, 16vh, 10rem);
 }
@@ -513,25 +512,3 @@ html:has(#about:target) #lista { display: none; }
   .credits { grid-template-columns: 1fr; gap: 0; }
   .credits dt { margin-top: .75rem; }
 }
-
-/* ── PRUEBAS: el panel para elegir variantes (js/pruebas.js) ──────── */
-
-.pruebas {
-  position: fixed;
-  left: .75rem;
-  top: calc(var(--bar) + .25rem);   /* arriba: abajo están los mandos del zoom */
-  z-index: 20;
-  display: grid;
-  gap: .3rem;
-  padding: .6rem .7rem;
-  font-size: 12px;
-  color: #000;
-  background: #fff;
-  border: 1px solid #000;
-}
-
-.pruebas div { display: flex; gap: .4rem; align-items: baseline; }
-.pruebas b { width: 6.5em; font-weight: 400; color: rgba(0, 0, 0, .5); }
-.pruebas button { padding: 0 .2em; border: 0; font: inherit; color: inherit; background: none; cursor: pointer; }
-.pruebas button[aria-pressed="true"] { color: #fff; background: #000; }
-.pruebas .x { position: absolute; top: .2rem; right: .3rem; }

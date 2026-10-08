@@ -1,12 +1,10 @@
 /* Servidor estático para trabajar en local. Sin dependencias.
    `npm run serve` -> http://localhost:8000
 
-   Sirve dist/, que es la web tal cual se publica. Lo que no esté ahí lo
-   busca en la raíz del repo: así abren también las maquetas de pruebas/,
-   que no se publican. */
+   Sirve dist/, que es la web tal cual se publica. */
 
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, statSync } from 'node:fs';
+import { createReadStream, statSync } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,7 +31,6 @@ createServer((req, res) => {
 
   try {
     let file = join(DIST, path);
-    if (!existsSync(file)) file = join(ROOT, path);
     if (statSync(file).isDirectory()) file = join(file, 'index.html');
     const type = TYPES[extname(file).toLowerCase()] || 'application/octet-stream';
     res.writeHead(200, { 'content-type': type, 'cache-control': 'no-cache' });
