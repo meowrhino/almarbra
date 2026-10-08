@@ -12,8 +12,10 @@ El menú va arriba en todas las páginas: el nombre a la izquierda, **mapa** y
   túnel y la lista de oriol-colomer. El mapa es la idea de anaelleblin.com: las
   fotos de todos los proyectos mezcladas por un plano que se arrastra, con zoom
   (+ y −), y en vez de líneas, un mapa de calor de píxeles del color de cada
-  proyecto. Al pasar por una foto se enciende su proyecto. La lista: la portada
-  grande y al lado el título y un degradado de píxeles, una a cada lado. Entre
+  proyecto. Al pasar por una foto se enciende su proyecto. La lista: una franja
+  por proyecto con la portada a un lado —una a la izquierda, la siguiente a la
+  derecha— y cuadrados de su color alrededor, apretados junto a la foto y cada
+  vez más sueltos al alejarse. Se hornean en el build (un SVG por franja). Entre
   mapa y lista la pantalla se tapa de píxeles de colores; al entrar en un
   proyecto, de píxeles de su color.
 - **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con aire alrededor

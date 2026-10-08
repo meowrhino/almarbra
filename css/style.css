@@ -187,68 +187,54 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .zoom > button:hover { background: var(--dim); }
 }
 
-/* La lista: la portada grande y, al lado, el título y un degradado de
-   píxeles del color del proyecto que sale de la foto. Una a la
-   izquierda, la siguiente a la derecha. */
+/* La lista: cada proyecto, una franja de proporción fija con la
+   portada a un lado —uno a la izquierda, el siguiente a la derecha— y
+   cuadrados de su color alrededor, más juntos cuanto más cerca de la
+   foto. Dónde va cada cosa lo calcula build/build.mjs, en % de la
+   franja. */
 #lista ol {
   display: grid;
-  gap: clamp(3rem, 12vh, 8rem);
+  gap: clamp(1rem, 4vh, 3rem);
   margin: 0;
-  padding: clamp(2rem, 8vh, 5rem) var(--pad);
+  padding: clamp(1rem, 4vh, 3rem) var(--pad);
   list-style: none;
 }
 
-#lista a {
-  display: grid;
-  grid-template-columns: 55fr 45fr;
-  align-items: center;
-}
-
-#lista li:nth-child(even) a { grid-template-columns: 45fr 55fr; }
-#lista li:nth-child(even) img { order: 2; }
-
-#lista img {
-  width: 100%;
-  max-height: 85dvh;
-  object-fit: cover;
-}
-
-.side { min-width: 0; }
-
-.side h2,
-.side p { margin: 0; padding-inline: clamp(1rem, 3vw, 2.5rem); }
-
-.side h2 {
-  font-size: clamp(1.5rem, 3.4vw, 2.75rem);
-  font-weight: 700;
-  letter-spacing: -.02em;
-  line-height: 1.05;
-}
-
-.side p { margin: .6rem 0 1.25rem; color: var(--dim); font-size: .9em; }
-
-/* el degradado nace pegado a la foto: en las pares, la foto está a la
-   derecha y se le da la vuelta */
-.fade {
+.row {
+  position: relative;
   display: block;
+  aspect-ratio: 1000 / 600;
+}
+
+.row svg {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: auto;
+  height: 100%;
   fill: var(--c);
   shape-rendering: crispEdges;
 }
 
-#lista li:nth-child(even) .fade { transform: scaleX(-1); }
-#lista li:nth-child(even) .side { text-align: right; }
+.row .pic { position: absolute; }
+.row .pic img { width: 100%; }
 
-@media (hover: hover) {
-  #lista a:hover h2 { color: var(--c); }
+/* el título, bajo la foto y al ras de su borde de fuera, sobre un
+   recorte negro para leerse encima de los cuadrados */
+.row h2 {
+  position: absolute;
+  margin: .5em 0 0;
+  padding: .15em .35em;
+  font-size: clamp(.9rem, 2vw, 1.5rem);
+  font-weight: 700;
+  line-height: 1.15;
+  background: var(--bg);
 }
 
-@media (max-width: 700px) {
-  #lista a,
-  #lista li:nth-child(even) a { grid-template-columns: 1fr; }
-  #lista li:nth-child(even) img { order: 0; }
-  .side h2 { margin-top: 1rem; }
+.row.flip h2 { text-align: right; }
+.row h2 small { display: block; font-size: .6em; font-weight: 400; color: var(--dim); }
+
+@media (hover: hover) {
+  .row:hover h2 { color: var(--c); }
 }
 
 /* La tapa de píxeles entre vistas: un lienzo pequeño estirado a toda la

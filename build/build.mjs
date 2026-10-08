@@ -157,19 +157,43 @@ function mapImages(project) {
   return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
 }
 
-/* Un degradado de píxeles en tramado (Bayer 4×4): lleno junto a la foto
-   y deshaciéndose hacia fuera. Sale distinto en cada build. */
-const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+/* Una fila de la lista: una franja de proporción fija (1000×600) con la
+   portada a un lado y, alrededor, cuadrados del color del proyecto,
+   apretados junto a la foto y cada vez más sueltos al alejarse. Todo va
+   en coordenadas de la franja —el SVG y la foto, en %—, así que los
+   cuadrados quedan alrededor de la foto a cualquier ancho. Sale distinto
+   en cada build. */
+const ROW = { w: 1000, h: 600, side: 60, sq: 20 };
 
-function pixelFade(cols = 24, rows = 6) {
-  const cells = [];
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const t = 1 - (x + 0.5) / cols;
-      if (t > (BAYER[(y % 4) * 4 + (x % 4)] / 16 + Math.random() * 0.35) / 1.35) cells.push(`M${x} ${y}h1v1h-1z`);
-    }
+function listRow(project, i) {
+  const cover = coverOf(project);
+  let h = 470;
+  let w = (h * cover.w) / cover.h;
+  if (w > 560) { w = 560; h = (w * cover.h) / cover.w; }
+  const x = i % 2 ? ROW.w - ROW.side - w : ROW.side;
+  const y = (ROW.h - h) / 2;
+  const S = ROW.sq;
+
+  const squares = [];
+  for (let n = 0; n < 6000; n++) {
+    const sx = Math.round(Math.random() * (ROW.w - S));
+    const sy = Math.round(Math.random() * (ROW.h - S));
+    if (sx > x && sy > y && sx + S < x + w && sy + S < y + h) continue;   // tapado por la foto
+    const dx = Math.max(x - sx - S / 2, 0, sx + S / 2 - x - w);
+    const dy = Math.max(y - sy - S / 2, 0, sy + S / 2 - y - h);
+    if (Math.random() > 0.006 + 0.8 * Math.exp(-Math.hypot(dx, dy) / 60)) continue;
+    if (squares.some(([qx, qy]) => Math.abs(qx - sx) < S + 6 && Math.abs(qy - sy) < S + 6)) continue;
+    squares.push([sx, sy]);
   }
-  return `<svg class="fade" viewBox="0 0 ${cols} ${rows}" aria-hidden="true"><path d="${cells.join('')}"/></svg>`;
+
+  const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
+  const edge = i % 2 ? `right:${pct(ROW.w - x - w, ROW.w)}` : `left:${pct(x, ROW.w)}`;
+
+  return `<li><a class="row${i % 2 ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path d="${squares.map(([qx, qy]) => `M${qx} ${qy}h${S}v${S}h-${S}z`).join('')}"/></svg>
+<div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
+<h2 style="${edge};top:${pct(y + h, ROW.h)}">${esc(t(project.title) || project.slug)} <small>${esc(project.category.replace(/-/g, ' '))} · ${project.images.length}</small></h2>
+</a></li>`;
 }
 
 /** El menú de arriba, igual en todas las páginas. */
@@ -202,17 +226,7 @@ function homePage(projects) {
       + `<span>${esc(t(project.short) || t(project.title) || project.slug)}</span></a>`;
   }));
 
-  /* La lista: la portada grande y, al lado, el título y un degradado de
-     píxeles del color del proyecto. Una a la izquierda, la siguiente a
-     la derecha (el CSS da la vuelta a las pares). */
-  const rows = projects.map((project) => `<li><a href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-${img(coverOf(project), { sizes: '(max-width: 700px) 100vw, 55vw' })}
-<div class="side">
-<h2>${esc(t(project.title) || project.slug)}</h2>
-<p>${esc(project.category.replace(/-/g, ' '))} · ${project.images.length} fotos</p>
-${pixelFade()}
-</div>
-</a></li>`);
+  const rows = projects.map(listRow);
 
   return page({
     title: null,
