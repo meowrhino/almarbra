@@ -1,5 +1,5 @@
 {
-  "_": "Correcciones a mano sobre lo que sale de las fichas. Se aplican encima del JSON generado, así que reingestar no se las lleva. Cada clave es el slug del proyecto. `cover` elige la imagen del proyecto en la portada; sin ella se usa la primera. `short` es el nombre corto para la lista de la portada.",
+  "_": "Correcciones a mano sobre lo que sale de las fichas. Se aplican encima del JSON generado, así que reingestar no se las lleva. Cada clave es el slug del proyecto. `cover` elige la imagen del proyecto en la portada; sin ella se usa la primera. `short` es el nombre corto para la portada. `drop` son fotos del original (por nombre de archivo) que no entran en la web.",
   "roma": {
     "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
     "title": {
@@ -11,7 +11,10 @@
       "es": "roma",
       "en": "rome",
       "ca": "roma"
-    }
+    },
+    "drop": [
+      "virgen_13colores.jpg"
+    ]
   },
   "sicky-magazine-02": {
     "_nota": "La ficha repite el título de la primera; se distingue aquí.",
@@ -23,7 +26,13 @@
   },
   "cuerpo-esquema": {
     "cover": "media/cuerpo-esquema/cuerpo-esquema-76.webp",
-    "_nota": "La primera imagen es una captura de pantalla; de portada va una pieza."
+    "_nota": "La primera imagen es una captura de pantalla; de portada va una pieza.",
+    "drop": [
+      "ANHELOS 3 colorees.jpg",
+      "ANHELOS 3 colores.jpg",
+      "CUERPO FINITO 15 COLORES 4 TRAMAS.jpg"
+    ],
+    "_drop": "Las preparaciones de color del jacquard: fuera."
   },
   "corporea": {
     "cover": "media/corporea/corporea-04.webp"

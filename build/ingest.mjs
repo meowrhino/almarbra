@@ -20,13 +20,19 @@
      node build/ingest.mjs --force    # todo otra vez
 
    Las correcciones a mano van en content/overrides.json, que se aplica
-   encima del JSON generado: así reingestar no se las lleva por delante. */
+   encima del JSON generado: así reingestar no se las lleva por delante.
+   Ahí `drop` lista fotos del original que no entran en la web.
+
+   Las fotos que estén en una carpeta `home` (a cualquier profundidad
+   dentro del proyecto) salen marcadas con `home: true`: son las que van
+   al mapa de la portada. `noHome` es solo para ordenar; ni `home` ni
+   `noHome` cuentan como grupo. */
 
 import { execFile } from 'node:child_process';
 import {
   existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync,
 } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { basename, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
@@ -77,10 +83,16 @@ function photosUnder(dir) {
 }
 
 /* Nombre del grupo a partir de la carpeta que cuelga del proyecto.
-   FOTOS no es un grupo; PIEZAS solo lo es si no lleva subcarpetas. */
+   FOTOS, home y noHome no son grupos; PIEZAS solo lo es si no lleva
+   subcarpetas. */
+const NOT_GROUP = /^(fotos|home|nohome)$/i;
+
+const inHome = (projectDir, file) =>
+  relative(projectDir, file).split('/').slice(0, -1).some((s) => s.toLowerCase() === 'home');
+
 function groupOf(projectDir, file) {
   const segments = relative(projectDir, file).split('/').slice(0, -1)
-    .filter((s) => s.toUpperCase() !== 'FOTOS');
+    .filter((s) => !NOT_GROUP.test(s));
   if (segments.length > 1 && segments[0].toUpperCase() === 'PIEZAS') segments.shift();
   if (!segments.length) return null;
   return { slug: slugify(segments.join('-')), name: titleize(segments.join(' / ')) };
@@ -181,7 +193,7 @@ function applyOverride(project, override) {
   if (!override) return project;
   const out = { ...project };
   for (const [key, value] of Object.entries(override)) {
-    if (key.startsWith('_')) continue;   // notas del archivo, no contenido
+    if (key.startsWith('_') || key === 'drop') continue;   // notas, y lo que ya usó la ingesta
     out[key] = value && !Array.isArray(value) && typeof value === 'object'
       ? { ...(out[key] || {}), ...value }
       : value;
@@ -189,17 +201,26 @@ function applyOverride(project, override) {
   return out;
 }
 
-async function ingestProject(categoryDir, categorySlug, name, cache) {
+async function ingestProject(categoryDir, categorySlug, name, cache, override) {
   const dir = join(categoryDir, name);
   const slug = slugify(name);
   const outDir = join(MEDIA, slug);
   mkdirSync(outDir, { recursive: true });
 
-  const files = photosUnder(dir);
-  const images = await pool(files, CONCURRENCY, async (file, i) => {
+  /* El número de cada foto sale de su sitio en el original, antes de
+     quitar las de `drop`: así quitar una no renombra las demás (ni
+     rompe un `cover`). */
+  const drop = new Set(override?.drop || []);
+  const numbered = photosUnder(dir).map((file, i) => ({ file, n: i + 1 }))
+    .filter(({ file }) => !drop.has(basename(file)));
+  const files = numbered.map(({ file }) => file);
+
+  const images = await pool(numbered, CONCURRENCY, async ({ file, n }) => {
     const group = groupOf(dir, file);
-    const record = await convert(file, outDir, `${slug}-${String(i + 1).padStart(2, '0')}`, cache);
-    return { ...record, alt: '', ...(group ? { group: group.slug } : {}) };
+    const record = await convert(file, outDir, `${slug}-${String(n).padStart(2, '0')}`, cache);
+    return {
+      ...record, alt: '', ...(group ? { group: group.slug } : {}), ...(inHome(dir, file) ? { home: true } : {}),
+    };
   });
 
   const groups = [];
@@ -271,9 +292,10 @@ async function main() {
     const categoryDir = join(SOURCE, category);
 
     for (const name of dirs(categoryDir)) {
+      const override = overrides[slugify(name)];
       const { swept, ...project } = applyOverride(
-        await ingestProject(categoryDir, categorySlug, name, cache),
-        overrides[slugify(name)]
+        await ingestProject(categoryDir, categorySlug, name, cache, override),
+        override
       );
 
       writeFileSync(join(PROJECTS, `${project.slug}.json`), JSON.stringify(project, null, 2) + '\n');
