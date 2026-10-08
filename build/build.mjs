@@ -145,13 +145,26 @@ function version(file) {
      .tapada       se llega desde otra página de la web, o con atrás y
                    adelante: la página nace tapada para que la transición
                    la destape (js/transicion.js); si ese script no llegara,
-                   el CSS la destapa sola a los 5 s */
+                   el CSS la destapa sola a los 5 s
+     .tapando      con atrás y adelante, mientras la ola tapa la foto que
+                   el navegador guarda de la página de antes (una View
+                   Transition): la página nueva, transparente salvo la ola.
+                   window.revelada dice si la hay (js/transicion.js) */
 const HEAD_SCRIPT = `<script>{
 const html = document.documentElement;
 html.classList.add('js');
 try { html.dataset.idioma = localStorage.getItem('almarbra-idioma') || ''; } catch {}
 html.dataset.idioma ||= ${JSON.stringify(lang)};
-try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (sessionStorage.getItem('almarbra-transicion') || performance.getEntriesByType('navigation')[0]?.type === 'back_forward')) html.classList.add('tapada'); } catch {}
+let back = false;
+try {
+  back = !sessionStorage.getItem('almarbra-transicion') && performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (back || sessionStorage.getItem('almarbra-transicion'))) html.classList.add('tapada');
+} catch {}
+window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListener('pagereveal', (e) => {
+  const vt = e.viewTransition;
+  if (vt && back && html.classList.contains('tapada')) { html.classList.add('tapando'); done(vt); }
+  else { vt?.skipTransition(); done(null); }
+}, { once: true })) : Promise.resolve(null);
 }</script>
 `;
 

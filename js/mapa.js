@@ -147,8 +147,8 @@
                    largo de las uniones entre ellas, ancha al salir de
                    cada foto y fina a medio camino; siempre. Un <path>
                    por proyecto (data-p, para que se encienda al pasar)
-         halo      muchos, alrededor de las fotos del proyecto por el que
-                   se pasa; se hace al pasar y se borra al irse
+         halo      muchos, alrededor de la foto por la que se pasa; se
+                   hace al pasar y se borra al irse
          pelusa    sueltos al lado de los hilos, como si se deshilacharan;
                    uno por hilo, que se rehace cuando el hilo se recose */
     pixels = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -156,8 +156,8 @@
     pixels.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.after(pixels);
 
-    groups = Map.groupBy(spots, (s) => s.p);
-    for (const [p, boxes] of groups) {
+    for (const s of spots) spotOf.set(s.pin, s);
+    for (const [p, boxes] of Map.groupBy(spots, (s) => s.p)) {
       const el = layer('hilachas', p, colorOf(boxes[0].pin));
       const links = [...svg.querySelectorAll(`path[data-p="${p}"]`)].map((path) => path.ends);
       for (const b of boxes) fray.push([el, () => lobes(b)]);
@@ -186,7 +186,7 @@
     return (t) => 0.5 + 0.3 * Math.sin(t * f + a) + 0.2 * Math.sin(t * f * 2.7 + b);
   };
   let pixels = null;
-  let groups = new Map();   // proyecto -> sus fotos
+  const spotOf = new Map();   // foto -> su caja en el plano
   let halo = null;
 
   function layer(name, p, color) {
@@ -267,7 +267,7 @@
     if (spinning.length || fray.length) requestAnimationFrame(spin);
   }
 
-  /* El halo del proyecto encendido: brota de las fotos hacia fuera, una
+  /* El halo de la foto por la que se pasa: brota de ella hacia fuera, una
      franja de RING px cada dos fotogramas (medio segundo, más o menos), y
      al irse se borra igual, de dentro hacia fuera. */
   const RING = 4;
@@ -286,20 +286,21 @@
     })();
   }
 
-  function glow(p) {
+  let glowing = null;
+  function glow(pin) {
+    if (pin === glowing) return;
+    glowing = pin;
     const run = ++haloRun;
     if (!halo || map.classList.contains('sin-halo')) return;
     const show = () => halo.setAttribute('d', haloRings.flat().join(''));
-    if (p === null) {   // de dentro hacia fuera: se van quitando las de dentro
+    const b = spotOf.get(pin);
+    if (!b) {   // de dentro hacia fuera: se van quitando las de dentro
       everyOther(run, () => { haloRings.shift(); show(); return haloRings.length > 0; });
       return;
     }
-    const boxes = groups.get(p) || [];
     const rings = [];
-    for (const b of boxes) {
-      around(b, 60, (d) => 0.55 * Math.exp(-d / 16), (d, dot) => { (rings[Math.floor(d / RING)] ||= []).push(dot); });
-    }
-    halo.setAttribute('fill', colorOf(boxes[0].pin));
+    around(b, 60, (d) => 0.55 * Math.exp(-d / 16), (d, dot) => { (rings[Math.floor(d / RING)] ||= []).push(dot); });
+    halo.setAttribute('fill', colorOf(pin));
     haloRings = [];
     let k = 0;
     everyOther(run, () => { haloRings.push(rings[k++] || []); show(); return k < rings.length; });
@@ -328,26 +329,27 @@
     el.fluff.setAttribute('d', el.fluff.dots.join(''));
   }
 
-  /* Al recoserse el hilo: la pelusa de antes se va borrando, a saltos y
-     sin orden, mientras se descose; y la nueva va saliendo igual cuando
-     el hilo nuevo ya está cosido. */
+  /* Al recoserse el hilo: la pelusa de antes se va con él, de golpe; y
+     la nueva va saliendo, a saltos y sin orden, cuando el hilo nuevo ya
+     está cosido. */
   function refluff(el) {
     const f = el.fluff;
     const run = (f.run || 0) + 1;
     f.run = run;
     const shuffle = () => Math.random() - 0.5;
     const next = lint(el).sort(shuffle);
-    const shown = [...f.dots].sort(shuffle);
-    const out = Math.ceil(shown.length / 12);   // se borra en 12 fotogramas
-    const into = Math.ceil(next.length / 24);   // y sale en 24
+    const shown = [];
+    const into = Math.ceil(next.length / 24);   // sale en 24 fotogramas
     let n = 0;
+    f.dots = shown;
+    f.setAttribute('d', '');
     (function frame() {
       if (f.run !== run) return;   // se ha vuelto a recoser
       n += 1;
-      if (n <= 12) shown.splice(0, out);
-      else if (n > 48) shown.push(...next.splice(0, into));   // a los 48, el hilo ya está cosido
-      f.dots = shown;
-      f.setAttribute('d', shown.join(''));
+      if (n > 48) {   // a los 48, el hilo ya está cosido
+        shown.push(...next.splice(0, into));
+        f.setAttribute('d', shown.join(''));
+      }
       if (n <= 48 || next.length) requestAnimationFrame(frame);
     })();
   }
@@ -372,15 +374,18 @@
     if (p === lit) return;
     lit = p;
     map.classList.toggle('dim', p !== null);
-    glow(p);   // PRUEBAS
     for (const el of world.querySelectorAll('[data-p]')) {
       const on = el.dataset.p === p;
       el.classList.toggle('on', on);
       if (on && el.ends) redraw(el);
     }
   }
-  world.addEventListener('pointerover', (e) => light(e.target.closest('.pin')?.dataset.p ?? null));
-  world.addEventListener('pointerleave', () => light(null));
+  world.addEventListener('pointerover', (e) => {
+    const pin = e.target.closest('.pin');
+    light(pin?.dataset.p ?? null);
+    glow(pin);
+  });
+  world.addEventListener('pointerleave', () => { light(null); glow(null); });
 
   /* Arrastrar con el ratón. Con el dedo ya lo hace el scroll. Si se ha
      arrastrado, el clic de al soltar no abre el proyecto. */

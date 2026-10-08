@@ -42,10 +42,13 @@ sobre las fotos.
   **Siempre que se cambia de página o de vista**, una ola de píxeles de
   colores barre la pantalla en diagonal y la deja en blanco; se cambia, y en
   la página nueva otra ola sigue en el mismo sentido y la destapa
-  (`js/transicion.js`). Cada ola con su frente, distinto cada vez. Al entrar
+  (`js/transicion.js`). Cada ola con su frente, distinto cada vez, que se
+  va doblando y se mueve mientras avanza. Al entrar
   en un proyecto baja, al volver sube; entre mapa, lista y about va de lado,
   en el orden del menú. Al entrar o salir de un proyecto, de su color.
-  También con atrás y adelante del navegador.
+  También con atrás y adelante del navegador: ahí no se puede tapar antes
+  de irse, así que la página nueva tapa una foto quieta de la de antes
+  (View Transitions; donde no las hay, nace en blanco).
 
   **Idiomas**: lo traducido va en la página en los tres (`data-l`) y se ve
   el elegido (`js/idioma.js`, que lo recuerda); si falta un idioma, sale el

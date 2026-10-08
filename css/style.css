@@ -434,6 +434,23 @@ html:not(.js):has(#about:target) #lista { display: none; }
 
 @keyframes destapar { to { visibility: hidden; } }
 
+/* Con atrás y adelante no se puede tapar antes de irse. El navegador
+   guarda una foto de la página de antes y la deja quieta debajo; la
+   página nueva, transparente salvo el lienzo (.tapando), la tapa con la
+   ola; luego la foto se quita (js/transicion.js). */
+@view-transition { navigation: auto; }
+::view-transition-old(root) { animation: quieta 10s; }
+::view-transition-new(root) { animation: none; }
+@keyframes quieta { to { opacity: 1; } }
+
+/* (si el script no llegara, a los 10 s se ve igual) */
+.tapando,
+.tapando body { background: transparent; }
+.tapando body > :not(.veil) { visibility: hidden; animation: asomar 0s 10s forwards; }
+.tapando body::before { visibility: hidden; }
+
+@keyframes asomar { to { visibility: visible; } }
+
 @media (prefers-reduced-motion: reduce) {
   .threads path,
   .row svg path,
