@@ -1,16 +1,17 @@
 /* La portada: el mapa, la lista y el paso de una a otra.
 
-   El mapa son las fotos de cada proyecto desperdigadas por un plano más
-   grande que la pantalla, que se arrastra con el ratón y se recorre con
-   el dedo o la rueda (es un scroll normal). Las fotos de un mismo
-   proyecto van unidas por un camino de píxeles de su color, que crece
-   desde la portada del proyecto. Todo cae en un sitio distinto en cada
-   carga.
+   El mapa son las fotos de todos los proyectos, mezcladas, por un plano
+   más grande que la pantalla, que se arrastra con el ratón y se recorre
+   con el dedo o la rueda (es un scroll normal). Debajo, un mapa de calor
+   de píxeles: cada píxel toma el color del proyecto que más cerca le
+   queda y se enciende más cuanto más cerca está, en tramado, como un
+   juego viejo. Todo cae en un sitio distinto en cada carga. Los botones
+   + y − acercan y alejan.
 
    La vista la dice el hash: #mapa o #lista. El menú son enlaces a esos
    hashes, así que atrás y adelante funcionan solos. Al cambiar, la
-   pantalla se tapa de píxeles de colores, se cambia y se destapa. Lo
-   mismo al entrar en un proyecto.
+   pantalla se tapa de píxeles, se cambia y se destapa. Al entrar en un
+   proyecto se tapa de píxeles de su color.
 
    Sin este archivo la portada es la lista (ver css/style.css). */
 
@@ -19,40 +20,36 @@
   const map = document.getElementById('mapa');
   const world = map.querySelector('.world');
   const pins = [...world.querySelectorAll('.pin')];
-  const palette = [...new Set(pins.map((p) => p.style.getPropertyValue('--c')))];
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const PX = 5;          // un píxel del camino, en px de pantalla
-  const DENSITY = 0.12;  // cuánto del plano tapan las fotos
+  const colorOf = (el) => el.style.getPropertyValue('--c');
+  const palette = [...new Set(pins.map(colorOf))];
+
+  const PX = 8;          // un píxel del mapa de calor, en px del plano
+  const REACH = 110;     // cuánto se extiende el calor de una foto, en px
+  const DENSITY = 0.11;  // cuánto del plano tapan las fotos
   const MARGIN = 60;     // aire entre las fotos y el borde del plano
+
+  /* Tramado ordenado (Bayer 4×4): el umbral de cada píxel según su sitio.
+     Es lo que hace que el degradado salga a cuadros y no liso. */
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
   /* ── el mapa ───────────────────────────────────────────────────── */
 
   const hits = (a, b, gap) =>
     a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
 
-  const center = (b) => [Math.floor((b.x + b.w / 2) / PX), Math.floor((b.y + b.h / 2) / PX)];
-
-  /* Un camino de píxel en píxel, en escalera: casi siempre avanza hacia
-     el destino, a veces se desvía un paso. */
-  function walk([x, y], [tx, ty], cols, rows) {
-    const cells = [];
-    while (x !== tx || y !== ty) {
-      cells.push([x, y]);
-      const dx = tx - x;
-      const dy = ty - y;
-      if (Math.random() < 0.18) {
-        if (Math.random() < 0.5) x += Math.random() < 0.5 ? 1 : -1;
-        else y += Math.random() < 0.5 ? 1 : -1;
-        x = Math.max(0, Math.min(cols - 1, x));
-        y = Math.max(0, Math.min(rows - 1, y));
-      } else if (Math.random() < Math.abs(dx) / (Math.abs(dx) + Math.abs(dy))) x += Math.sign(dx);
-      else y += Math.sign(dy);
-    }
-    return cells;
-  }
+  /** Un color de CSS (un nombre, un #hex) en rgb, preguntándoselo a un lienzo. */
+  const probe = document.createElement('canvas').getContext('2d');
+  const rgb = (color) => {
+    probe.fillStyle = color;
+    const hex = probe.fillStyle.slice(1);
+    return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  };
 
   let built = false;
+  let paint = () => {};   // vuelve a pintar el calor; lo define build()
+  let lit = null;         // el proyecto encendido al pasar por encima
 
   /* Sin tamaño (pestaña aún sin pintar, oculta) no se monta: el plano
      saldría infinito. Se reintenta al cambiar el tamaño. */
@@ -67,86 +64,109 @@
     world.style.width = `${W}px`;
     world.style.height = `${H}px`;
 
-    /* Primero las portadas, separadas entre sí, y luego el resto de cada
-       proyecto cerca de la suya. Si no hay hueco se va aflojando. */
-    const placed = [];
-    const groups = new Map();   // proyecto -> sus cajas, la portada primero
-    const order = [...pins.keys()].sort((a, b) => pins[b].classList.contains('cover') - pins[a].classList.contains('cover'));
-
-    for (const i of order) {
-      const pin = pins[i];
+    /* Cada foto, en cualquier sitio del plano donde no pise a otra: los
+       proyectos quedan mezclados. Si no hay hueco se va aflojando. */
+    const spots = [];
+    pins.forEach((pin, i) => {
       const { w, h } = boxes[i];
-      const home = groups.get(pin.dataset.p)?.[0];
-      let gap = home ? 24 : 220;
-      let reach = 240;
+      let gap = 40;
       let spot = null;
-      let x;
-      let y;
-
       for (let t = 0; t < 800 && !spot; t++) {
-        if (t && t % 100 === 0) { gap /= 2; reach *= 1.4; }
-        x = home ? home.x + home.w / 2 - w / 2 + (Math.random() * 2 - 1) * reach : MARGIN + Math.random() * (W - w - 2 * MARGIN);
-        y = home ? home.y + home.h / 2 - h / 2 + (Math.random() * 2 - 1) * reach : MARGIN + Math.random() * (H - h - 2 * MARGIN);
-        x = Math.max(MARGIN, Math.min(W - w - MARGIN, x));
-        y = Math.max(MARGIN, Math.min(H - h - MARGIN, y));
-        const box = { x, y, w, h };
-        if (!placed.some((b) => hits(box, b, gap))) spot = box;
+        if (t && t % 200 === 0) gap /= 2;
+        const box = { x: MARGIN + Math.random() * (W - w - 2 * MARGIN), y: MARGIN + Math.random() * (H - h - 2 * MARGIN), w, h };
+        if (t === 799 || !spots.some((b) => hits(box, b, gap))) spot = box;   // ponytail: plano lleno, se pisa; bajar DENSITY
       }
-      spot ||= { x, y, w, h };   // ponytail: plano lleno, se pisa; subir DENSITY no, bajarla
-
-      placed.push(spot);
-      if (!groups.has(pin.dataset.p)) groups.set(pin.dataset.p, []);
-      groups.get(pin.dataset.p).push(spot);
+      spot.p = Number(pin.dataset.p);
+      spots.push(spot);
       pin.style.left = `${spot.x}px`;
       pin.style.top = `${spot.y}px`;
-    }
+    });
 
-    /* Los caminos: un lienzo por proyecto, de un píxel por celda, que el
-       CSS estira sin suavizar. Cada foto se une a la más cercana de las
-       que ya estaban, así que crece en árbol desde la portada. */
+    /* El calor: por cada píxel, cuánto le llega de cada proyecto (sumando
+       sus fotos, y más cuanto más cerca) y quién gana. */
     const cols = Math.ceil(W / PX);
     const rows = Math.ceil(H / PX);
-    const paths = [];
+    const projects = Math.max(...spots.map((s) => s.p)) + 1;
+    const heat = new Float32Array(projects * cols * rows);
 
-    for (const [p, spots] of groups) {
-      const canvas = document.createElement('canvas');
-      canvas.width = cols;
-      canvas.height = rows;
-      canvas.dataset.p = p;
-      world.prepend(canvas);
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = pins.find((pin) => pin.dataset.p === p).style.getPropertyValue('--c');
-
-      spots.slice(1).forEach((spot, k) => {
-        const from = spots.slice(0, k + 1).reduce((a, b) =>
-          Math.hypot(a.x - spot.x, a.y - spot.y) < Math.hypot(b.x - spot.x, b.y - spot.y) ? a : b);
-        paths.push({ ctx, cells: walk(center(from), center(spot), cols, rows), i: 0 });
-      });
+    for (const s of spots) {
+      const x0 = Math.max(0, Math.floor((s.x - 3 * REACH) / PX));
+      const x1 = Math.min(cols - 1, Math.ceil((s.x + s.w + 3 * REACH) / PX));
+      const y0 = Math.max(0, Math.floor((s.y - 3 * REACH) / PX));
+      const y1 = Math.min(rows - 1, Math.ceil((s.y + s.h + 3 * REACH) / PX));
+      const base = s.p * cols * rows;
+      for (let y = y0; y <= y1; y++) {
+        const cy = (y + 0.5) * PX;
+        const dy = Math.max(s.y - cy, 0, cy - s.y - s.h);
+        for (let x = x0; x <= x1; x++) {
+          const cx = (x + 0.5) * PX;
+          const dx = Math.max(s.x - cx, 0, cx - s.x - s.w);
+          heat[base + y * cols + x] += Math.exp(-(dx * dx + dy * dy) / (REACH * REACH));
+        }
+      }
     }
 
-    const grow = () => {
-      let left = false;
-      for (const path of paths) {
-        for (let k = 0; k < 4 && path.i < path.cells.length; k++) path.ctx.fillRect(...path.cells[path.i++], 1, 1);
-        left ||= path.i < path.cells.length;
+    const owner = new Uint8Array(cols * rows);
+    const level = new Float32Array(cols * rows);
+    for (let c = 0; c < cols * rows; c++) {
+      for (let p = 0; p < projects; p++) {
+        const v = heat[p * cols * rows + c];
+        if (v > level[c]) { level[c] = v; owner[c] = p; }
       }
-      if (left) requestAnimationFrame(grow);
-    };
-    if (still) for (const path of paths) path.cells.forEach((c) => path.ctx.fillRect(...c, 1, 1));
-    else grow();
+    }
 
-    map.scrollTo((W - map.clientWidth) / 2, (H - map.clientHeight) / 2);
+    const colors = [];
+    for (const pin of pins) colors[pin.dataset.p] = rgb(colorOf(pin));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = cols;
+    canvas.height = rows;
+    world.prepend(canvas);
+    const ctx = canvas.getContext('2d');
+    const image = ctx.createImageData(cols, rows);
+    const px = new Uint32Array(image.data.buffer);
+
+    /* `amount` (0–1) es cuánto calor se enseña: al cargar sube poco a
+       poco y el mapa se enciende desde las fotos hacia fuera. Con un
+       proyecto encendido, los demás se quedan a un cuarto. */
+    paint = (amount = 1) => {
+      for (let y = 0, c = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++, c++) {
+          if (level[c] * amount <= BAYER[(y & 3) * 4 + (x & 3)]) { px[c] = 0; continue; }
+          const [r, g, b] = colors[owner[c]];
+          const a = lit === null || owner[c] === lit ? 255 : 60;
+          px[c] = (a << 24 | b << 16 | g << 8 | r) >>> 0;
+        }
+      }
+      ctx.putImageData(image, 0, 0);
+    };
+
+    if (still) paint();
+    else {
+      const start = performance.now();
+      const grow = (now) => {
+        const t = Math.min(1, (now - start) / 900);
+        paint(t);
+        if (t < 1) requestAnimationFrame(grow);
+      };
+      requestAnimationFrame(grow);
+    }
+
+    setZoom(1);
   }
 
   /* Al pasar por una foto se enciende su proyecto y el resto se apaga. */
-  let lit = null;
   function light(p) {
     if (p === lit) return;
     lit = p;
     map.classList.toggle('dim', p !== null);
-    for (const el of world.querySelectorAll('[data-p]')) el.classList.toggle('on', el.dataset.p === p);
+    for (const pin of pins) pin.classList.toggle('on', Number(pin.dataset.p) === p);
+    paint();
   }
-  world.addEventListener('pointerover', (e) => light(e.target.closest('.pin')?.dataset.p ?? null));
+  world.addEventListener('pointerover', (e) => {
+    const pin = e.target.closest('.pin');
+    light(pin ? Number(pin.dataset.p) : null);
+  });
   world.addEventListener('pointerleave', () => light(null));
 
   /* Arrastrar con el ratón. Con el dedo ya lo hace el scroll. Si se ha
@@ -171,9 +191,45 @@
   map.addEventListener('click', (e) => { if (drag?.moved) e.preventDefault(); }, true);
   map.addEventListener('dragstart', (e) => e.preventDefault());
 
-  /* ── la transición: píxeles de colores ─────────────────────────── */
+  /* ── el zoom ───────────────────────────────────────────────────── */
 
-  const CELL = 32;     // lado de un píxel de la tapa
+  /* A saltos, sin animación: cinco escalones, cada uno un cuadrado en la
+     columna de la derecha. Acerca o aleja sobre el centro de la pantalla. */
+  const ZOOMS = [0.5, 0.7, 1, 1.4, 2];
+  const zoomBox = document.querySelector('.zoom');
+  const ticks = zoomBox.querySelector('.ticks');
+  let zoom = 1;
+
+  for (const z of [...ZOOMS].reverse()) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.tabIndex = -1;
+    b.dataset.z = z;
+    ticks.append(b);
+  }
+
+  function setZoom(z) {
+    const cx = (map.scrollLeft + map.clientWidth / 2) / zoom;
+    const cy = (map.scrollTop + map.clientHeight / 2) / zoom;
+    const first = !world.style.zoom;
+    zoom = z;
+    world.style.zoom = z;
+    if (first) map.scrollTo((world.offsetWidth * z - map.clientWidth) / 2, (world.offsetHeight * z - map.clientHeight) / 2);
+    else map.scrollTo(cx * z - map.clientWidth / 2, cy * z - map.clientHeight / 2);
+    for (const b of ticks.children) b.classList.toggle('on', Number(b.dataset.z) === z);
+  }
+
+  zoomBox.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    const i = ZOOMS.indexOf(zoom);
+    const z = b.dataset.z ? Number(b.dataset.z) : ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, i + Number(b.dataset.step)))];
+    if (z !== zoom) setZoom(z);
+  });
+
+  /* ── la transición: píxeles grandes ────────────────────────────── */
+
+  const CELL = 72;     // lado de un píxel de la tapa
   const FRAMES = 14;   // fotogramas en tapar, y otros tantos en destapar
 
   const veil = document.createElement('canvas');
@@ -181,8 +237,9 @@
   document.body.append(veil);
   const vctx = veil.getContext('2d');
 
-  function pixels(cover) {
-    if (cover) {
+  /** Tapa (con `colors`) o destapa la pantalla, píxel a píxel al azar. */
+  function pixels(colors) {
+    if (colors) {
       veil.width = Math.ceil(innerWidth / CELL);
       veil.height = Math.ceil(innerHeight / CELL);
     }
@@ -197,7 +254,7 @@
     return new Promise((done) => {
       const step = () => {
         for (const [x, y] of cells.splice(0, per)) {
-          if (cover) { vctx.fillStyle = palette[Math.floor(Math.random() * palette.length)]; vctx.fillRect(x, y, 1, 1); }
+          if (colors) { vctx.fillStyle = colors[Math.floor(Math.random() * colors.length)]; vctx.fillRect(x, y, 1, 1); }
           else vctx.clearRect(x, y, 1, 1);
         }
         if (cells.length) requestAnimationFrame(step);
@@ -225,18 +282,18 @@
     const view = wanted();
     if (view === root.dataset.vista) return;
     if (still) { show(view); return; }
-    await pixels(true);
+    await pixels(palette);
     show(view);
-    await pixels(false);
+    await pixels(null);
   });
 
-  /* Entrar en un proyecto: se tapa y luego se va. Al volver con atrás,
-     la página sale de la caché tal cual, tapada: se destapa. */
+  /* Entrar en un proyecto: se tapa de su color y luego se va. Al volver
+     con atrás, la página sale de la caché tal cual, tapada: se destapa. */
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href^="projects/"]');
     if (!a || still || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
-    pixels(true).then(() => { location.href = a.href; });
+    pixels([colorOf(a)]).then(() => { location.href = a.href; });
   });
-  addEventListener('pageshow', (e) => { if (e.persisted) pixels(false); });
+  addEventListener('pageshow', (e) => { if (e.persisted) pixels(null); });
 })();

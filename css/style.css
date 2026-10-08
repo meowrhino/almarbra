@@ -75,11 +75,13 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    diga el hash. */
 
 #mapa { display: none; }
-[data-vista="mapa"] #mapa { display: block; }
+[data-vista="mapa"] #mapa { display: grid; }
 [data-vista="mapa"] #lista { display: none; }
 
 /* El mapa es un scroll en las dos direcciones, sin barras: con el dedo
-   o la rueda se recorre solo, y el ratón lo arrastra (js/mapa.js). */
+   o la rueda se recorre solo, y el ratón lo arrastra (js/mapa.js). Es
+   una rejilla para que el plano, si al alejarlo queda más pequeño que la
+   pantalla, se quede en el centro (margin: auto). */
 #mapa {
   position: fixed;
   inset: var(--bar) 0 0;
@@ -93,9 +95,9 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 #mapa::-webkit-scrollbar { display: none; }
 #mapa.dragging { cursor: grabbing; }
 
-.world { position: relative; }
+.world { position: relative; margin: auto; }
 
-/* los caminos: un píxel del lienzo es un cuadrado de pantalla */
+/* el mapa de calor: un píxel del lienzo es un cuadrado de pantalla */
 .world canvas {
   position: absolute;
   inset: 0;
@@ -111,7 +113,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .pin img { width: 100%; }
 
-/* el nombre del proyecto, bajo su portada, al encenderse */
+/* el nombre del proyecto, bajo la foto por la que pasas */
 .pin span {
   position: absolute;
   top: 100%;
@@ -123,43 +125,130 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   opacity: 0;
 }
 
-.world canvas,
 .pin,
 .pin span { transition: opacity .2s; }
 
-.dim .pin:not(.on),
-.dim canvas:not(.on) { opacity: .15; }
-.pin.on span { opacity: 1; }
+.dim .pin:not(.on) { opacity: .15; }
+.pin:hover span { opacity: 1; }
 
-/* La lista: un cuadrado del color del proyecto, el título, la
-   categoría y cuántas fotos tiene. */
+/* El zoom, a la derecha: + arriba, − abajo y en medio un cuadrado por
+   escalón, lleno el que está puesto. Botones con las esquinas mordidas,
+   como de juego viejo; los signos son píxeles (un SVG de 5×5). */
+.zoom { display: none; }
+[data-vista="mapa"] .zoom {
+  position: fixed;
+  right: var(--pad);
+  top: 50%;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  transform: translateY(-50%);
+}
+
+.zoom button {
+  display: block;
+  padding: 0;
+  border: 0;
+  color: var(--bg);
+  background: var(--ink);
+  cursor: pointer;
+}
+
+.zoom > button {
+  width: 36px;
+  height: 36px;
+  clip-path: polygon(4px 0, calc(100% - 4px) 0, calc(100% - 4px) 4px, 100% 4px, 100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px), calc(100% - 4px) 100%, 4px 100%, 4px calc(100% - 4px),
+    0 calc(100% - 4px), 0 4px, 4px 4px);
+}
+
+.zoom svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+  margin: auto;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+}
+
+.zoom .ticks { display: grid; gap: 6px; padding-block: 4px; }
+
+.zoom .ticks button {
+  width: 10px;
+  height: 10px;
+  background: var(--bg);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.zoom .ticks button.on { background: var(--ink); }
+
+@media (hover: hover) {
+  .zoom > button:hover { background: var(--dim); }
+}
+
+/* La lista: la portada grande y, al lado, el título y un degradado de
+   píxeles del color del proyecto que sale de la foto. Una a la
+   izquierda, la siguiente a la derecha. */
 #lista ol {
+  display: grid;
+  gap: clamp(3rem, 12vh, 8rem);
   margin: 0;
-  padding: clamp(1.5rem, 6vh, 4rem) var(--pad);
+  padding: clamp(2rem, 8vh, 5rem) var(--pad);
   list-style: none;
 }
 
 #lista a {
   display: grid;
-  grid-template-columns: .7em 1fr auto 3ch;
-  gap: 1.25rem;
-  align-items: baseline;
-  padding-block: .55rem;
-  border-bottom: 1px solid rgba(255, 255, 255, .12);
+  grid-template-columns: 55fr 45fr;
+  align-items: center;
 }
 
-#lista i { width: .7em; height: .7em; background: var(--c); }
-#lista .c,
-#lista .n { color: var(--dim); font-size: .9em; }
-#lista .n { text-align: right; }
+#lista li:nth-child(even) a { grid-template-columns: 45fr 55fr; }
+#lista li:nth-child(even) img { order: 2; }
+
+#lista img {
+  width: 100%;
+  max-height: 85dvh;
+  object-fit: cover;
+}
+
+.side { min-width: 0; }
+
+.side h2,
+.side p { margin: 0; padding-inline: clamp(1rem, 3vw, 2.5rem); }
+
+.side h2 {
+  font-size: clamp(1.5rem, 3.4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -.02em;
+  line-height: 1.05;
+}
+
+.side p { margin: .6rem 0 1.25rem; color: var(--dim); font-size: .9em; }
+
+/* el degradado nace pegado a la foto: en las pares, la foto está a la
+   derecha y se le da la vuelta */
+.fade {
+  display: block;
+  width: 100%;
+  height: auto;
+  fill: var(--c);
+  shape-rendering: crispEdges;
+}
+
+#lista li:nth-child(even) .fade { transform: scaleX(-1); }
+#lista li:nth-child(even) .side { text-align: right; }
 
 @media (hover: hover) {
-  #lista a:hover .t { color: var(--c); }
+  #lista a:hover h2 { color: var(--c); }
 }
 
 @media (max-width: 700px) {
-  #lista a { grid-template-columns: .7em 1fr 3ch; gap: .75rem; }
-  #lista .c { display: none; }
+  #lista a,
+  #lista li:nth-child(even) a { grid-template-columns: 1fr; }
+  #lista li:nth-child(even) img { order: 0; }
+  .side h2 { margin-top: 1rem; }
 }
 
 /* La tapa de píxeles entre vistas: un lienzo pequeño estirado a toda la

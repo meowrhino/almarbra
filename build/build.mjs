@@ -143,15 +143,33 @@ ${scripts.map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></scrip
 const coverOf = (project) =>
   project.images.find((i) => i.src === project.cover) || project.images[0];
 
-/* En el mapa no van las 259 fotos: la portada de cada proyecto y unas
-   cuantas más, repartidas a lo largo de su galería. */
+/* Al mapa van las fotos de la carpeta `home` de cada proyecto (ver
+   build/ingest.mjs). Un proyecto que aún no la tiene manda su portada y
+   unas cuantas más, repartidas a lo largo de su galería. */
 const PER_PROJECT = 6;
 
 function mapImages(project) {
+  const home = project.images.filter((i) => i.home);
+  if (home.length) return home;
   const cover = coverOf(project);
   const rest = project.images.filter((i) => i !== cover);
   const n = Math.min(PER_PROJECT - 1, rest.length);
   return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
+}
+
+/* Un degradado de píxeles en tramado (Bayer 4×4): lleno junto a la foto
+   y deshaciéndose hacia fuera. Sale distinto en cada build. */
+const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+
+function pixelFade(cols = 24, rows = 6) {
+  const cells = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const t = 1 - (x + 0.5) / cols;
+      if (t > (BAYER[(y % 4) * 4 + (x % 4)] / 16 + Math.random() * 0.35) / 1.35) cells.push(`M${x} ${y}h1v1h-1z`);
+    }
+  }
+  return `<svg class="fade" viewBox="0 0 ${cols} ${rows}" aria-hidden="true"><path d="${cells.join('')}"/></svg>`;
 }
 
 /** El menú de arriba, igual en todas las páginas. */
@@ -177,18 +195,23 @@ function homePage(projects) {
      Es solo para la vista: quien navega con teclado o lector de
      pantalla tiene la lista. */
   const pins = projects.flatMap((project, p) => mapImages(project).map((image, i) => {
-    const long = i === 0 ? 170 : 120;   // la portada, más grande
+    const long = [170, 120, 145][i % 3];   // de tres tamaños, para que no parezca una rejilla
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
-    return `<a class="pin${i === 0 ? ' cover' : ''}" href="projects/${attr(project.slug)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
-      + img(image, { sizes: `${width}px` })
-      + (i === 0 ? `<span>${esc(t(project.short) || t(project.title) || project.slug)}</span>` : '')
-      + '</a>';
+    return `<a class="pin" href="projects/${attr(project.slug)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
+      + img(image, { sizes: `${width * 2}px` })
+      + `<span>${esc(t(project.short) || t(project.title) || project.slug)}</span></a>`;
   }));
 
+  /* La lista: la portada grande y, al lado, el título y un degradado de
+     píxeles del color del proyecto. Una a la izquierda, la siguiente a
+     la derecha (el CSS da la vuelta a las pares). */
   const rows = projects.map((project) => `<li><a href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<i></i><span class="t">${esc(t(project.title) || project.slug)}</span>
-<span class="c">${esc(project.category.replace(/-/g, ' '))}</span>
-<span class="n">${project.images.length}</span>
+${img(coverOf(project), { sizes: '(max-width: 700px) 100vw, 55vw' })}
+<div class="side">
+<h2>${esc(t(project.title) || project.slug)}</h2>
+<p>${esc(project.category.replace(/-/g, ' '))} · ${project.images.length} fotos</p>
+${pixelFade()}
+</div>
 </a></li>`);
 
   return page({
@@ -206,6 +229,12 @@ ${topBar()}
 ${pins.join('\n')}
 </div>
 </section>
+
+<div class="zoom" aria-hidden="true">
+<button type="button" data-step="1" tabindex="-1"><svg viewBox="0 0 5 5"><path d="M2 0h1v5h-1zM0 2h5v1h-5z"/></svg></button>
+<div class="ticks"></div>
+<button type="button" data-step="-1" tabindex="-1"><svg viewBox="0 0 5 5"><path d="M0 2h5v1h-5z"/></svg></button>
+</div>
 
 <section id="lista">
 <ol>

@@ -3,14 +3,19 @@
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
 JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
-[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias y cero JavaScript de navegador.**
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el único JavaScript de navegador es el del mapa.
 
-Dos pantallas:
+El menú va arriba en todas las páginas: el nombre a la izquierda, **mapa** y
+**lista** a la derecha. Dos pantallas:
 
-- **portada** (`/`): la foto —un PNG recortado, con el fondo transparente—
-  entera en la primera pantalla y «entrar» encima. Debajo, otra pantalla de
-  100dvh en negro con la firma arriba y los proyectos desperdigados. «Entrar» es
-  un ancla y el desplazamiento suave lo hace el navegador.
+- **portada** (`/`): el **mapa** (`#mapa`) o la **lista** (`#lista`), como el
+  túnel y la lista de oriol-colomer. El mapa es la idea de anaelleblin.com: las
+  fotos de todos los proyectos mezcladas por un plano que se arrastra, con zoom
+  (+ y −), y en vez de líneas, un mapa de calor de píxeles del color de cada
+  proyecto. Al pasar por una foto se enciende su proyecto. La lista: la portada
+  grande y al lado el título y un degradado de píxeles, una a cada lado. Entre
+  mapa y lista la pantalla se tapa de píxeles de colores; al entrar en un
+  proyecto, de píxeles de su color.
 - **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con aire alrededor
   —ficha técnica arriba, galería en scroll vertical debajo—. Nada va a sangre: el
   negro de los lados es parte de la página.
@@ -42,9 +47,9 @@ build/build.mjs         content/ + media/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/ (y de pruebas/)
 
 css/style.css           todo el estilo
-js/scatter.js           desperdiga los proyectos de la portada (lo único de navegador)
+js/mapa.js              el mapa y la transición de píxeles (lo único de navegador)
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
-media/portada/          GENERADO: la foto de la portada
+media/portada/          GENERADO: la foto que sale al compartir la portada
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
 wrangler.jsonc          para cuando pase a Cloudflare Workers
@@ -115,6 +120,15 @@ pero ya no se puede volver a generar en otra calidad. Copia de seguridad aparte.
 
 `source` en cada imagen dice de qué original salió: para volver atrás sin adivinar.
 
+### Qué fotos van al mapa: `home` y `noHome`
+
+Dentro de la carpeta de cada proyecto en `originals/`, las fotos que estén en
+una carpeta **`home`** salen en el mapa de la portada; las de **`noHome`**, solo
+en la página del proyecto. Las dos carpetas pueden ir a cualquier profundidad
+(`FOTOS/home/`, `PIEZAS/VIRGEN/home/`…) y no cuentan como grupo. Después,
+`npm run ingest`. Un proyecto sin carpeta `home` manda al mapa su portada y
+cinco fotos más, repartidas por su galería.
+
 ### content/overrides.json
 
 `content/projects/*.json` lo **reescribe la ingesta cada vez**, así que editarlo a
@@ -126,10 +140,16 @@ encima del JSON recién generado:
   "roma": {
     "title": { "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN" },
     "short": { "es": "roma" },                     // nombre corto para la portada
-    "cover": "media/roma/roma-12.webp"        // la foto que lo representa
+    "cover": "media/roma/roma-12.webp",       // la foto que lo representa
+    "drop": ["virgen_13colores.jpg"]          // fotos del original que no entran
   }
 }
 ```
+
+`drop` lo lee la ingesta: esas fotos no se convierten y sus `.webp` se borran.
+Las demás no se renumeran (el número sale del sitio en el original), así que
+quitar una no rompe ningún `cover`. Ahora mismo fuera: las cuatro
+preparaciones de color del jacquard (tres de Cuerpo Esquema y una de Roma).
 
 `cover` y `short` son solo para la portada; sin `cover` se usa la primera foto del
 proyecto, y sin `short`, el título entero. Las claves que empiezan por `_` son
@@ -173,30 +193,44 @@ En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**
 Lo que se cambia sin tocar código, en `content/site.json`:
 
 ```jsonc
-"home": { "enter": "entrar" },            // la palabra de la portada
-"order": ["textil", "editorial-moda"]     // en qué orden salen las categorías
+"home": { "map": "mapa", "list": "lista" }, // las palabras del menú
+"order": ["textil", "editorial-moda"],      // en qué orden salen las categorías
+"colors": ["Maroon", "MediumSpringGreen", …] // un color por proyecto, en ese orden
 ```
 
-La foto de la portada no se elige aquí: es la que haya en `originals/PORTADA/`
-(ver *La ingesta*).
+Los colores son nombres de CSS, uno por proyecto y sin repetir: de las cuatro
+familias de Maroon, MediumSpringGreen, Turquoise y Violet, alternadas para que
+dos proyectos seguidos no sean de la misma. Si hay más proyectos que colores,
+el build para y lo dice.
+
+La foto de `originals/PORTADA/` ya no sale en la web: es la `og:image` de la
+portada, la que se ve al compartir el enlace.
 
 El ancho de la columna de un proyecto —800 px— vive en `--col`, en
 `css/style.css`, y `build/build.mjs` lo repite en el `sizes` de cada foto para
 que el navegador no se baje una más grande de la cuenta. Si cambia uno, cambia el
 otro.
 
-## Lo único de navegador: js/scatter.js
+## Lo único de navegador: js/mapa.js
 
-Los proyectos de la segunda pantalla salen **en un sitio distinto cada vez que se
-carga la página**. Eso no se puede hornear en el HTML, así que lo hace el
-navegador: `js/scatter.js` mide de verdad cada proyecto, tira posiciones al azar y
-descarta las que pisan a otro, aflojando la separación que exige si no encuentra
-hueco. Nunca se solapan ni se salen. Vuelve a repartir al girar el móvil o
-cambiar el tamaño de la ventana.
+El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
+(las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
+pisarse y sin agruparlas por proyecto. Debajo pinta el mapa de calor: el plano
+partido en píxeles de 8 px, y cada píxel toma el color del proyecto que más le
+llega —cada foto calienta su alrededor, más cuanto más cerca— y se enciende o no
+según un tramado Bayer 4×4, así que el degradado sale a cuadros. Un solo lienzo,
+de un píxel por celda, que el CSS estira sin suavizar. Al cargar, el calor se
+enciende desde las fotos hacia fuera. `REACH` dice cuánto se extiende.
 
-**Sin él la página funciona igual**: el CSS deja los proyectos en una lista
-centrada, que es lo que se ve si el script no llega, falla o está desactivado.
-Es también lo que se ve si la pantalla es demasiado pequeña para repartirlos.
+El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
+arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS
+`zoom`, y acerca sobre el centro de la pantalla.
+
+La vista la dice el hash, así que atrás y adelante funcionan y se puede enlazar
+`/#lista`. Un `<script>` de una línea en el `<head>` la pone antes de pintar.
+
+**Sin JavaScript la portada es la lista**, que es también lo que leen el teclado
+y los lectores de pantalla: el mapa va con `aria-hidden`.
 
 El CSS se enlaza con `?v=<hash>` de su contenido: un deploy nunca deja a nadie con
 estilos viejos en caché.
@@ -217,10 +251,10 @@ comando `node build/build.mjs`.
 Kaltbult Magazine · Lula Japan Magazine · Sicky Magazine · Sicky Magazine (II) ·
 Teeth Magazine · Vein Magazine — 143 fotos.
 
-**Textil** (3): Corpórea (17) · Cuerpo Esquema (83) · Roma (16, en tres piezas:
-Laocoonte, Río de la Plata, Virgen) — 116 fotos.
+**Textil** (3): Corpórea (17) · Cuerpo Esquema (80) · Roma (15, en tres piezas:
+Laocoonte, Río de la Plata, Virgen) — 112 fotos.
 
-259 fotos, 825 WebP, 133 MB.
+255 fotos.
 
 ### Lo que hay que mirar antes de diseñar
 
