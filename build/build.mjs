@@ -171,9 +171,19 @@ window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListe
 
 const LOCALES = { es: 'es_ES', en: 'en_GB', ca: 'ca_ES' };
 
-/* La foto al compartir: la variante de 1400 px si la hay, que pesa
-   mucho menos que la grande y sobra para una vista previa. */
-function shareImage(image) {
+/* La foto al compartir: la de media/og/<og>.jpg, 1200×630, si está
+   (build/og.mjs, npm run og). Si no, la variante de 1400 px de `image`,
+   que pesa mucho menos que la grande. */
+const OG = existsSync(join(ROOT, 'media/og/og.json')) ? read('media/og/og.json') : {};
+
+function shareImage(image, og) {
+  if (og && existsSync(join(ROOT, `media/og/${og}.jpg`))) {
+    return `<meta property="og:image" content="${attr(abs(`media/og/${og}.jpg`))}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+`;
+  }
   const w = image.w > 1400 && existsSync(join(ROOT, variant(image.src, 1400))) ? 1400 : image.w;
   const src = w === image.w ? image.src : variant(image.src, w);
   return `<meta property="og:image" content="${attr(abs(src))}">
@@ -193,15 +203,33 @@ const person = () => ({
   name: site.title,
   url: site.url,
   description: t(about)?.split(/\n{2,}/)[0] || t(site.description),
+  ...(site.email ? { email: site.email } : {}),
   ...(site.redes?.length ? { sameAs: site.redes } : {}),
 });
+
+/* Al pie del about: el email y las redes de content/web.json. De
+   Instagram sale @usuario; de lo demás, el nombre del sitio. */
+function contact() {
+  const handle = (url) => {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, '');
+    const user = u.pathname.split('/').filter(Boolean)[0];
+    return host === 'instagram.com' && user ? `@${user}` : host.replace(/\.[a-z]+$/, '');
+  };
+  const links = [
+    ...(site.email ? [`<a href="mailto:${attr(site.email)}">${esc(site.email)}</a>`] : []),
+    ...(site.redes || []).map((url) => `<a href="${attr(url)}" target="_blank" rel="noopener me">${esc(handle(url))}</a>`),
+  ];
+  return links.length ? `\n<p class="contacto">${links.join('\n')}</p>` : '';
+}
 
 /* `path` es la dirección de la página dentro del sitio, sin el idioma
    ('' la portada, 'projects/roma/' un proyecto); sin ella no hay
    canonical, hreflang ni og, que es lo que pasa en la 404. `root` va de
    la página a la raíz del sitio, donde están css/, js/, media/ y
-   fonts/. `image` es la que sale al compartir el enlace. */
-function page({ title, body, root = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, head = '' }) {
+   fonts/. `image` (y `og`, su versión de media/og/) es la que sale al
+   compartir el enlace. */
+function page({ title, body, root = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, og = null, head = '' }) {
   const full = title ? `${title} — ${site.title}` : site.title;
   const desc = description || t(site.description) || '';
   const alternates = LANGS.length > 1
@@ -213,7 +241,7 @@ ${alternates}<meta property="og:type" content="website">
 <meta property="og:title" content="${attr(full)}">
 <meta property="og:description" content="${attr(desc)}">
 <meta property="og:url" content="${attr(abs(prefix(cur) + path))}">
-${image ? shareImage(image) : ''}<meta property="og:locale" content="${LOCALES[cur] || cur}">
+${image ? shareImage(image, og) : ''}<meta property="og:locale" content="${LOCALES[cur] || cur}">
 <meta name="twitter:card" content="summary_large_image">
 `;
   return `<!DOCTYPE html>
@@ -337,6 +365,7 @@ function homePage(projects) {
     path: '',
     root,
     image: hero,
+    og: 'portada',
     bodyClass: 'home',
     head: VIEW_SCRIPT + ld(person()),
     scripts: ['js/mapa.js', 'js/telar.js'],
@@ -356,7 +385,7 @@ ${pins.join('\n')}
 </div>
 
 <section id="about">
-<div>${tr(about, synopsis)}</div>
+<div>${tr(about, synopsis)}${contact()}</div>
 </section>
 
 <section id="lista">
@@ -436,6 +465,7 @@ function projectPage(project) {
     path,
     description,
     image: coverOf(project),
+    og: project.slug,
     head: ld({
       '@type': 'CreativeWork',
       name: title,
@@ -550,6 +580,11 @@ for (const project of projects) {
   }
 }
 if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que se arregle.`);
+
+/* Las og:image (build/og.mjs) no paran el build: sin ellas se comparte la
+   foto tal cual. Pero si falta alguna o la portada ha cambiado, se avisa. */
+const stale = projects.filter((p) => OG[p.slug] !== coverOf(p).src).map((p) => p.slug);
+if (stale.length) console.warn(`⚠ og:image que faltan o son de otra portada: ${stale.join(', ')}. Hazlas con npm run og.\n`);
 
 /* ── escribir ────────────────────────────────────────────────────── */
 

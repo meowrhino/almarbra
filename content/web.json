@@ -1,5 +1,5 @@
 {
-  "_": "Lo general de la web. Casi nunca hace falta tocarlo. «description», por idioma, es la que sale en Google y al compartir. «order»: en qué orden salen las categorías. «colors»: un color por proyecto, en el orden de la lista (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en proyectos.json.",
+  "_": "Lo general de la web. Casi nunca hace falta tocarlo. «description», por idioma, es la que sale en Google y al compartir. «email» y «redes» (direcciones enteras, p. ej. https://www.instagram.com/usuario/) salen al pie del about; vacíos, no sale nada. «order»: en qué orden salen las categorías. «colors»: un color por proyecto, en el orden de la lista (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en proyectos.json.",
   "title": "almudena gonzalez",
   "url": "https://meowrhino.github.io/almarbra/",
   "lang": "es",
@@ -14,6 +14,8 @@
     "ca": "Portfoli d'Almudena González — art tèxtil i fotografia de moda."
   },
   "noindex": true,
+  "email": "",
+  "redes": [],
   "order": [
     "textil",
     "editorial-moda"

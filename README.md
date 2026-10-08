@@ -133,6 +133,7 @@ build/ingest.mjs        originals/ -> media/ + content/projects/
 build/ficha.mjs         lector de las FICHAS .rtf
 build/formats.mjs       tamaño y calidad de los WebP, en un solo sitio
 build/slug.mjs          slugs y nombres legibles
+build/og.mjs            las imágenes para compartir (media/og/), con ffmpeg
 build/build.mjs         content/ + media/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/
 build/watch.mjs         rehace dist/ al guardar (para Live Server)
@@ -144,7 +145,8 @@ js/transicion.js        la transición al cambiar de página o de vista, y la en
 js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
 js/hilo.js              el hilo de la página de un proyecto
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
-media/portada/          GENERADO: la foto que sale al compartir la portada
+media/portada/          GENERADO: la foto de la portada
+media/og/               GENERADO por npm run og: las imágenes para compartir, 1200×630
 fonts/                  DM Mono en woff2 (400 y 500, latin y latin-ext)
 favicon.svg             dos hilos de píxeles
 
@@ -271,9 +273,10 @@ salen una vez por idioma (`/`, `/en/`, `/ca/`).
 - `title` y `description` (en un proyecto, el primer párrafo de la sinopsis;
   en la portada, la de `content/web.json`), en su idioma.
 - `canonical`, `hreflang` de los tres idiomas y `x-default` (el español).
-- `og:*` y `twitter:card`, con la portada del proyecto en la variante de
-  1400 px, para que al compartir un enlace se vea ese proyecto.
-- JSON-LD: en la portada, `Person` (con `sameAs` si se ponen `"redes"` en
+- `og:*` y `twitter:card`, con su imagen de `media/og/` (1200×630, JPG):
+  al compartir un proyecto se ve ese proyecto. Si falta, la portada del
+  proyecto en la variante de 1400 px.
+- JSON-LD: en la portada, `Person` (con `email` y `sameAs` si se ponen en
   `content/web.json`); en cada proyecto, `CreativeWork` con ella de autora.
 - `<main>`, un solo `h1` y `alt` en las fotos de la galería: el suyo si lo
   tiene en el JSON y si no, el título del proyecto y el del grupo.
@@ -385,15 +388,48 @@ El CSS y los scripts se enlazan con `?v=<hash>` de su contenido: un deploy nunca
 estilos viejos en caché.
 
 Todas las páginas llevan `noindex` y `robots.txt` bloquea el sitio, hasta que haya
-web de verdad. **Al lanzar**, en `content/web.json`:
+web de verdad.
 
-- `"url"`: la dirección definitiva (ahora `https://meowrhino.github.io/almarbra/`).
-  De ahí salen el canonical, las `og:image`, el sitemap y los enlaces de la 404.
+## Lanzar
+
+Lo que falta es solo dato: el Instagram, el email (si se quiere) y el dominio.
+
+**1. En `content/web.json`:**
+
+- `"redes": ["https://www.instagram.com/usuario/"]`: sale al pie del about como
+  `@usuario`, y en el JSON-LD como `sameAs` (Google une la web con la cuenta).
+- `"email": "…"`: al pie del about, delante de las redes. Vacío, no sale.
+- `"url": "https://eldominio.com/"`: la dirección definitiva, con la `/` del
+  final. De ahí salen los canonical, los `hreflang`, las `og:image`, el sitemap
+  y los enlaces de la 404. Los demás enlaces son relativos: no hay que tocar nada más.
 - `"noindex": false`: quita el meta y abre `robots.txt` con su `Sitemap:`.
-- Opcional: `"redes": ["https://www.instagram.com/…"]`, para el `sameAs`.
 
-Si pasa a Cloudflare, `wrangler.jsonc` y `_headers` ya están: en Workers Builds,
-comando `node build/build.mjs`.
+**2. El dominio**, una de dos:
+
+- **GitHub Pages** (como ahora): en el repo, *Settings → Pages → Custom domain*,
+  el dominio. En el DNS del dominio, cuatro registros `A` a `185.199.108.153`,
+  `185.199.109.153`, `185.199.110.153` y `185.199.111.153`, y un `CNAME` de `www`
+  a `meowrhino.github.io`. Cuando GitHub dé el certificado, *Enforce HTTPS*.
+- **Cloudflare Workers** (lo que pide la receta: `_headers` con la caché,
+  sin el límite de 10 min de GitHub): Workers Builds conectado al repo;
+  `wrangler.jsonc` ya está y el comando es `node build/build.mjs`. Luego, el
+  dominio en *Custom domains*. Si se hace así, borrar
+  `.github/workflows/deploy.yml` para no publicar dos veces.
+
+**3. Comprobar**, ya publicada:
+
+- [Rich Results Test](https://search.google.com/test/rich-results) con la portada
+  y un proyecto: tiene que salir la `Person` y el `CreativeWork`.
+- Pegar un enlace en WhatsApp o en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/):
+  la imagen de `media/og/`.
+- Dar de alta el dominio en [Search Console](https://search.google.com/search-console)
+  y mandarle `sitemap.xml`.
+
+**Las imágenes para compartir** están hechas: `media/og/`, 1200×630 en JPG, una
+por proyecto (su portada entera sobre blanco) y la de la portada (las de los
+seis primeros proyectos en fila). Las hace `npm run og` (pide ffmpeg). Si se
+cambia una portada en `content/proyectos.json`, el build avisa y hay que volver a
+hacerlas.
 
 ## Los 13 proyectos
 

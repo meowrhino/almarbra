@@ -121,7 +121,8 @@ html:not(.js):has(#about:target) #lista { display: none; }
 
 /* ── el about: el texto arriba a la izquierda, bajo el nombre ───────
 
-   Detrás, el telar: hilos de borde a borde que se tejen y destejen despacio (js/mapa.js). */
+   Detrás, el telar: hilos de borde a borde que se tejen y destejen
+   despacio (js/telar.js). Al pie, el email y las redes. */
 
 #about {
   min-height: calc(100vh - var(--bar));
@@ -137,6 +138,10 @@ html:not(.js):has(#about:target) #lista { display: none; }
 }
 
 #about p { margin: 0 0 1em; }
+
+/* el email y las redes, al pie (content/web.json) */
+.contacto { display: flex; flex-wrap: wrap; gap: 0 1.25em; }
+.contacto a { border-bottom: 1px solid var(--dim); }
 
 .fondo {
   position: fixed;
