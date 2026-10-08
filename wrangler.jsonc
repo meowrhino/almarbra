@@ -1,5 +1,5 @@
 // Para cuando la web pase a Cloudflare Workers (Workers Builds conectado al
-// repo). Allí va con dominio propio: cambia "url" en content/site.json.
+// repo). Allí va con dominio propio: cambia "url" en content/web.json (y quita "noindex").
 {
   "name": "almarbra",
   "compatibility_date": "2026-10-01",

@@ -230,7 +230,9 @@ html:not(.js):has(#about:target) #lista { display: none; }
 .js .pin { animation: hueco .4s steps(4, end) var(--d, 0s) backwards; }
 @keyframes hueco { from { opacity: 0; } }
 
-.js :is(.pin, .row .pic, .group figure) img:not(.ok) { opacity: 0; }
+/* (si js/transicion.js no llegara, a los 8 s se ven igual) */
+.js :is(.pin, .row .pic, .group figure) img:not(.ok) { opacity: 0; animation: verse 0s 8s forwards; }
+@keyframes verse { to { opacity: 1; } }
 .js :is(.pin, .row .pic, .group figure) img { transition: opacity .8s ease-out; }
 .js .pin img { transition-delay: calc(var(--d, 0s) + .3s); }
 .listo .pin { --d: 0s; }

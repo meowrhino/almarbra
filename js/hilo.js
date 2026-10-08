@@ -117,12 +117,14 @@
 
   function fit() {
     const w = root.clientWidth;
-    if (w !== W && pts.length) {
-      /* otro ancho: lo tejido se estira o se encoge con la página */
-      for (const p of pts) { p.x *= w / W; p.bx *= w / W; }
-      for (const h of [down, up]) { h.x *= w / W; h.goal *= w / W; }
-    }
+    const was = W;
     W = w;
+    if (!was) seed(scrollY);   // se abrió sin ancho (en una pestaña de fondo): lo de antes no vale
+    else if (w !== was && pts.length) {
+      /* otro ancho: lo tejido se estira o se encoge con la página */
+      for (const p of pts) { p.x *= w / was; p.bx *= w / was; }
+      for (const h of [down, up]) { h.x *= w / was; h.goal *= w / was; }
+    }
     for (const svg of layers) {
       svg.setAttribute('width', W);
       svg.setAttribute('height', root.scrollHeight);

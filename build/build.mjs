@@ -168,6 +168,8 @@ window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListe
 }</script>
 `;
 
+const LOCALES = { es: 'es_ES', en: 'en_GB', ca: 'ca_ES' };
+
 /* `path` es la dirección de la página dentro del sitio ('' la portada,
    'projects/roma/' un proyecto); sin ella no hay canonical ni og, que es
    lo que pasa en la 404. `image` es la que sale al compartir el enlace. */
@@ -183,7 +185,8 @@ function page({ title, body, base = '', bodyClass = null, bodyStyle = null, scri
 ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <meta property="og:image:width" content="${image.w}">
 <meta property="og:image:height" content="${image.h}">
-` : ''}<meta name="twitter:card" content="summary_large_image">
+` : ''}<meta property="og:locale" content="${LOCALES[lang] || lang}">
+<meta name="twitter:card" content="summary_large_image">
 `;
   return `<!DOCTYPE html>
 <html lang="${attr(lang)}">
@@ -279,6 +282,20 @@ ${link('about')}
 const VIEW_SCRIPT = `<script>document.documentElement.dataset.vista = { '#lista': 'lista', '#about': 'about' }[location.hash] || 'mapa'</script>
 `;
 
+/* Quién es, para los buscadores (JSON-LD). «redes» en content/web.json,
+   si las hay, van en sameAs. */
+function personLd() {
+  const person = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: site.title,
+    url: site.url,
+    description: t(about)?.split(/\n{2,}/)[0] || site.description,
+    ...(site.redes?.length ? { sameAs: site.redes } : {}),
+  };
+  return `<script type="application/ld+json">${JSON.stringify(person).replace(/</g, '\\u003c')}</script>\n`;
+}
+
 function homePage(projects) {
   /* El mapa: las fotos de cada proyecto, sin posición. js/mapa.js las
      reparte en cada carga y las une con hilos del color del proyecto.
@@ -299,7 +316,7 @@ function homePage(projects) {
     path: '',
     image: hero,
     bodyClass: 'home',
-    head: VIEW_SCRIPT,
+    head: VIEW_SCRIPT + personLd(),
     scripts: ['js/mapa.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
 ${topBar()}

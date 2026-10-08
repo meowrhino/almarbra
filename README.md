@@ -258,8 +258,9 @@ pantalla).
 `/projects/roma/`, `/projects/sicky-magazine/`… Son dos plantillas y ya. Cada
 página lleva su `title`, `description` (el primer párrafo de la sinopsis),
 `canonical` y `og:*` con la foto de portada del proyecto, para que al compartir un
-enlace se vea ese proyecto y no la portada genérica. Más `404.html`,
-`sitemap.xml` y `robots.txt`.
+enlace se vea ese proyecto y no la portada genérica. La portada lleva además
+un JSON-LD `Person` (con `sameAs` si se ponen `"redes"` en `content/web.json`).
+Más `404.html`, `sitemap.xml` y `robots.txt`.
 
 **Antes de escribir nada, valida.** Un JSON con una coma de menos, una foto que no
 está en `media/` o un `cover` que no es de ninguna foto paran el build con el
