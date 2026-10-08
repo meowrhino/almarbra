@@ -10,8 +10,8 @@ El menú va arriba en todas las páginas: el nombre a la izquierda, **mapa** y
 
 - **portada** (`/`): el **mapa** (`#mapa`) o la **lista** (`#lista`), como el
   túnel y la lista de oriol-colomer. El mapa es la idea de anaelleblin.com: las
-  fotos de todos los proyectos mezcladas por un plano que se arrastra, con zoom
-  (+ y −), y en vez de líneas, un mapa de calor de píxeles del color de cada
+  fotos de todos los proyectos, por zonas, en un plano que se arrastra, con zoom
+  (+ y −), y en vez de líneas, ruido de píxeles del color de cada
   proyecto. Al pasar por una foto se enciende su proyecto. La lista: una franja
   por proyecto con la portada a un lado —una a la izquierda, la siguiente a la
   derecha— y cuadrados de su color alrededor, apretados junto a la foto y cada
@@ -217,12 +217,13 @@ otro.
 
 El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
 (las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
-pisarse y sin agruparlas por proyecto. Debajo, ruido de píxeles del color de
-cada proyecto —cada píxel de uno de seis tonos, del oscuro al claro—, de dos
-clases:
+pisarse y por zonas: primero la primera foto de cada proyecto, separadas entre
+sí, y luego el resto alrededor de la suya (`REACH`). Las zonas se tocan y se
+mezclan un poco por los bordes. Debajo, ruido de píxeles del color de cada
+proyecto —cada píxel de uno de ocho tonos, del oscuro al claro—, de dos clases:
 
 - **el halo**: alrededor de cada foto, mucho y apretado, que se va soltando al
-  alejarse. Como mucho un píxel por casilla de 8 px, corrido al azar dentro de
+  alejarse. Como mucho un píxel por casilla de 6 px, corrido al azar dentro de
   ella para que no se vea la rejilla.
 - **las franjas**: como las líneas de anaelleblin.com, unen las fotos de un
   mismo proyecto —cada una con la más cercana de las que ya estaban, así que
@@ -232,7 +233,8 @@ clases:
 Un solo lienzo a media resolución, que el CSS estira sin suavizar. Los mandos,
 arriba de `js/mapa.js`: `DOT` (tamaño), `HALO` y `FADE` (lo lleno y lo ancho del
 halo), `BAND` y `BAND_FILL` (ancho de las franjas al salir y a medio camino, y lo
-llenas que van) y `SHADES` (cuántos tonos).
+llenas que van), `SHADES` (cuántos tonos), `DENSITY` (lo juntas que van las
+fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS

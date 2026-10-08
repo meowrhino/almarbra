@@ -1,6 +1,6 @@
 /* La portada: el mapa, la lista y el paso de una a otra.
 
-   El mapa son las fotos de todos los proyectos, mezcladas, por un plano
+   El mapa son las fotos de todos los proyectos, por zonas, en un plano
    más grande que la pantalla, que se arrastra con el ratón y se recorre
    con el dedo o la rueda (es un scroll normal). Debajo, ruido de
    píxeles del color de cada proyecto, cada uno de un tono: mucho
@@ -27,14 +27,15 @@
   const colorOf = (el) => el.style.getPropertyValue('--c');
   const palette = [...new Set(pins.map(colorOf))];
 
-  const DOT = 6;         // lado de un píxel, en px
-  const STEP = 8;        // en el halo, como mucho un píxel por casilla de STEP px
+  const DOT = 4;         // lado de un píxel, en px
+  const STEP = 6;        // en el halo, como mucho un píxel por casilla de STEP px
   const HALO = 0.75;     // qué parte de las casillas se llena pegado a la foto
   const FADE = 35;       // en cuántos px se suelta el halo (a 3×FADE ya casi no queda)
   const BAND = [70, 6];  // ancho de una franja al salir de la foto y a medio camino, en px
   const BAND_FILL = 0.2; // qué parte de la franja tapan sus píxeles
-  const SHADES = 6;      // tonos de cada color, del oscuro al claro: el ruido
-  const DENSITY = 0.11;  // cuánto del plano tapan las fotos
+  const SHADES = 8;      // tonos de cada color, del oscuro al claro: el ruido
+  const DENSITY = 0.15;  // cuánto del plano tapan las fotos
+  const REACH = 230;     // hasta dónde se apartan las fotos de un proyecto de la primera
   const MARGIN = 60;     // aire entre las fotos y el borde del plano
 
   /* ── el mapa ───────────────────────────────────────────────────── */
@@ -59,23 +60,37 @@
     world.style.width = `${W}px`;
     world.style.height = `${H}px`;
 
-    /* Cada foto, en cualquier sitio del plano donde no pise a otra: los
-       proyectos quedan mezclados. Si no hay hueco se va aflojando. */
+    /* Por zonas: primero la primera foto de cada proyecto, en cualquier
+       sitio y separadas entre sí; luego el resto de cada proyecto
+       alrededor de la suya, a REACH px como mucho. Las zonas se tocan y
+       se mezclan un poco por los bordes. Si no hay hueco se va aflojando. */
+    const first = pins.map((pin, i) => i === 0 || pins[i - 1].dataset.p !== pin.dataset.p);
+    const order = [...pins.keys()].sort((a, b) => first[b] - first[a]);
+    const anchors = new Map();   // proyecto -> la caja de su primera foto
     const spots = [];
-    pins.forEach((pin, i) => {
+
+    for (const i of order) {
+      const pin = pins[i];
+      const p = Number(pin.dataset.p);
       const { w, h } = boxes[i];
-      let gap = 40;
+      const home = anchors.get(p);
+      let gap = home ? 18 : 160;
+      let reach = REACH;
       let spot = null;
       for (let t = 0; t < 800 && !spot; t++) {
-        if (t && t % 200 === 0) gap /= 2;
-        const box = { x: MARGIN + Math.random() * (W - w - 2 * MARGIN), y: MARGIN + Math.random() * (H - h - 2 * MARGIN), w, h };
+        if (t && t % 100 === 0) { gap /= 2; reach *= 1.3; }
+        let x = home ? home.x + home.w / 2 - w / 2 + (Math.random() * 2 - 1) * reach : MARGIN + Math.random() * (W - w - 2 * MARGIN);
+        let y = home ? home.y + home.h / 2 - h / 2 + (Math.random() * 2 - 1) * reach : MARGIN + Math.random() * (H - h - 2 * MARGIN);
+        x = Math.max(MARGIN, Math.min(W - w - MARGIN, x));
+        y = Math.max(MARGIN, Math.min(H - h - MARGIN, y));
+        const box = { x, y, w, h, p };
         if (t === 799 || !spots.some((b) => hits(box, b, gap))) spot = box;   // ponytail: plano lleno, se pisa; bajar DENSITY
       }
-      spot.p = Number(pin.dataset.p);
+      if (!home) anchors.set(p, spot);
       spots.push(spot);
       pin.style.left = `${spot.x}px`;
       pin.style.top = `${spot.y}px`;
-    });
+    }
 
     /* Los píxeles, por proyecto. `r` es la tirada de cada uno: al
        cargar se van encendiendo de menor a mayor. */
@@ -147,14 +162,14 @@
       }
     }
 
-    /* Los tonos de cada color: del 45 % de luz al color tal cual y, de
+    /* Los tonos de cada color: del 30 % de luz al color tal cual y, de
        ahí, hacia el blanco. Cada píxel lleva uno al azar. */
     const probe = document.createElement('canvas').getContext('2d');
     const tones = (color) => {
       probe.fillStyle = color;
       const [r, g, b] = [1, 3, 5].map((i) => parseInt(probe.fillStyle.slice(i, i + 2), 16));
       return Array.from({ length: SHADES }, (_, i) => {
-        const k = 0.45 + (0.85 * i) / (SHADES - 1);   // 0.45 … 1.3
+        const k = 0.3 + (1.2 * i) / (SHADES - 1);   // 0.3 … 1.5
         const mix = (v) => Math.round(k <= 1 ? v * k : v + (255 - v) * (k - 1));
         return `rgb(${mix(r)} ${mix(g)} ${mix(b)})`;
       });
