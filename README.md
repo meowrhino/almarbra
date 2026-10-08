@@ -18,6 +18,24 @@ El menú va arriba en todas las páginas: el nombre a la izquierda, **mapa** y
   foto y acaba en el título, al otro lado. Entre mapa y lista la pantalla se
   llena de líneas que se dibujan solas; al entrar en un proyecto, de su color.
 
+  En la portada, el nombre abre el **about** (`#about`): la foto de la
+  portada y el texto de `about` en `content/site.json`.
+
+  **Idiomas**: es · en · ca en el centro de la barra. Lo traducido va en la
+  página en los tres (`data-l`) y se ve el elegido (`js/idioma.js`, que lo
+  recuerda); si falta un idioma, sale el español. Los textos de la
+  interfaz y las categorías, en `content/site.json`.
+
+  Los hilos van a escalones de 4 px, como dibujados en pocos píxeles.
+
+  **Pruebas abiertas.** `?pruebas` en la dirección abre un panel abajo a la
+  izquierda para elegir, de cada cosa, una variante (se recuerda en el
+  navegador; la × lo cierra): fondo blanco o negro; lista en franjas,
+  índice, hilo o muestrario; transición de líneas, telar u ovillo; y el
+  fondo de los proyectos liso, tinte, trama o hilo; y la mezcla del mapa,
+  de 0 (zonas limpias) a 100 (todo revuelto). Todo lo marcado
+  `PRUEBAS` en el código (y `js/pruebas.js`) se va cuando se decida.
+
   Lo de píxeles (mapa de calor, halos, ruido de color, lista con cuadrados) se
   quedó en la rama `pixel`.
 - **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con aire alrededor

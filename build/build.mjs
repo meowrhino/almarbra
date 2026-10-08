@@ -65,6 +65,20 @@ const attr = (v) => esc(v).replace(/"/g, '&quot;');
 /** El valor en el idioma del sitio, con el primero que haya de reserva. */
 const t = (field) => (field ? field[lang] ?? Object.values(field)[0] ?? null : null);
 
+/* Los idiomas del selector de arriba. Lo que tiene traducción va en la
+   página en todos, cada uno en su <span data-l> (o la etiqueta que se
+   diga), y el CSS enseña el de data-idioma en <html> (js/idioma.js). Si
+   falta un idioma, va el del sitio. Si todos dicen lo mismo, va una vez
+   y sin envoltorio. */
+const LANGS = site.langs || [lang];
+
+function tr(field, render = esc, tag = 'span') {
+  const values = LANGS.map((l) => field?.[l] ?? t(field));
+  if (values[0] == null) return '';
+  if (values.every((v) => JSON.stringify(v) === JSON.stringify(values[0]))) return render(values[0]);
+  return LANGS.map((l, i) => `<${tag} data-l="${l}" lang="${l}">${render(values[i])}</${tag}>`).join('');
+}
+
 /* ── imágenes ────────────────────────────────────────────────────── */
 
 /* De cada foto hay varias anchuras en media/ (ver build/ingest.mjs). El
@@ -103,10 +117,23 @@ function version(file) {
   return hashes.get(file);
 }
 
+/* El idioma elegido, en <html> antes de pintar (ver js/idioma.js). */
+const IDIOMA_HEAD = `<script>try { document.documentElement.dataset.idioma = localStorage.getItem('almarbra-idioma') || ''; } catch {}
+document.documentElement.dataset.idioma ||= ${JSON.stringify(lang)};</script>
+`;
+
+/* PRUEBAS: qué variante se ve de cada cosa —fondo, lista, transición y
+   fondo de proyecto—, en <html> antes de pintar. Lo elige el panel de
+   js/pruebas.js (se abre con ?pruebas) y se recuerda en este navegador.
+   Cuando se decida, esto se va y lo elegido se queda en el CSS. */
+const PRUEBAS_HEAD = `<script>Object.assign(document.documentElement.dataset, { fondo: 'blanco', lista: 'franjas', transicion: 'lineas', proyecto: 'liso', mezcla: '50' });
+try { Object.assign(document.documentElement.dataset, JSON.parse(localStorage.getItem('almarbra-pruebas'))); } catch {}</script>
+`;
+
 /* `path` es la dirección de la página dentro del sitio ('' la portada,
    'projects/roma/' un proyecto); sin ella no hay canonical ni og, que es
    lo que pasa en la 404. `image` es la que sale al compartir el enlace. */
-function page({ title, body, base = '', bodyClass = null, scripts = [], path = null, description = null, image = null, head = '' }) {
+function page({ title, body, base = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, head = '' }) {
   const full = title ? `${title} — ${site.title}` : site.title;
   const desc = description || site.description || '';
   const share = path === null ? '' : `<link rel="canonical" href="${attr(abs(path))}">
@@ -128,10 +155,10 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
-${head}</head>
-<body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}>
+${IDIOMA_HEAD}${PRUEBAS_HEAD}${head}</head>
+<body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
-${scripts.map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
+${[...scripts, 'js/idioma.js', 'js/pruebas.js'].map((s) => `<script src="${attr(base)}${s}${version(s)}" defer></script>`).join('\n')}
 </body>
 </html>
 `;
@@ -158,8 +185,9 @@ function mapImages(project) {
 }
 
 /* Un hilo de a a b, como los del mapa (js/mapa.js): la recta desviada
-   por una onda larga y otra corta, que se apagan en los extremos. */
-function thread(a, b) {
+   por una onda larga y otra corta, que se apagan en los extremos. Da
+   los puntos; `stairs` los pasa a escalones. */
+function wander(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const len = Math.hypot(dx, dy) || 1;
@@ -167,14 +195,34 @@ function thread(a, b) {
   const waves = 0.5 + Math.random() * 1.5;
   const phase = Math.random() * Math.PI * 2;
   const n = Math.ceil(len / 8);
-  let d = '';
-  for (let k = 0; k <= n; k++) {
+  return Array.from({ length: n + 1 }, (_, k) => {
     const t = k / n;
     const off = Math.sin(Math.PI * t) * (amp * Math.sin(Math.PI * waves * t + phase / 4) + 12 * Math.sin((t * len) / 35 + phase));
-    d += `${k ? 'L' : 'M'}${(a.x + dx * t - (dy / len) * off).toFixed(1)} ${(a.y + dy * t + (dx / len) * off).toFixed(1)}`;
+    return { x: a.x + dx * t - (dy / len) * off, y: a.y + dy * t + (dx / len) * off };
+  });
+}
+
+/* El hilo a escalones, como en una pantalla de pocos píxeles: cada punto
+   se pega a una rejilla de `g` y de uno a otro se va en horizontal y
+   luego en vertical. Igual que en js/mapa.js. */
+function stairs(points, g) {
+  let d = '';
+  let last = null;
+  for (const p of points) {
+    const x = Math.round(p.x / g) * g;
+    const y = Math.round(p.y / g) * g;
+    if (!last) d = `M${x} ${y}`;
+    else d += `${x !== last.x ? `H${x}` : ''}${y !== last.y ? `V${y}` : ''}`;
+    last = { x, y };
   }
   return d;
 }
+
+const thread = (a, b) => stairs(wander(a, b), 4);
+
+const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
+const meta = (project) => `${tr(site.categories?.[project.category]) || esc(project.category.replace(/-/g, ' '))} · ${project.images.length}`;
+const num = (i) => String(i + 1).padStart(2, '0');
 
 /* Una fila de la lista: una franja de proporción fija (1000×500) con la
    portada a un lado y, del centro de la foto al otro lado, un hilo de su
@@ -193,31 +241,79 @@ function listRow(project, i) {
   const y = (ROW.h - h) / 2;
   const end = { x: flip ? ROW.side + 10 : ROW.w - ROW.side - 10, y: ROW.h * (0.3 + Math.random() * 0.4) };
 
-  const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
   const edge = flip ? `left:${pct(ROW.side, ROW.w)}` : `right:${pct(ROW.side, ROW.w)}`;
 
   return `<li><a class="row${flip ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
 <svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${thread({ x: x + w / 2, y: y + h / 2 }, end)}"/></svg>
 <div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
-<h2 style="${edge};top:${pct(end.y, ROW.h)}">${esc(t(project.title) || project.slug)} <small>${esc(project.category.replace(/-/g, ' '))} · ${project.images.length}</small></h2>
+<h2 style="${edge};top:${pct(end.y, ROW.h)}">${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></h2>
 </a></li>`;
 }
 
-/** El menú de arriba, igual en todas las páginas. */
-function topBar(base = '') {
+/* ── PRUEBAS: otras listas, para elegir (js/pruebas.js) ──────────── */
+
+/* El índice: una línea por proyecto —número, título, un pespunte de su
+   color y lo que es—. Al pasar, la portada flota a la derecha. */
+function indexRow(project, i) {
+  return `<li><a class="item" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+<span class="n">${num(i)}</span><span class="t">${tr(project.title) || esc(project.slug)}</span><span class="stitch"></span><span class="m">${meta(project)}</span>
+${img(coverOf(project), { sizes: '16rem' })}
+</a></li>`;
+}
+
+/* El hilo: un solo hilo baja por toda la lista y atraviesa las portadas,
+   una a cada lado; en cada proyecto cambia al color de ese proyecto,
+   como cuando se empalma otro ovillo. Cada fila sale por abajo donde
+   entra la siguiente, así que el hilo no se corta. */
+const SPINE = { w: 1000, h: 440 };
+
+function spine(projects) {
+  let entry = SPINE.w / 2;
+  return projects.map((project, i) => {
+    const cover = coverOf(project);
+    let h = 320;
+    let w = (h * cover.w) / cover.h;
+    if (w > 380) { w = 380; h = (w * cover.h) / cover.w; }
+    const left = i % 2 === 0;
+    const c = { x: left ? 290 : 710, y: SPINE.h / 2 };
+    const exit = Math.round((380 + Math.random() * 240) / 4) * 4;
+    const d = stairs([...wander({ x: entry, y: 0 }, c), ...wander(c, { x: exit, y: SPINE.h }).slice(1)], 4);
+    entry = exit;
+    const side = left ? `left:${pct(560, SPINE.w)}` : `right:${pct(560, SPINE.w)};text-align:right`;
+    return `<li><a class="knot" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+<svg viewBox="0 0 ${SPINE.w} ${SPINE.h}" aria-hidden="true"><path pathLength="1" d="${d}" style="animation-delay:${(i * 0.3).toFixed(1)}s"/></svg>
+<div class="pic" style="left:${pct(c.x - w / 2, SPINE.w)};top:${pct(c.y - h / 2, SPINE.h)};width:${pct(w, SPINE.w)}">${img(cover, { sizes: `${Math.round((w / SPINE.w) * 100)}vw` })}</div>
+<h2 style="${side}">${tr(project.title) || esc(project.slug)} <small>${num(i)} · ${meta(project)}</small></h2>
+</a></li>`;
+  });
+}
+
+/* El muestrario: las portadas como retales cortados con tijera de
+   picos, en rejilla, con su etiqueta debajo. */
+function swatch(project, i) {
+  return `<li><a class="swatch" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+<div class="cut"><div>${img(coverOf(project), { sizes: '(min-width: 700px) 20vw, 45vw' })}</div></div>
+<p><b>${num(i)}</b> ${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></p>
+</a></li>`;
+}
+
+/** El menú de arriba, igual en todas las páginas. En la portada el
+    nombre abre el about; en las demás, lleva a la portada. */
+function topBar(base = '', onHome = false) {
   return `<header class="top">
-<a href="${attr(base)}./">${esc(site.title)}</a>
+<a href="${onHome ? '#about' : `${attr(base)}./`}" class="name">${esc(site.title)}</a>
+${LANGS.length > 1 ? `<div class="idiomas">${LANGS.map((l) => `<button type="button" value="${l}">${l}</button>`).join('')}</div>` : ''}
 <nav>
-<a href="${attr(base)}#mapa">${esc(home.map || 'mapa')}</a>
-<a href="${attr(base)}#lista">${esc(home.list || 'lista')}</a>
+<a href="${attr(base)}#mapa">${tr(home.map) || 'mapa'}</a>
+<a href="${attr(base)}#lista">${tr(home.list) || 'lista'}</a>
 </nav>
 </header>`;
 }
 
-/* La vista sale del hash (#mapa o #lista) y se pone en <html> antes de
+/* La vista sale del hash (#mapa, #lista o #about) y se pone en <html> antes de
    pintar, para que no asome la otra. Sin JavaScript no se pone nada y
    el CSS enseña la lista. */
-const VIEW_SCRIPT = `<script>document.documentElement.dataset.vista = location.hash === '#lista' ? 'lista' : 'mapa'</script>
+const VIEW_SCRIPT = `<script>document.documentElement.dataset.vista = { '#lista': 'lista', '#about': 'about' }[location.hash] || 'mapa'</script>
 `;
 
 function homePage(projects) {
@@ -230,7 +326,7 @@ function homePage(projects) {
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
     return `<a class="pin" href="projects/${attr(project.slug)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
       + img(image, { sizes: `${width * 2}px` })
-      + `<span>${esc(t(project.short) || t(project.title) || project.slug)}</span></a>`;
+      + `<span>${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
 
   const rows = projects.map(listRow);
@@ -243,7 +339,7 @@ function homePage(projects) {
     head: VIEW_SCRIPT,
     scripts: ['js/mapa.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
-${topBar()}
+${topBar('', true)}
 
 <section id="mapa" aria-hidden="true">
 <div class="world">
@@ -257,10 +353,24 @@ ${pins.join('\n')}
 <button type="button" data-step="-1" tabindex="-1">−</button>
 </div>
 
+<section id="about">
+${img(hero, { sizes: '(min-width: 800px) 35vw, 70vw' })}
+<div>${tr(site.about, synopsis, 'div')}</div>
+</section>
+
 <section id="lista">
-<ol>
+<div class="l-franjas"><ol>
 ${rows.join('\n')}
-</ol>
+</ol></div>
+<div class="l-indice"><ol>
+${projects.map(indexRow).join('\n')}
+</ol></div>
+<div class="l-hilo"><ol>
+${spine(projects).join('\n')}
+</ol></div>
+<div class="l-muestrario"><ol>
+${projects.map(swatch).join('\n')}
+</ol></div>
 </section>`,
   });
 }
@@ -329,20 +439,21 @@ function projectPage(project) {
     image: coverOf(project),
     base,
     bodyClass: 'project',
+    bodyStyle: `--c:${project.color}`,
     body: `${topBar(base)}
 
-<article style="--c:${attr(project.color)}">
+<article>
 <div class="ficha">
-<h1>${esc(t(project.title) || project.slug)}</h1>
-${synopsis(t(project.synopsis))}
-${credits(t(project.credits))}
+<h1>${tr(project.title) || esc(project.slug)}</h1>
+${tr(project.synopsis, synopsis, 'div')}
+${tr(project.credits, credits, 'div')}
 </div>
 
 ${gallery.join('\n\n')}
 </article>
 
 <footer class="bar">
-<a href="${attr(base)}#lista">← proyectos</a>
+<a href="${attr(base)}#lista">${tr(home.back) || '← proyectos'}</a>
 </footer>`,
   });
 }
