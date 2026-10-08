@@ -14,6 +14,7 @@
      volver de un proyecto     hacia atrás
      mapa · lista · about      hacia delante si vas a la de la derecha
                                del menú, hacia atrás si a la izquierda
+     otro idioma               de lado, hacia delante
 
    Los colores: los del proyecto si se entra o se sale de uno; si no, los
    de todos. Al cambiar de página, lo que falta (destapar) lo hace la
@@ -60,8 +61,10 @@
     ? 'proyecto'
     : { '#about': 'about', '#lista': 'lista' }[url.hash] || 'mapa');
 
-  /* De un sitio a otro: eje (para el barrido) y sentido. */
+  /* De un sitio a otro: eje (para el barrido) y sentido. Al mismo sitio
+     (otro idioma), de lado. */
   function way(from, to) {
+    if (from === to) return { axis: 'x', sign: 1 };
     if (from === 'proyecto' || to === 'proyecto') return { axis: 'y', sign: to === 'proyecto' ? 1 : -1 };
     return { axis: 'x', sign: ORDER[to] >= ORDER[from] ? 1 : -1 };
   }
@@ -176,10 +179,9 @@
 
   const wait = (ms) => new Promise((done) => setTimeout(done, ms));
 
-  /* Lo que se espera en blanco: que la página esté montada (los demás
-     scripts, que van detrás de este, ya han corrido) y que hayan llegado
-     las fotos que quedan a la vista; como mucho WAIT. Y luego HOLD, para
-     que el blanco se vea entero. */
+  /* Lo que se espera en blanco: que la página esté montada y que hayan
+     llegado las fotos que quedan a la vista; como mucho WAIT. Y luego
+     HOLD, para que el blanco se vea entero. */
   async function ready() {
     await mounted;
     const seen = [...document.images].filter((img) => {

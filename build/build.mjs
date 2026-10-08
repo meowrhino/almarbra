@@ -11,8 +11,9 @@
    (dist/en/, dist/ca/…), cada página con sus hreflang.
 
    Más lo que pide un sitio estático: 404.html, sitemap.xml, robots.txt,
-   .nojekyll y _headers, y una copia de css/, js/ y media/. dist/ no se
-   commitea: lo publica la Action (.github/workflows/deploy.yml).
+   .nojekyll, _headers y favicon.svg, y una copia de css/, js/, media/ y
+   fonts/. dist/ no se commitea: lo publica la Action
+   (.github/workflows/deploy.yml).
 
    Antes de escribir nada, valida: un JSON roto, una foto que no está o un
    `cover` que no es de ninguna foto paran el build con un mensaje, y la
@@ -170,6 +171,31 @@ window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListe
 
 const LOCALES = { es: 'es_ES', en: 'en_GB', ca: 'ca_ES' };
 
+/* La foto al compartir: la variante de 1400 px si la hay, que pesa
+   mucho menos que la grande y sobra para una vista previa. */
+function shareImage(image) {
+  const w = image.w > 1400 && existsSync(join(ROOT, variant(image.src, 1400))) ? 1400 : image.w;
+  const src = w === image.w ? image.src : variant(image.src, w);
+  return `<meta property="og:image" content="${attr(abs(src))}">
+<meta property="og:image:width" content="${w}">
+<meta property="og:image:height" content="${Math.round((image.h * w) / image.w)}">
+`;
+}
+
+/* Datos para los buscadores (JSON-LD). `<` escapado, para que nada
+   cierre el <script> antes de tiempo. */
+const ld = (data) => `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', ...data }).replace(/</g, '\\u003c')}</script>\n`;
+
+/* Quién es: va en la portada, y como autora en cada proyecto. «redes»
+   en content/web.json, si las hay, van en sameAs. */
+const person = () => ({
+  '@type': 'Person',
+  name: site.title,
+  url: site.url,
+  description: t(about)?.split(/\n{2,}/)[0] || t(site.description),
+  ...(site.redes?.length ? { sameAs: site.redes } : {}),
+});
+
 /* `path` es la dirección de la página dentro del sitio, sin el idioma
    ('' la portada, 'projects/roma/' un proyecto); sin ella no hay
    canonical, hreflang ni og, que es lo que pasa en la 404. `root` va de
@@ -187,10 +213,7 @@ ${alternates}<meta property="og:type" content="website">
 <meta property="og:title" content="${attr(full)}">
 <meta property="og:description" content="${attr(desc)}">
 <meta property="og:url" content="${attr(abs(prefix(cur) + path))}">
-${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
-<meta property="og:image:width" content="${image.w}">
-<meta property="og:image:height" content="${image.h}">
-` : ''}<meta property="og:locale" content="${LOCALES[cur] || cur}">
+${image ? shareImage(image) : ''}<meta property="og:locale" content="${LOCALES[cur] || cur}">
 <meta name="twitter:card" content="summary_large_image">
 `;
   return `<!DOCTYPE html>
@@ -200,7 +223,9 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
-${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="preload" href="${attr(root)}fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+${share}${site.noindex || path === null ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="icon" href="${attr(root)}favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#ffffff">
+<link rel="preload" href="${attr(root)}fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${attr(root)}css/style.css${version('css/style.css')}">
 ${HEAD_SCRIPT}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
@@ -291,20 +316,6 @@ ${link('about')}
 const VIEW_SCRIPT = `<script>document.documentElement.dataset.vista = { '#lista': 'lista', '#about': 'about' }[location.hash] || 'mapa'</script>
 `;
 
-/* Quién es, para los buscadores (JSON-LD). «redes» en content/web.json,
-   si las hay, van en sameAs. */
-function personLd() {
-  const person = {
-    '@context': 'https://schema.org',
-    '@type': 'Person',
-    name: site.title,
-    url: site.url,
-    description: t(about)?.split(/\n{2,}/)[0] || t(site.description),
-    ...(site.redes?.length ? { sameAs: site.redes } : {}),
-  };
-  return `<script type="application/ld+json">${JSON.stringify(person).replace(/</g, '\\u003c')}</script>\n`;
-}
-
 function homePage(projects) {
   const root = cur === lang ? '' : '../';
   /* El mapa: las fotos de cada proyecto, sin posición. js/mapa.js las
@@ -327,11 +338,12 @@ function homePage(projects) {
     root,
     image: hero,
     bodyClass: 'home',
-    head: VIEW_SCRIPT + personLd(),
-    scripts: ['js/mapa.js'],
+    head: VIEW_SCRIPT + ld(person()),
+    scripts: ['js/mapa.js', 'js/telar.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
 ${topBar({ root, path: '' })}
 
+<main>
 <section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}">
 <div class="world">
 ${pins.join('\n')}
@@ -351,7 +363,8 @@ ${pins.join('\n')}
 <ol>
 ${rows.join('\n')}
 </ol>
-</section>`,
+</section>
+</main>`,
   });
 }
 
@@ -405,35 +418,51 @@ function projectPage(project) {
   const root = home + (cur === lang ? '' : '../');
   const path = `projects/${project.slug}/`;
 
-  /* La primera foto se carga con prioridad; las demás, según hagan falta. */
+  const title = t(project.title) || project.slug;
+  const description = summary(t(project.synopsis));
+
+  /* La primera foto se carga con prioridad; las demás, según hagan
+     falta. Sin `alt` propio, el título del proyecto y el del grupo. */
   const gallery = groups(project).map(({ name, images }, g) =>
     `<section class="group">\n${name ? `<h2>${esc(name)}</h2>\n` : ''}`
     + images.map((image, i) =>
-        `<figure>${img(image, { base: root, sizes: GALLERY_SIZES, cap: true, eager: g === 0 && i === 0 })}</figure>`
+        `<figure>${img({ ...image, alt: image.alt || [title, name].filter(Boolean).join(' — ') }, { base: root, sizes: GALLERY_SIZES, cap: true, eager: g === 0 && i === 0 })}</figure>`
       ).join('\n')
     + '\n</section>'
   );
 
   return page({
-    title: t(project.title),
+    title,
     path,
-    description: summary(t(project.synopsis)),
+    description,
     image: coverOf(project),
+    head: ld({
+      '@type': 'CreativeWork',
+      name: title,
+      ...(description ? { description } : {}),
+      url: abs(prefix(cur) + path),
+      inLanguage: cur,
+      genre: t(textos.categorias?.[project.category]) || project.category,
+      image: project.images.slice(0, 10).map((i) => abs(i.src)),   // con unas pocas basta
+      creator: person(),
+    }),
     root,
     bodyClass: 'project',
     bodyStyle: `--c:${project.color}`,
     scripts: ['js/hilo.js'],
     body: `${topBar({ home, root, path })}
 
+<main>
 <article>
 <div class="ficha">
-<h1>${tr(project.title) || esc(project.slug)}</h1>
+<h1>${esc(title)}</h1>
 ${tr(project.synopsis, synopsis)}
 ${tr(project.credits, credits)}
 </div>
 
 ${gallery.join('\n\n')}
 </article>
+</main>
 
 <footer class="bar">
 <a href="${attr(home)}#lista" class="back">${tr(textos.menu?.volver) || 'back'}</a>
@@ -454,12 +483,14 @@ function notFoundPage() {
     bodyClass: 'project',
     body: `${topBar({ home: base, root: base })}
 
+<main>
 <article>
 <div class="ficha">
 <h1>esta página no existe</h1>
 <p><a href="${attr(base)}#lista">ver los proyectos</a></p>
 </div>
-</article>`,
+</article>
+</main>`,
   });
 }
 
@@ -527,7 +558,7 @@ if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que 
 mkdirSync(OUT, { recursive: true });
 for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true, maxRetries: 5 });
 for (const d of ['css', 'js', 'media', 'fonts']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
-cpSync(join(ROOT, '_headers'), join(OUT, '_headers'));
+for (const f of ['_headers', 'favicon.svg']) cpSync(join(ROOT, f), join(OUT, f));
 
 const paths = ['', ...projects.map((p) => `projects/${p.slug}/`)];
 
@@ -547,8 +578,10 @@ cur = lang;
 writeFileSync(join(OUT, '404.html'), notFoundPage());
 
 writeFileSync(join(OUT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${LANGS.flatMap((l) => paths.map((p) => `  <url><loc>${esc(abs(prefix(l) + p))}</loc></url>`)).join('\n')}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${LANGS.flatMap((l) => paths.map((p) => `  <url><loc>${esc(abs(prefix(l) + p))}</loc>${
+  LANGS.length > 1 ? LANGS.map((o) => `<xhtml:link rel="alternate" hreflang="${o}" href="${esc(abs(prefix(o) + p))}"/>`).join('') : ''
+}</url>`)).join('\n')}
 </urlset>
 `);
 

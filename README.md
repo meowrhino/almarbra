@@ -20,8 +20,10 @@ sobre las fotos.
   El mapa es la idea de anaelleblin.com: las fotos de todos los proyectos,
   más o menos por zonas (la `mezcla`), en un plano que se arrastra, y las de
   un mismo proyecto unidas por un hilo fino de su color, que serpentea y se
-  dibuja al cargar. Al pasar por una foto se enciende su proyecto y sus hilos
-  se descosen y se vuelven a coser por otro camino. Abajo en el centro, el
+  dibuja al cargar. Al lado de cada hilo, una pelusa de píxeles sueltos, como
+  si se deshilachara. Al pasar por una foto se enciende su proyecto, le brota
+  alrededor un halo de píxeles de su color, y sus hilos se descosen y se
+  vuelven a coser por otro camino (con su pelusa nueva). Abajo en el centro, el
   zoom: un − y un + que pesan como una balanza (en el zoom de partida son
   iguales; cuanto más cerca, más grande el + y más pequeño el −).
 
@@ -65,7 +67,8 @@ sobre las fotos.
   de color, lista con cuadrados) está en la rama `pixel`; las otras formas de
   hilo y de transición que se probaron (escalera, diagonal, liso; círculo,
   píxeles, líneas) y el panel de `?pruebas`, en el historial, antes de
-  «Limpieza».
+  «Limpieza»; las hilachas (una nube de píxeles con la forma del tejido de
+  cada proyecto) y su panel, antes de «Fuera las hilachas».
 - **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con
   aire alrededor —ficha técnica arriba, galería en scroll vertical debajo y,
   al final, un **back** centrado que vuelve al mapa o a la lista, a la que se
@@ -135,13 +138,15 @@ build/serve.mjs         servidor local de dist/
 build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
 css/style.css           todo el estilo
-js/mapa.js              el mapa, la lista y el about (con su telar)
+js/mapa.js              el mapa (con su halo y su pelusa), la lista y el cambio de vista
+js/telar.js             el telar de detrás del about
 js/transicion.js        la transición al cambiar de página o de vista, y la entrada de las fotos
 js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
 js/hilo.js              el hilo de la página de un proyecto
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
 media/portada/          GENERADO: la foto que sale al compartir la portada
 fonts/                  DM Mono en woff2 (400 y 500, latin y latin-ext)
+favicon.svg             dos hilos de píxeles
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
 wrangler.jsonc          para cuando pase a Cloudflare Workers
@@ -258,12 +263,24 @@ pantalla).
 
 `build/build.mjs` escribe `dist/` entera desde cero: `index.html` y un
 `projects/<slug>/index.html` por proyecto, así que las direcciones quedan
-`/projects/roma/`, `/projects/sicky-magazine/`… Son dos plantillas y ya. Cada
-página lleva su `title`, `description` (el primer párrafo de la sinopsis),
-`canonical` y `og:*` con la foto de portada del proyecto, para que al compartir un
-enlace se vea ese proyecto y no la portada genérica. La portada lleva además
-un JSON-LD `Person` (con `sameAs` si se ponen `"redes"` en `content/web.json`).
-Más `404.html`, `sitemap.xml` y `robots.txt`.
+`/projects/roma/`, `/projects/sicky-magazine/`… Son dos plantillas y ya, y
+salen una vez por idioma (`/`, `/en/`, `/ca/`).
+
+**El SEO**, en cada página:
+
+- `title` y `description` (en un proyecto, el primer párrafo de la sinopsis;
+  en la portada, la de `content/web.json`), en su idioma.
+- `canonical`, `hreflang` de los tres idiomas y `x-default` (el español).
+- `og:*` y `twitter:card`, con la portada del proyecto en la variante de
+  1400 px, para que al compartir un enlace se vea ese proyecto.
+- JSON-LD: en la portada, `Person` (con `sameAs` si se ponen `"redes"` en
+  `content/web.json`); en cada proyecto, `CreativeWork` con ella de autora.
+- `<main>`, un solo `h1` y `alt` en las fotos de la galería: el suyo si lo
+  tiene en el JSON y si no, el título del proyecto y el del grupo.
+- `favicon.svg` y `theme-color`.
+
+Más `404.html` (con `noindex`), `sitemap.xml` con las tres versiones de cada
+página y `robots.txt`.
 
 **Antes de escribir nada, valida.** Un JSON con una coma de menos, una foto que no
 está en `media/` o un `cover` que no es de ninguna foto paran el build con el
@@ -327,22 +344,27 @@ atasca, la ola se para y sigue, no salta). Hace de pantalla de carga: entre
 las dos olas espera en blanco a que lo nuevo esté listo —la página montada y
 las fotos que quedan a la vista, `WAIT` como mucho— y `HOLD` más. La
 pantalla se parte en píxeles de `C` px, cada uno con su turno: la fila que
-le toca en el sentido de la ola más un retraso por línea —una curva suave
-entre unos pocos puntos al azar, y algo de inclinación, distinta en cada
-ola—; se tapa cuando le llega y se destapa igual, y
+le toca en el sentido de la ola más un retraso por línea: el frente, que va
+de una curva suave a otra mientras avanza (las dos al azar, con algo de
+inclinación) y lleva encima una onda corta de un píxel (`RIPPLE`) que lo hace
+moverse. Se tapa cuando le llega y se destapa igual, y
 la ola lleva `BAND` píxeles de color delante. Los enlaces a otra página de la
 web se interceptan: se tapa, se apunta en `sessionStorage` el sentido y los
 colores, y se va; la página nueva nace tapada (un `<script>` en el `<head>`
 le pone `.tapada`) y se destapa en ese sentido. Si el script no llegara, el
 CSS la destapa sola a los 5 s. Mapa, lista y about son la misma página: ahí
-la llama `js/mapa.js` al cambiar el hash.
+la llama `js/mapa.js` al cambiar el hash. Con atrás y adelante del navegador
+no hay clic que interceptar (y el evento `navigate` no se deja cancelar
+entre páginas): con `@view-transition` el navegador deja una foto quieta de
+la página de antes, la nueva se pone transparente salvo el lienzo
+(`.tapando`) y la ola la tapa; luego se destapa como siempre.
 
 El hilo de los proyectos, `js/hilo.js`: dos puntas, una hacia abajo y otra
 hacia arriba, que dan pasos de 3 px girando poco a poco hacia su sitio. Los
 mandos, arriba del archivo: `OPEN` (la primera pantalla), `CALM` (sin
 scroll), `CHASE` (con scroll), `SLOW` y `EDGE` (el último trozo), `KEEP` (lo
 que se guarda fuera de la pantalla antes de borrarse) y `DROP` (lo que baja
-cada curva). El del about, en `js/mapa.js`: `STRANDS` (cuántos hilos),
+cada curva). El del about, en `js/telar.js`: `STRANDS` (cuántos hilos),
 `GROW` y `HOLD` (lo que tardan en tejerse y lo que se quedan).
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
@@ -368,6 +390,7 @@ web de verdad. **Al lanzar**, en `content/web.json`:
 - `"url"`: la dirección definitiva (ahora `https://meowrhino.github.io/almarbra/`).
   De ahí salen el canonical, las `og:image`, el sitemap y los enlaces de la 404.
 - `"noindex": false`: quita el meta y abre `robots.txt` con su `Sitemap:`.
+- Opcional: `"redes": ["https://www.instagram.com/…"]`, para el `sameAs`.
 
 Si pasa a Cloudflare, `wrangler.jsonc` y `_headers` ya están: en Workers Builds,
 comando `node build/build.mjs`.

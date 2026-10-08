@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- dos hilos de píxeles, como los del mapa -->
+  <path fill="#800000" d="M1 11h3v2H1zM4 9h2v2H4zM6 7h3v2H6zM9 5h2v2H9zM11 3h4v2h-4z"/>
+  <path fill="#40e0d0" d="M3 1h2v3H3zM5 4h2v3H5zM7 7h2v2H7zM9 9h2v3H9zM11 12h2v3h-2z"/>
+</svg>

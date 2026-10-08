@@ -225,10 +225,9 @@ html:not(.js):has(#about:target) #lista { display: none; }
 .js .pin img { transition-delay: calc(var(--d, 0s) + .3s); }
 .listo .pin { --d: 0s; }
 
-/* PRUEBAS: los píxeles del mapa (js/mapa.js). Las hilachas, flojas,
-   se van tejiendo después de los huecos; el halo brota al pasar por un
-   proyecto y se va igual (js/mapa.js); la pelusa sale cuando su hilo ya
-   está cosido, y al recoserse se borra y vuelve a salir. Con el panel, cada manera se apaga (.sin-<manera>). */
+/* Los píxeles del mapa (js/mapa.js): el halo brota al pasar por una
+   foto y se va igual; la pelusa sale cuando su hilo ya está cosido, y
+   al recoserse se va con él y vuelve a salir. */
 .pixeles {
   position: absolute;
   inset: 0;
@@ -240,40 +239,9 @@ html:not(.js):has(#about:target) #lista { display: none; }
 }
 
 .pixeles path { transition: opacity .6s steps(4, end); }
-.hilachas { opacity: .5; }
 .pelusa { opacity: .7; animation: hueco .4s steps(4, end) 2s backwards; }
 .halo { opacity: .45; }
-.dim :is(.hilachas, .pelusa):not(.on) { opacity: .1; }
-
-.sin-hilachas .hilachas,
-.sin-halo .halo,
-.sin-pelusa .pelusa { display: none; }
-
-.pixeles-panel { display: none; }
-[data-vista="mapa"] .pixeles-panel {
-  position: fixed;
-  left: var(--pad);
-  bottom: 0;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  gap: .6rem;
-  height: var(--bar);
-  color: #fff;
-  mix-blend-mode: difference;
-}
-
-.pixeles-panel button {
-  padding: 0;
-  border: 0;
-  font: inherit;
-  font-size: .85em;
-  color: rgba(255, 255, 255, .45);
-  background: none;
-  cursor: pointer;
-}
-
-.pixeles-panel button[aria-pressed="true"] { color: #fff; }
+.dim .pelusa:not(.on) { opacity: .1; }
 
 /* Los mandos del zoom, abajo en el centro: un − y un +, dibujados
    como píxeles, que pesan como una balanza: --s (lo largo del trazo) y

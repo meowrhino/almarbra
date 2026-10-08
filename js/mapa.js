@@ -1,4 +1,4 @@
-/* La portada: el mapa, la lista, el about y el paso de una a otra.
+/* La portada: el mapa, la lista y el paso de una vista a otra.
 
    El mapa son las fotos de todos los proyectos, por zonas, en un plano
    más grande que la pantalla, que se arrastra con el ratón y se recorre
@@ -6,7 +6,7 @@
    proyecto van unidas por un hilo fino de su color, que serpentea como
    las líneas de anaelleblin.com y se dibuja al cargar. Todo cae en un
    sitio distinto en cada carga. Los botones + y − acercan y alejan.
-   Detrás del about, un telar de hilos que se tejen y destejen.
+   (El telar del about, en js/telar.js.)
 
    La vista la dice el hash: #mapa, #lista o #about. El menú
    son enlaces a esos hashes, así que atrás y adelante funcionan solos.
@@ -139,32 +139,20 @@
       svg.append(path);
     }
 
-    /* PRUEBAS: los píxeles, en otro SVG entre los hilos y las fotos. Cada
-       uno es un cuadrado de PX px, en la rejilla de los hilos:
+    /* Los píxeles, en otro SVG entre los hilos y las fotos. Cada uno es
+       un cuadrado de PX px, en la rejilla de los hilos:
 
-         hilachas  una nube floja con la forma del tejido de cada
-                   proyecto: alrededor de sus fotos, en lóbulos, y a lo
-                   largo de las uniones entre ellas, ancha al salir de
-                   cada foto y fina a medio camino; siempre. Un <path>
-                   por proyecto (data-p, para que se encienda al pasar)
-         halo      muchos, alrededor de la foto por la que se pasa; se
-                   hace al pasar y se borra al irse
+         halo      muchos, alrededor de la foto por la que se pasa; brota
+                   al pasar y se borra al irse
          pelusa    sueltos al lado de los hilos, como si se deshilacharan;
-                   uno por hilo, que se rehace cuando el hilo se recose */
+                   un <path> por hilo, que se rehace cuando el hilo se
+                   recose */
     pixels = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     pixels.setAttribute('class', 'pixeles');
     pixels.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.after(pixels);
 
     for (const s of spots) spotOf.set(s.pin, s);
-    for (const [p, boxes] of Map.groupBy(spots, (s) => s.p)) {
-      const el = layer('hilachas', p, colorOf(boxes[0].pin));
-      const links = [...svg.querySelectorAll(`path[data-p="${p}"]`)].map((path) => path.ends);
-      for (const b of boxes) fray.push([el, () => lobes(b)]);
-      for (const link of links) fray.push([el, () => span(link)]);
-    }
-    fray.sort(() => Math.random() - 0.5);
-    setTimeout(() => requestAnimationFrame(spin), still ? 0 : 1600);   // después de los huecos
     halo = layer('halo', null, 'none');
     for (const path of svg.querySelectorAll('path')) {
       path.fluff = layer('pelusa', path.dataset.p, path.getAttribute('stroke'));
@@ -175,16 +163,12 @@
     setZoom(1);
   }
 
-  /* PRUEBAS: los píxeles (ver build). */
+  /* ── los píxeles ───────────────────────────────────────────────── */
+
   const PX = 2;
   const snap = (v) => Math.round(v / PX) * PX;
   const dot = (x, y) => `M${snap(x)} ${snap(y)}h${PX}v${PX}h-${PX}z`;
   const bell = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;   // de -1 a 1, más cerca de 0
-  /* una onda lenta y torcida, de 0 a 1, para que los bordes no salgan lisos */
-  const swell = () => {
-    const [a, b, f] = [Math.random() * 7, Math.random() * 7, 1 + Math.random() * 2];
-    return (t) => 0.5 + 0.3 * Math.sin(t * f + a) + 0.2 * Math.sin(t * f * 2.7 + b);
-  };
   let pixels = null;
   const spotOf = new Map();   // foto -> su caja en el plano
   let halo = null;
@@ -199,72 +183,15 @@
   }
 
   /* Alrededor de una foto, hasta R px de su borde: en cada casilla, un
-     píxel o no, según `chance` de la distancia al borde y del ángulo.
-     Devuelve los píxeles juntos o, con `each`, uno a uno con su
-     distancia. */
+     píxel o no, según `chance` de la distancia al borde. Cada uno que
+     sale, a `each`, con su distancia. */
   function around(b, R, chance, each) {
-    let d = '';
-    const cx = b.x + b.w / 2;
-    const cy = b.y + b.h / 2;
     for (let y = b.y - R; y < b.y + b.h + R; y += PX) {
       for (let x = b.x - R; x < b.x + b.w + R; x += PX) {
         const dist = Math.hypot(Math.max(b.x - x, 0, x - b.x - b.w), Math.max(b.y - y, 0, y - b.y - b.h));
-        if (dist > 0 && Math.random() < chance(dist, Math.atan2(y - cy, x - cx))) {
-          if (each) each(dist, dot(x, y));
-          else d += dot(x, y);
-        }
+        if (dist > 0 && Math.random() < chance(dist)) each(dist, dot(x, y));
       }
     }
-    return d;
-  }
-
-  /* Las hilachas de una foto: en lóbulos, que llegan más o menos lejos
-     según hacia dónde. */
-  const lobes = (b) => {
-    const [k, a, c] = [2 + Math.floor(Math.random() * 3), Math.random() * 7, Math.random() * 7];
-    const reach = (angle) => 0.5 + 0.3 * Math.sin(k * angle + a) + 0.2 * Math.sin((k + 2) * angle + c);   // da la vuelta sin corte
-    return around(b, 50, (d, angle) => 0.16 * Math.exp(-d / (4 + 22 * reach(angle))));
-  };
-
-  /* Las de una unión entre dos fotos: píxeles a los lados de la recta,
-     más apartados cerca de las fotos y menos a medio camino, con un
-     ancho que ondula. */
-  function span([a, b]) {
-    const len = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-    const [nx, ny] = [-(b.y - a.y) / len, (b.x - a.x) / len];
-    const wide = swell();
-    let d = '';
-    for (let k = 0, n = Math.round(len * 0.35); k < n; k++) {
-      const t = Math.random();
-      const width = (6 + 34 * Math.abs(1 - 2 * t) ** 2) * (0.4 + wide(t * 5));
-      const off = bell() * width;
-      d += dot(a.x + (b.x - a.x) * t + nx * off, a.y + (b.y - a.y) * t + ny * off);
-    }
-    return d;
-  }
-
-  /* Las hilachas se tejen poco a poco, con el mapa ya a la vista: cada
-     tarea de `fray` es una foto o una unión de un proyecto; se sacan sus
-     píxeles, se barajan y se van añadiendo a su <path>, unos pocos por
-     fotograma y varias tareas a la vez (LOOMS). Solo con el mapa a la
-     vista; si no, espera. */
-  const fray = [];   // [path, () => píxeles]
-  const LOOMS = 4;
-  const PER_FRAME = 30;   // píxeles por tarea y fotograma
-  const spinning = [];
-  function spin() {
-    if (root.dataset.vista === 'mapa') {
-      while (spinning.length < LOOMS && fray.length) {
-        const [el, make] = fray.pop();
-        spinning.push({ el, dots: make().split('M').filter(Boolean).sort(() => Math.random() - 0.5) });
-      }
-      for (const job of spinning) {
-        const take = still ? job.dots.length : PER_FRAME;
-        job.el.setAttribute('d', (job.el.getAttribute('d') || '') + job.dots.splice(0, take).map((d) => `M${d}`).join(''));
-      }
-      spinning.splice(0, spinning.length, ...spinning.filter((job) => job.dots.length));
-    }
-    if (spinning.length || fray.length) requestAnimationFrame(spin);
   }
 
   /* El halo de la foto por la que se pasa: brota de ella hacia fuera, una
@@ -291,7 +218,7 @@
     if (pin === glowing) return;
     glowing = pin;
     const run = ++haloRun;
-    if (!halo || map.classList.contains('sin-halo')) return;
+    if (!halo) return;
     const show = () => halo.setAttribute('d', haloRings.flat().join(''));
     const b = spotOf.get(pin);
     if (!b) {   // de dentro hacia fuera: se van quitando las de dentro
@@ -363,7 +290,7 @@
     el.style.animation = 'none';
     el.getBBox();   // para que la animación vuelva a empezar
     el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
-    if (el.fluff) refluff(el);   // PRUEBAS
+    if (el.fluff) refluff(el);
   }
 
   /* Al pasar por una foto se enciende su proyecto y el resto se apaga.
@@ -448,121 +375,6 @@
     if (z !== zoom) setZoom(z);
   });
 
-  /* ── el about: el telar ─────────────────────────────────────────── */
-
-  /* Detrás del texto, como en un telar: hilos de borde a borde, la
-     trama en horizontal y la urdimbre en vertical, de los colores de los
-     proyectos. Cada uno entra por un lado y se teje muy despacio (GROW
-     s), se queda (HOLD), se desteje en el mismo sentido —la cola sigue a
-     la punta— y, tras un respiro, vuelve a entrar en otro sitio. La forma
-     no cambia: lo único que se mueve es la punta. Pocos a la vez
-     (STRANDS) y sin pasar por el texto. */
-  const STRANDS = 5;
-  const GROW = 40;
-  const HOLD = 15;
-  const FPS = 24;
-  const back = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  back.setAttribute('class', 'fondo');
-  back.setAttribute('aria-hidden', 'true');
-  const about = document.getElementById('about');
-  about.prepend(back);
-  const text = about.querySelector('div');
-
-  /* Un sitio libre en [from, to], o cualquiera si no queda hueco. */
-  const lane = (from, to, all) => (to - from > 80 ? from + Math.random() * (to - from) : 40 + Math.random() * (all - 80));
-
-  /* Una vida nueva: dirección, sitio, sentido y color. */
-  function born(s, t) {
-    const W = innerWidth;
-    const H = innerHeight;
-    const box = text.getBoundingClientRect();
-    const ida = Math.random() < 0.5;   // el sentido, como la lanzadera
-    let a;
-    let b;
-    if (s.weft) {
-      const y = lane(box.bottom + 40, H - 40, H);
-      [a, b] = [{ x: -10, y }, { x: W + 10, y: y + (Math.random() - 0.5) * 120 }];
-    } else {
-      const x = lane(box.right + 40, W - 40, W);
-      [a, b] = [{ x, y: -10 }, { x: x + (Math.random() - 0.5) * 120, y: H + 10 }];
-    }
-    s.el.setAttribute('d', hilos.path(ida ? hilos.wander(a, b) : hilos.wander(b, a)));
-    s.el.setAttribute('stroke', palette[Math.floor(Math.random() * palette.length)]);
-    s.from = t;
-    s.life = 2 * GROW + HOLD + 3 + Math.random() * 12;   // con el respiro del final
-  }
-
-  const strands = Array.from({ length: STRANDS }, (_, i) => {
-    const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    el.setAttribute('pathLength', '1');
-    back.append(el);
-    return { el, weft: i % 2 === 0, from: 0, life: -1 };
-  });
-
-  /* Cuánto se ve. El dash: positivo, se ve el principio; negativo, se
-     ha ido la cola. */
-  const ease = (x) => x * x * (3 - 2 * x);
-  function dash(age) {
-    if (still) return 0;
-    if (age < GROW) return 1 - ease(age / GROW);
-    if (age < GROW + HOLD) return 0;
-    return -ease(Math.min(1, (age - GROW - HOLD) / GROW));
-  }
-
-  function weave(t) {
-    strands.forEach((s, i) => {
-      if (s.life < 0) {
-        born(s, t);
-        s.from = t - (i / STRANDS) * (GROW + HOLD);   // no todos a la vez
-      } else if (t - s.from > s.life) born(s, t);
-      s.el.style.strokeDashoffset = dash(t - s.from);
-    });
-  }
-
-  /* Se teje solo con el about a la vista: el primer hilo nace al entrar,
-     que antes el texto no tiene sitio. */
-  /* El bucle solo corre con el about a la vista; show() lo arranca. */
-  const start = performance.now();
-  let last = 0;
-  let looming = false;
-  function loom(now) {
-    if (root.dataset.vista !== 'about') { looming = false; return; }
-    requestAnimationFrame(loom);
-    if (document.hidden || now - last < 1000 / FPS) return;
-    last = now;
-    weave((now - start) / 1000);
-  }
-  /* ponytail: al cambiar el tamaño de la ventana, los que ya están se
-     quedan con el de antes; los nuevos ya nacen con el nuevo. */
-
-  /* ── PRUEBAS: el panel de los píxeles ──────────────────────────────
-
-     Abajo a la izquierda, solo en el mapa: enciende y apaga cada manera
-     (una clase sin-<manera> en el mapa). Se recuerda en este navegador. */
-  const KINDS = ['hilachas', 'halo', 'pelusa'];
-  const OFF = 'almarbra-pixeles';
-  let off = [];
-  try { off = JSON.parse(localStorage.getItem(OFF)) || []; } catch { /* todo encendido */ }
-  const panel = document.createElement('div');
-  panel.className = 'pixeles-panel';
-  panel.innerHTML = KINDS.map((k) => `<button type="button" value="${k}">${k}</button>`).join('');
-  document.body.append(panel);
-  const paintPanel = () => {
-    for (const b of panel.children) {
-      const on = !off.includes(b.value);
-      b.setAttribute('aria-pressed', on);
-      map.classList.toggle(`sin-${b.value}`, !on);
-    }
-  };
-  panel.addEventListener('click', (e) => {
-    const k = e.target.closest('button')?.value;
-    if (!k) return;
-    off = off.includes(k) ? off.filter((x) => x !== k) : [...off, k];
-    try { localStorage.setItem(OFF, JSON.stringify(off)); } catch { /* vale para esta visita */ }
-    paintPanel();
-  });
-  paintPanel();
-
   /* ── la vista ──────────────────────────────────────────────────── */
 
   const wanted = () => ({ '#lista': 'lista', '#about': 'about' }[location.hash] || 'mapa');
@@ -574,13 +386,11 @@
     if (view !== 'about') try { sessionStorage.setItem('almarbra-vista', view); } catch { /* sin él, back va a la lista */ }
     scrollTo(0, 0);
     if (view === 'mapa') build();
-    if (view === 'about' && !looming) { looming = true; requestAnimationFrame(loom); }
   }
 
   show(wanted());
 
   addEventListener('resize', () => { if (root.dataset.vista === 'mapa') build(); });
-
 
   /* Cambiar de vista: la transición (js/transicion.js), de lado, en el
      orden del menú. */
