@@ -215,12 +215,14 @@ otro.
 
 El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
 (las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
-pisarse y sin agruparlas por proyecto. Debajo pinta el mapa de calor: el plano
-partido en píxeles de 8 px, y cada píxel toma el color del proyecto que más le
-llega —cada foto calienta su alrededor, más cuanto más cerca— y se enciende o no
-según un tramado Bayer 4×4, así que el degradado sale a cuadros. Un solo lienzo,
-de un píxel por celda, que el CSS estira sin suavizar. Al cargar, el calor se
-enciende desde las fotos hacia fuera. `REACH` dice cuánto se extiende.
+pisarse y sin agruparlas por proyecto. Debajo pinta el mapa de calor con
+píxeles sueltos: el plano se parte en casillas de 11 px, cada una toma el color
+del proyecto que más le llega —cada foto calienta su alrededor, más cuanto más
+cerca— y lleva un píxel o ninguno, más probable cuanto más calor. El píxel no va
+en el centro de la casilla sino corrido al azar, para que no se vea la
+cuadrícula. Un solo lienzo a media resolución, que el CSS estira sin suavizar.
+Los mandos, arriba de `js/mapa.js`: `STEP` (separación), `DOT` (tamaño), `FILL`
+(cuánto se llena donde más calor hay) y `REACH` (cuánto se extiende).
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS

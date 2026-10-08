@@ -3,10 +3,9 @@
    El mapa son las fotos de todos los proyectos, mezcladas, por un plano
    más grande que la pantalla, que se arrastra con el ratón y se recorre
    con el dedo o la rueda (es un scroll normal). Debajo, un mapa de calor
-   de píxeles: cada píxel toma el color del proyecto que más cerca le
-   queda y se enciende más cuanto más cerca está, en tramado, como un
-   juego viejo. Todo cae en un sitio distinto en cada carga. Los botones
-   + y − acercan y alejan.
+   de píxeles sueltos: cada uno toma el color del proyecto que más cerca
+   le queda, y hay más cuanto más cerca está. Todo cae en un sitio
+   distinto en cada carga. Los botones + y − acercan y alejan.
 
    La vista la dice el hash: #mapa o #lista. El menú son enlaces a esos
    hashes, así que atrás y adelante funcionan solos. Al cambiar, la
@@ -25,27 +24,17 @@
   const colorOf = (el) => el.style.getPropertyValue('--c');
   const palette = [...new Set(pins.map(colorOf))];
 
-  const PX = 8;          // un píxel del mapa de calor, en px del plano
+  const STEP = 11;       // separación media entre píxeles del calor, en px
+  const DOT = 6;         // lado de un píxel del calor, en px
+  const FILL = 0.45;     // qué parte de los huecos se llena donde más calor hay
   const REACH = 110;     // cuánto se extiende el calor de una foto, en px
   const DENSITY = 0.11;  // cuánto del plano tapan las fotos
   const MARGIN = 60;     // aire entre las fotos y el borde del plano
-
-  /* Tramado ordenado (Bayer 4×4): el umbral de cada píxel según su sitio.
-     Es lo que hace que el degradado salga a cuadros y no liso. */
-  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map((v) => (v + 0.5) / 16);
 
   /* ── el mapa ───────────────────────────────────────────────────── */
 
   const hits = (a, b, gap) =>
     a.x < b.x + b.w + gap && b.x < a.x + a.w + gap && a.y < b.y + b.h + gap && b.y < a.y + a.h + gap;
-
-  /** Un color de CSS (un nombre, un #hex) en rgb, preguntándoselo a un lienzo. */
-  const probe = document.createElement('canvas').getContext('2d');
-  const rgb = (color) => {
-    probe.fillStyle = color;
-    const hex = probe.fillStyle.slice(1);
-    return [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
-  };
 
   let built = false;
   let paint = () => {};   // vuelve a pintar el calor; lo define build()
@@ -84,22 +73,22 @@
 
     /* El calor: por cada píxel, cuánto le llega de cada proyecto (sumando
        sus fotos, y más cuanto más cerca) y quién gana. */
-    const cols = Math.ceil(W / PX);
-    const rows = Math.ceil(H / PX);
+    const cols = Math.ceil(W / STEP);
+    const rows = Math.ceil(H / STEP);
     const projects = Math.max(...spots.map((s) => s.p)) + 1;
     const heat = new Float32Array(projects * cols * rows);
 
     for (const s of spots) {
-      const x0 = Math.max(0, Math.floor((s.x - 3 * REACH) / PX));
-      const x1 = Math.min(cols - 1, Math.ceil((s.x + s.w + 3 * REACH) / PX));
-      const y0 = Math.max(0, Math.floor((s.y - 3 * REACH) / PX));
-      const y1 = Math.min(rows - 1, Math.ceil((s.y + s.h + 3 * REACH) / PX));
+      const x0 = Math.max(0, Math.floor((s.x - 3 * REACH) / STEP));
+      const x1 = Math.min(cols - 1, Math.ceil((s.x + s.w + 3 * REACH) / STEP));
+      const y0 = Math.max(0, Math.floor((s.y - 3 * REACH) / STEP));
+      const y1 = Math.min(rows - 1, Math.ceil((s.y + s.h + 3 * REACH) / STEP));
       const base = s.p * cols * rows;
       for (let y = y0; y <= y1; y++) {
-        const cy = (y + 0.5) * PX;
+        const cy = (y + 0.5) * STEP;
         const dy = Math.max(s.y - cy, 0, cy - s.y - s.h);
         for (let x = x0; x <= x1; x++) {
-          const cx = (x + 0.5) * PX;
+          const cx = (x + 0.5) * STEP;
           const dx = Math.max(s.x - cx, 0, cx - s.x - s.w);
           heat[base + y * cols + x] += Math.exp(-(dx * dx + dy * dy) / (REACH * REACH));
         }
@@ -115,30 +104,44 @@
       }
     }
 
-    const colors = [];
-    for (const pin of pins) colors[pin.dataset.p] = rgb(colorOf(pin));
+    /* Los píxeles: en cada casilla, uno o ninguno —más probable cuanto
+       más calor—, y no en el centro de la casilla sino corrido al azar,
+       para que no se vea la cuadrícula. `r` es su tirada: decide si sale
+       y cuándo, al encenderse. */
+    const dots = [];
+    for (let c = 0; c < cols * rows; c++) {
+      const chance = Math.min(1, level[c]) * FILL;
+      const r = Math.random();
+      if (r >= chance) continue;
+      (dots[owner[c]] ||= []).push({
+        x: ((c % cols) + Math.random()) * STEP - DOT / 2,
+        y: (Math.floor(c / cols) + Math.random()) * STEP - DOT / 2,
+        r: r / chance,
+      });
+    }
 
+    const colors = [];
+    for (const pin of pins) colors[pin.dataset.p] = colorOf(pin);
+
+    /* Un lienzo a la mitad de resolución que el plano: los píxeles caen
+       cada 2 px, que a la vista ya es «en cualquier sitio», y el CSS lo
+       estira sin suavizar. */
     const canvas = document.createElement('canvas');
-    canvas.width = cols;
-    canvas.height = rows;
+    canvas.width = Math.ceil(W / 2);
+    canvas.height = Math.ceil(H / 2);
     world.prepend(canvas);
     const ctx = canvas.getContext('2d');
-    const image = ctx.createImageData(cols, rows);
-    const px = new Uint32Array(image.data.buffer);
 
-    /* `amount` (0–1) es cuánto calor se enseña: al cargar sube poco a
-       poco y el mapa se enciende desde las fotos hacia fuera. Con un
-       proyecto encendido, los demás se quedan a un cuarto. */
+    /* `amount` (0–1) es qué parte de los píxeles se enseña: al cargar
+       sube poco a poco y el mapa se enciende. Con un proyecto encendido,
+       los demás se quedan a un cuarto. */
     paint = (amount = 1) => {
-      for (let y = 0, c = 0; y < rows; y++) {
-        for (let x = 0; x < cols; x++, c++) {
-          if (level[c] * amount <= BAYER[(y & 3) * 4 + (x & 3)]) { px[c] = 0; continue; }
-          const [r, g, b] = colors[owner[c]];
-          const a = lit === null || owner[c] === lit ? 255 : 60;
-          px[c] = (a << 24 | b << 16 | g << 8 | r) >>> 0;
-        }
-      }
-      ctx.putImageData(image, 0, 0);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      dots.forEach((list, p) => {
+        ctx.fillStyle = colors[p];
+        ctx.globalAlpha = lit === null || p === lit ? 1 : 0.25;
+        for (const d of list) if (d.r < amount) ctx.fillRect(Math.round(d.x / 2), Math.round(d.y / 2), DOT / 2, DOT / 2);
+      });
     };
 
     if (still) paint();
