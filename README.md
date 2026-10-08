@@ -217,20 +217,22 @@ otro.
 
 El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
 (las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
-pisarse y sin agruparlas por proyecto. Debajo, píxeles del color de cada
-proyecto, de dos clases:
+pisarse y sin agruparlas por proyecto. Debajo, ruido de píxeles del color de
+cada proyecto —cada píxel de uno de seis tonos, del oscuro al claro—, de dos
+clases:
 
-- **el halo**: alrededor de cada foto, muchos y apretados, que se van soltando
-  al alejarse. Como mucho uno por casilla de 11 px, corrido al azar dentro de
+- **el halo**: alrededor de cada foto, mucho y apretado, que se va soltando al
+  alejarse. Como mucho un píxel por casilla de 8 px, corrido al azar dentro de
   ella para que no se vea la rejilla.
-- **los caminos**: como las líneas de anaelleblin.com, unen las fotos de un
+- **las franjas**: como las líneas de anaelleblin.com, unen las fotos de un
   mismo proyecto —cada una con la más cercana de las que ya estaban, así que
-  cada proyecto es un árbol—. Son curvas en S hechas de píxeles sueltos, mucho
-  menos densas que el halo.
+  cada proyecto es un árbol—. Siguen una curva en S, salen anchas de cada foto
+  y se estrechan hacia la mitad, y son mucho menos densas que el halo.
 
 Un solo lienzo a media resolución, que el CSS estira sin suavizar. Los mandos,
 arriba de `js/mapa.js`: `DOT` (tamaño), `HALO` y `FADE` (lo lleno y lo ancho del
-halo), `GAIT` y `TRAIL` (cada cuánto hay un píxel en los caminos).
+halo), `BAND` y `BAND_FILL` (ancho de las franjas al salir y a medio camino, y lo
+llenas que van) y `SHADES` (cuántos tonos).
 
 El plano es un scroll normal: con el dedo o la rueda va solo, y el ratón lo
 arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS
