@@ -22,7 +22,8 @@ html { background: var(--bg); }
 
 body {
   margin: 0;
-  font: 400 clamp(15px, 1.6vw, 17px)/1.45 "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+  font: 400 clamp(14px, 1.5vw, 16px)/1.5 "DM Mono", ui-monospace, monospace;
+  letter-spacing: -.02em;
   color: var(--ink);
   background: var(--bg);
   text-transform: lowercase;
@@ -77,12 +78,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   mix-blend-mode: difference;
 }
 
-/* mapa y lista, arriba a la derecha: solo cuando estás en una de las
-   dos (o sin JavaScript, que la portada es la lista) */
-.top nav { display: none; gap: 1.25rem; }
-[data-vista="mapa"] .top nav,
-[data-vista="lista"] .top nav,
-:root:not(.js) .home .top nav { display: flex; }
+/* Arriba a la derecha: mapa, lista y about, y en un proyecto su nombre */
+.top nav { display: flex; gap: 1.25rem; }
 .top nav a { color: var(--dim); }
 
 /* el selector de idioma, abajo a la derecha */
@@ -109,8 +106,9 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* lo que está puesto: el idioma y la vista (data-vista lo pone js/mapa.js) */
 .idiomas button[aria-pressed="true"],
-[data-vista="mapa"] .top a[href$="#mapa"],
-[data-vista="lista"] .top a[href$="#lista"] { color: var(--ink); }
+[data-vista="mapa"] .top [data-to="mapa"],
+[data-vista="lista"] .top [data-to="lista"],
+[data-vista="about"] .top [data-to="about"] { color: var(--ink); }
 
 @media (hover: hover) {
   .top a:hover,
@@ -428,13 +426,13 @@ html:has(#about:target) #lista { display: none; }
 }
 
 /* El hilo: baja por toda la página ondulando de lado a lado, por encima
-   de las fotos, y se va dibujando al bajar. */
+   de las fotos, y se va tejiendo al bajar (js/hilo.js). */
 .hilo {
   position: absolute;
   top: 0;
   left: 0;
   z-index: 2;
-  overflow: visible;
+  overflow: hidden;
   pointer-events: none;
 }
 
@@ -455,8 +453,11 @@ html:has(#about:target) #lista { display: none; }
   color: var(--dim);
 }
 
-/* Que la página no termine a ras del último enlace. */
-.project footer.bar { padding-bottom: clamp(2rem, 7vh, 4.5rem); }
+/* El «back», al final de todo, centrado y con aire. */
+.project footer.bar {
+  justify-content: center;
+  padding-block: clamp(3rem, 12vh, 8rem) clamp(4rem, 16vh, 10rem);
+}
 
 @media (hover: hover) {
   .bar a:hover { color: var(--ink); }

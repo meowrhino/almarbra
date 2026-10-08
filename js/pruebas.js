@@ -19,6 +19,7 @@
   };
   const DEFAULTS = { hilos: 'fina', transicion: 'barrido' };
 
+
   const store = (key, value) => {
     try {
       if (value === null) localStorage.removeItem(key);

@@ -324,8 +324,10 @@
 
   const wanted = () => ({ '#lista': 'lista', '#about': 'about' }[location.hash] || 'mapa');
 
+  /* La vista se apunta para el «back» de los proyectos (build/build.mjs). */
   function show(view) {
     root.dataset.vista = view;
+    if (view !== 'about') try { sessionStorage.setItem('almarbra-vista', view); } catch { /* sin él, back va a la lista */ }
     scrollTo(0, 0);
     if (view === 'mapa') build();
   }

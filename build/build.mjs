@@ -181,7 +181,9 @@ ${image ? `<meta property="og:image" content="${attr(abs(image.src))}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
-${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
+${share}${site.noindex ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="${attr(base)}css/style.css${version('css/style.css')}">
 ${HEAD_SCRIPT}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
 ${body}
@@ -243,15 +245,18 @@ function listRow(project, i) {
 </a></li>`;
 }
 
-/** El menú de arriba, igual en todas las páginas. En la portada el
-    nombre abre el about; en las demás, lleva a la portada. */
-function topBar(base = '', onHome = false) {
+/** El menú de arriba, igual en todas las páginas. El nombre lleva
+    siempre a la portada. A la derecha, mapa, lista y about, con lo que
+    está puesto marcado (css/style.css). */
+function topBar(base = '') {
+  const link = (to) => `<a href="${attr(base)}#${to}" data-to="${to}">${tr(textos.menu?.[to]) || to}</a>`;
   return `<header class="top">
-<a href="${onHome ? '#about' : `${attr(base)}./`}" class="name">${esc(site.title)}</a>
+<a href="${attr(base)}#mapa" class="name">${esc(site.title)}</a>
 ${LANGS.length > 1 ? `<div class="idiomas">${LANGS.map((l) => `<button type="button" value="${l}">${l}</button>`).join('')}</div>` : ''}
 <nav>
-<a href="${attr(base)}#mapa">${tr(textos.menu?.mapa) || 'mapa'}</a>
-<a href="${attr(base)}#lista">${tr(textos.menu?.lista) || 'lista'}</a>
+${link('mapa')}
+${link('lista')}
+${link('about')}
 </nav>
 </header>`;
 }
@@ -285,7 +290,7 @@ function homePage(projects) {
     head: VIEW_SCRIPT,
     scripts: ['js/mapa.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
-${topBar('', true)}
+${topBar()}
 
 <section id="mapa" aria-hidden="true" data-mezcla="${mapa.mezcla ?? 50}">
 <div class="world">
@@ -389,8 +394,9 @@ ${gallery.join('\n\n')}
 </article>
 
 <footer class="bar">
-<a href="${attr(base)}#lista">${tr(textos.menu?.volver) || '← proyectos'}</a>
-</footer>`,
+<a href="${attr(base)}#lista" class="back">${tr(textos.menu?.volver) || 'back'}</a>
+</footer>
+<script>try { const v = sessionStorage.getItem('almarbra-vista'); if (v) document.querySelector('.back').hash = v; } catch {}</script>`,
   });
 }
 

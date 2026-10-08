@@ -11,10 +11,15 @@
       "en": "list",
       "ca": "llista"
     },
+    "about": {
+      "es": "about",
+      "en": "about",
+      "ca": "about"
+    },
     "volver": {
-      "es": "← proyectos",
-      "en": "← projects",
-      "ca": "← projectes"
+      "es": "back",
+      "en": "back",
+      "ca": "back"
     }
   },
   "categorias": {
