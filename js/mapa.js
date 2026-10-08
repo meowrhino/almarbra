@@ -158,9 +158,13 @@
 
     groups = Map.groupBy(spots, (s) => s.p);
     for (const [p, boxes] of groups) {
-      const links = [...svg.querySelectorAll(`path[data-p="${p}"]`)].map((el) => el.ends);
-      layer('hilachas', p, colorOf(boxes[0].pin)).setAttribute('d', boxes.map(lobes).join('') + links.map(span).join(''));
+      const el = layer('hilachas', p, colorOf(boxes[0].pin));
+      const links = [...svg.querySelectorAll(`path[data-p="${p}"]`)].map((path) => path.ends);
+      for (const b of boxes) fray.push([el, () => lobes(b)]);
+      for (const link of links) fray.push([el, () => span(link)]);
     }
+    fray.sort(() => Math.random() - 0.5);
+    setTimeout(() => requestAnimationFrame(spin), still ? 0 : 1600);   // después de los huecos
     halo = layer('halo', null, 'none');
     for (const path of svg.querySelectorAll('path')) {
       path.fluff = layer('pelusa', path.dataset.p, path.getAttribute('stroke'));
@@ -195,15 +199,20 @@
   }
 
   /* Alrededor de una foto, hasta R px de su borde: en cada casilla, un
-     píxel o no, según `chance` de la distancia al borde y del ángulo. */
-  function around(b, R, chance) {
+     píxel o no, según `chance` de la distancia al borde y del ángulo.
+     Devuelve los píxeles juntos o, con `each`, uno a uno con su
+     distancia. */
+  function around(b, R, chance, each) {
     let d = '';
     const cx = b.x + b.w / 2;
     const cy = b.y + b.h / 2;
     for (let y = b.y - R; y < b.y + b.h + R; y += PX) {
       for (let x = b.x - R; x < b.x + b.w + R; x += PX) {
         const dist = Math.hypot(Math.max(b.x - x, 0, x - b.x - b.w), Math.max(b.y - y, 0, y - b.y - b.h));
-        if (dist > 0 && Math.random() < chance(dist, Math.atan2(y - cy, x - cx))) d += dot(x, y);
+        if (dist > 0 && Math.random() < chance(dist, Math.atan2(y - cy, x - cx))) {
+          if (each) each(dist, dot(x, y));
+          else d += dot(x, y);
+        }
       }
     }
     return d;
@@ -234,24 +243,72 @@
     return d;
   }
 
-  /* El halo del proyecto encendido, o nada. */
-  let haloOff = 0;
+  /* Las hilachas se tejen poco a poco, con el mapa ya a la vista: cada
+     tarea de `fray` es una foto o una unión de un proyecto; se sacan sus
+     píxeles, se barajan y se van añadiendo a su <path>, unos pocos por
+     fotograma y varias tareas a la vez (LOOMS). Solo con el mapa a la
+     vista; si no, espera. */
+  const fray = [];   // [path, () => píxeles]
+  const LOOMS = 4;
+  const PER_FRAME = 30;   // píxeles por tarea y fotograma
+  const spinning = [];
+  function spin() {
+    if (root.dataset.vista === 'mapa') {
+      while (spinning.length < LOOMS && fray.length) {
+        const [el, make] = fray.pop();
+        spinning.push({ el, dots: make().split('M').filter(Boolean).sort(() => Math.random() - 0.5) });
+      }
+      for (const job of spinning) {
+        const take = still ? job.dots.length : PER_FRAME;
+        job.el.setAttribute('d', (job.el.getAttribute('d') || '') + job.dots.splice(0, take).map((d) => `M${d}`).join(''));
+      }
+      spinning.splice(0, spinning.length, ...spinning.filter((job) => job.dots.length));
+    }
+    if (spinning.length || fray.length) requestAnimationFrame(spin);
+  }
+
+  /* El halo del proyecto encendido: brota de las fotos hacia fuera, una
+     franja de RING px cada dos fotogramas (medio segundo, más o menos), y
+     al irse se borra igual, de dentro hacia fuera. */
+  const RING = 4;
+  let haloRings = [];   // las franjas puestas, de dentro hacia fuera
+  let haloRun = 0;
+
+  /* Cada dos fotogramas, `tick`, hasta que devuelva false; se corta si
+     entretanto empieza otra (run). */
+  function everyOther(run, tick) {
+    let odd = false;
+    (function frame() {
+      if (run !== haloRun) return;
+      odd = !odd;
+      if (still) { while (tick()); return; }
+      if (!odd || tick()) requestAnimationFrame(frame);
+    })();
+  }
+
   function glow(p) {
-    clearTimeout(haloOff);
+    const run = ++haloRun;
     if (!halo || map.classList.contains('sin-halo')) return;
-    if (p === null) {   // se apaga (css/style.css) y luego se borra
-      haloOff = setTimeout(() => halo.setAttribute('d', ''), 700);
+    const show = () => halo.setAttribute('d', haloRings.flat().join(''));
+    if (p === null) {   // de dentro hacia fuera: se van quitando las de dentro
+      everyOther(run, () => { haloRings.shift(); show(); return haloRings.length > 0; });
       return;
     }
     const boxes = groups.get(p) || [];
+    const rings = [];
+    for (const b of boxes) {
+      around(b, 60, (d) => 0.55 * Math.exp(-d / 16), (d, dot) => { (rings[Math.floor(d / RING)] ||= []).push(dot); });
+    }
     halo.setAttribute('fill', colorOf(boxes[0].pin));
-    halo.setAttribute('d', boxes.map((b) => around(b, 60, (d) => 0.55 * Math.exp(-d / 16))).join(''));
+    haloRings = [];
+    let k = 0;
+    everyOther(run, () => { haloRings.push(rings[k++] || []); show(); return k < rings.length; });
   }
 
   /* La pelusa de un hilo: de vez en cuando, a un lado o al otro, un
      píxel (o unos pocos juntos) apartado unos px. */
-  function fluff(el) {
-    let d = '';
+  function lint(el) {
+    const dots = [];
     el.pts.forEach((p, i) => {
       const q = el.pts[i + 1];
       if (!q || Math.random() > 0.5) return;
@@ -259,10 +316,40 @@
       const off = (2 + Math.random() * 12) * (Math.random() < 0.5 ? -1 : 1);
       const x = p.x - ((q.y - p.y) / len) * off;
       const y = p.y + ((q.x - p.x) / len) * off;
-      d += dot(x, y);
-      if (Math.random() < 0.35) d += dot(x + PX * (Math.random() < 0.5 ? 1 : -1), y + PX * Math.round(bell()));
+      dots.push(dot(x, y));
+      if (Math.random() < 0.35) dots.push(dot(x + PX * (Math.random() < 0.5 ? 1 : -1), y + PX * Math.round(bell())));
     });
-    el.fluff.setAttribute('d', d);
+    return dots;
+  }
+
+  /* La primera vez, de golpe (la entrada la hace el CSS). */
+  function fluff(el) {
+    el.fluff.dots = lint(el);
+    el.fluff.setAttribute('d', el.fluff.dots.join(''));
+  }
+
+  /* Al recoserse el hilo: la pelusa de antes se va borrando, a saltos y
+     sin orden, mientras se descose; y la nueva va saliendo igual cuando
+     el hilo nuevo ya está cosido. */
+  function refluff(el) {
+    const f = el.fluff;
+    const run = (f.run || 0) + 1;
+    f.run = run;
+    const shuffle = () => Math.random() - 0.5;
+    const next = lint(el).sort(shuffle);
+    const shown = [...f.dots].sort(shuffle);
+    const out = Math.ceil(shown.length / 12);   // se borra en 12 fotogramas
+    const into = Math.ceil(next.length / 24);   // y sale en 24
+    let n = 0;
+    (function frame() {
+      if (f.run !== run) return;   // se ha vuelto a recoser
+      n += 1;
+      if (n <= 12) shown.splice(0, out);
+      else if (n > 48) shown.push(...next.splice(0, into));   // a los 48, el hilo ya está cosido
+      f.dots = shown;
+      f.setAttribute('d', shown.join(''));
+      if (n <= 48 || next.length) requestAnimationFrame(frame);
+    })();
   }
 
   /* Descose un hilo y lo vuelve a coser por otro camino, entre los
@@ -274,12 +361,7 @@
     el.style.animation = 'none';
     el.getBBox();   // para que la animación vuelva a empezar
     el.style.animation = `draw .7s ease-out ${(Math.random() * 0.2).toFixed(2)}s forwards`;
-    if (el.fluff) {   // PRUEBAS: su pelusa, otra vez, cuando ya está cosido
-      fluff(el);
-      el.fluff.style.animation = 'none';
-      el.fluff.getBBox();
-      el.fluff.style.animation = 'hueco .4s steps(4, end) .7s backwards';
-    }
+    if (el.fluff) refluff(el);   // PRUEBAS
   }
 
   /* Al pasar por una foto se enciende su proyecto y el resto se apaga.
@@ -434,14 +516,17 @@
 
   /* Se teje solo con el about a la vista: el primer hilo nace al entrar,
      que antes el texto no tiene sitio. */
+  /* El bucle solo corre con el about a la vista; show() lo arranca. */
   const start = performance.now();
   let last = 0;
-  (function loop(now) {
-    requestAnimationFrame(loop);
-    if (root.dataset.vista !== 'about' || document.hidden || now - last < 1000 / FPS) return;
+  let looming = false;
+  function loom(now) {
+    if (root.dataset.vista !== 'about') { looming = false; return; }
+    requestAnimationFrame(loom);
+    if (document.hidden || now - last < 1000 / FPS) return;
     last = now;
     weave((now - start) / 1000);
-  })(start);
+  }
   /* ponytail: al cambiar el tamaño de la ventana, los que ya están se
      quedan con el de antes; los nuevos ya nacen con el nuevo. */
 
@@ -483,6 +568,7 @@
     if (view !== 'about') try { sessionStorage.setItem('almarbra-vista', view); } catch { /* sin él, back va a la lista */ }
     scrollTo(0, 0);
     if (view === 'mapa') build();
+    if (view === 'about' && !looming) { looming = true; requestAnimationFrame(loom); }
   }
 
   show(wanted());

@@ -236,9 +236,9 @@ html:not(.js):has(#about:target) #lista { display: none; }
 .listo .pin { --d: 0s; }
 
 /* PRUEBAS: los píxeles del mapa (js/mapa.js). Las hilachas, flojas,
-   salen después de los huecos; el halo, al pasar por un proyecto;
-   la pelusa, cuando su hilo ya está cosido. Todo a saltos, como los
-   huecos. Con el panel, cada manera se apaga (.sin-<manera>). */
+   se van tejiendo después de los huecos; el halo brota al pasar por un
+   proyecto y se va igual (js/mapa.js); la pelusa sale cuando su hilo ya
+   está cosido, y al recoserse se borra y vuelve a salir. Con el panel, cada manera se apaga (.sin-<manera>). */
 .pixeles {
   position: absolute;
   inset: 0;
@@ -250,10 +250,9 @@ html:not(.js):has(#about:target) #lista { display: none; }
 }
 
 .pixeles path { transition: opacity .6s steps(4, end); }
-.hilachas { opacity: .5; animation: hueco .6s steps(4, end) 1.6s backwards; }
+.hilachas { opacity: .5; }
 .pelusa { opacity: .7; animation: hueco .4s steps(4, end) 2s backwards; }
-.halo { opacity: 0; }
-.dim .halo { opacity: .45; }
+.halo { opacity: .45; }
 .dim :is(.hilachas, .pelusa):not(.on) { opacity: .1; }
 
 .sin-hilachas .hilachas,

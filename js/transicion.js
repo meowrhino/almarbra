@@ -22,7 +22,7 @@
    adelante del navegador, también.
 
    Cada ola, la que tapa y la que destapa, con su frente: la línea por
-   donde avanza —lo inclinada que va y cómo ondula— sale distinta cada
+   donde avanza —lo inclinada que va y cómo se curva— sale distinta cada
    vez.
 
    La usa js/mapa.js para mapa, lista y about (window.transicion).
@@ -34,7 +34,7 @@
   const KEY = 'almarbra-transicion';
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const TIME = 1.4;    // segundos en tapar, y otros tantos en destapar
+  const TIME = 1.9;    // segundos en tapar, y otros tantos en destapar
   const HOLD = 250;    // ms en blanco, como mínimo, entre tapar y destapar
   const WAIT = 2500;   // ms que se espera, como mucho, a que lo nuevo esté listo
   const BAND = 5;      // píxeles de color en el frente de la ola
@@ -68,20 +68,28 @@
 
      La pantalla en píxeles de C px, cada uno con su turno: la fila (o
      columna) que le toca en el sentido de la ola, más un retraso por
-     línea que hace el frente: una inclinación, una onda larga y un
-     temblor, los tres al azar en cada ola. El píxel se tapa
+     línea que hace el frente: una curva suave y algo de inclinación,
+     al azar en cada ola. El píxel se tapa
      de blanco cuando le llega el turno y se destapa igual; delante del
      frente, BAND píxeles de color. */
 
   function wave({ colors, dir, W, H }) {
     const along = Math.ceil((dir.axis === 'y' ? H : W) / C);
     const across = Math.ceil((dir.axis === 'y' ? W : H) / C);
-    const tilt = 0.15 + Math.random() * 0.6;
-    const swell = 2 + Math.random() * 6;
-    const period = 4 + Math.random() * 14;
-    const phase = Math.random() * 7;
-    const lag = Array.from({ length: across }, (_, i) => (dir.sign > 0 ? i : across - 1 - i) * tilt
-      + swell * Math.sin(i / period + phase) + Math.random() * 2);
+    /* El frente: una línea suave y distinta cada vez. Entre 3 y 7
+       puntos de lado a lado, cada uno más adelantado o más atrasado (de
+       nada a un cuarto de la pantalla), unidos con curvas; y algo de
+       inclinación. Sin temblor línea a línea, que lo hace zigzag. */
+    const tilt = Math.random() * 0.35;
+    const depth = along * (0.04 + Math.random() * 0.22);
+    const knots = Array.from({ length: 3 + Math.floor(Math.random() * 5) }, () => (Math.random() * 2 - 1) * depth);
+    const curve = (u) => {   // u de 0 a 1, de un lado al otro
+      const f = u * (knots.length - 1);
+      const k = Math.min(knots.length - 2, Math.floor(f));
+      const t = (1 - Math.cos((f - k) * Math.PI)) / 2;
+      return knots[k] + (knots[k + 1] - knots[k]) * t;
+    };
+    const lag = Array.from({ length: across }, (_, i) => (dir.sign > 0 ? i : across - 1 - i) * tilt + curve(i / Math.max(1, across - 1)));
     const low = Math.min(...lag);   // que empiece en el turno 0, sin píxeles ya tapados
     const cells = [];
     for (let y = 0; y < H; y += C) {
