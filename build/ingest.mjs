@@ -23,10 +23,20 @@
    encima del JSON generado: así reingestar no se las lleva por delante.
    Ahí `drop` lista fotos del original que no entran en la web.
 
+   Los números mandan. Una carpeta de proyecto que empieza por un número
+   («03 KALTBULT MAGAZINE») sale en ese lugar de su categoría (`order`), y
+   el número no entra en el nombre. Cada foto lleva el número de su
+   archivo («07.jpg» → `n: 7`): con él se eligen en content/proyectos.json
+   la portada (`portada`) y las del mapa (`mapa`), y no cambia aunque se
+   quite otra.
+
    Las fotos que estén en una carpeta `home` (a cualquier profundidad
-   dentro del proyecto) salen marcadas con `home: true`: son las que van
-   al mapa de la portada. `noHome` es solo para ordenar; ni `home` ni
-   `noHome` cuentan como grupo. */
+   dentro del proyecto) salen marcadas con `home: true`: también van al
+   mapa. `noHome` es solo para ordenar; ni `home` ni `noHome` cuentan
+   como grupo.
+
+   Un proyecto que ya no está en originals/ se borra de content/projects/
+   y de media/. */
 
 import { execFile } from 'node:child_process';
 import {
@@ -201,25 +211,33 @@ function applyOverride(project, override) {
   return out;
 }
 
-async function ingestProject(categoryDir, categorySlug, name, cache, override) {
-  const dir = join(categoryDir, name);
-  const slug = slugify(name);
+/* «03 KALTBULT MAGAZINE» -> { order: 3, name: 'KALTBULT MAGAZINE' } */
+function parseFolder(folder) {
+  const m = folder.match(/^(\d+)\s+(.*)$/);
+  return m ? { order: Number(m[1]), name: m[2] } : { order: null, name: folder };
+}
+
+async function ingestProject(categoryDir, categorySlug, folder, slug, cache, override) {
+  const dir = join(categoryDir, folder);
+  const { order, name } = parseFolder(folder);
   const outDir = join(MEDIA, slug);
   mkdirSync(outDir, { recursive: true });
 
-  /* El número de cada foto sale de su sitio en el original, antes de
-     quitar las de `drop`: así quitar una no renombra las demás (ni
-     rompe un `cover`). */
+  /* El número de cada foto es el de su archivo («07.jpg» → 7); si el
+     nombre no es un número, su sitio en el original. Se saca antes de
+     quitar las de `drop`: así quitar una no renombra las demás. */
   const drop = new Set(override?.drop || []);
-  const numbered = photosUnder(dir).map((file, i) => ({ file, n: i + 1 }))
-    .filter(({ file }) => !drop.has(basename(file)));
+  const numbered = photosUnder(dir).map((file, i) => {
+    const own = basename(file).match(/^(\d+)\.[a-z]+$/i);
+    return { file, n: own ? Number(own[1]) : i + 1 };
+  }).filter(({ file }) => !drop.has(basename(file)));
   const files = numbered.map(({ file }) => file);
 
   const images = await pool(numbered, CONCURRENCY, async ({ file, n }) => {
     const group = groupOf(dir, file);
     const record = await convert(file, outDir, `${slug}-${String(n).padStart(2, '0')}`, cache);
     return {
-      ...record, alt: '', ...(group ? { group: group.slug } : {}), ...(inHome(dir, file) ? { home: true } : {}),
+      ...record, n, alt: '', ...(group ? { group: group.slug } : {}), ...(inHome(dir, file) ? { home: true } : {}),
     };
   });
 
@@ -240,6 +258,7 @@ async function ingestProject(categoryDir, categorySlug, name, cache, override) {
     swept,
     slug,
     category: categorySlug,
+    ...(order !== null ? { order } : {}),
     source: relative(ROOT, dir),
     title: Object.keys(meta.title).length ? meta.title : { es: titleize(name) },
     synopsis: meta.synopsis,
@@ -285,16 +304,24 @@ async function main() {
 
   let projects = 0;
   let photos = 0;
+  const made = new Set();   // los slugs de esta vez
 
   for (const category of dirs(SOURCE)) {
     if (category === COVER_DIR) continue;   // la portada va aparte
     const categorySlug = slugify(category);
     const categoryDir = join(SOURCE, category);
 
-    for (const name of dirs(categoryDir)) {
-      const override = overrides[slugify(name)];
+    for (const folder of dirs(categoryDir)) {
+      /* Dos con el mismo nombre (las dos SICKY MAGAZINE): la segunda,
+         -02. */
+      const base = slugify(parseFolder(folder).name);
+      let slug = base;
+      for (let k = 2; made.has(slug); k++) slug = `${base}-${String(k).padStart(2, '0')}`;
+      made.add(slug);
+
+      const override = overrides[slug];
       const { swept, ...project } = applyOverride(
-        await ingestProject(categoryDir, categorySlug, name, cache, override),
+        await ingestProject(categoryDir, categorySlug, folder, slug, cache, override),
         override
       );
 
@@ -306,6 +333,15 @@ async function main() {
         + `${project.images.length} fotos`
         + (swept ? `   (${swept} .webp huérfanos borrados)` : ''));
     }
+  }
+
+  /* Lo que ya no está en originals/: fuera su JSON y sus fotos. */
+  for (const file of readdirSync(PROJECTS).filter((n) => n.endsWith('.json'))) {
+    const slug = file.replace(/\.json$/, '');
+    if (made.has(slug)) continue;
+    rmSync(join(PROJECTS, file));
+    rmSync(join(MEDIA, slug), { recursive: true, force: true });
+    console.log(`${slug}`.padEnd(34) + 'ya no está: borrado');
   }
 
   const cover = await ingestCover(cache);

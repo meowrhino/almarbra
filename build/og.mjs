@@ -14,7 +14,7 @@
      node build/og.mjs        (npm run og)
 
    La portada de cada proyecto se elige igual que en build/build.mjs:
-   `cover` de content/proyectos.json, o la primera foto. */
+   la de número `portada` en content/proyectos.json, o la primera. */
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -52,8 +52,11 @@ const rank = (category) => (order.includes(category) ? order.indexOf(category) :
 const projects = readdirSync(join(ROOT, 'content', 'projects'))
   .filter((n) => n.endsWith('.json'))
   .map((n) => read(`content/projects/${n}`))
-  .sort((a, b) => rank(a.category) - rank(b.category) || a.slug.localeCompare(b.slug));
-const coverOf = (p) => changes[p.slug]?.cover || p.cover || p.images[0].src;
+  .map((p) => ({ ...p, ...changes[p.slug] }))
+  .sort((a, b) => rank(a.category) - rank(b.category)
+    || (a.order ?? Infinity) - (b.order ?? Infinity)
+    || a.slug.localeCompare(b.slug));
+const coverOf = (p) => (p.images.find((i) => i.n === p.portada) || p.images[0]).src;
 
 try {
   execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' });

@@ -1,20 +1,16 @@
 {
-  "_": "Cambios a mano en cada proyecto, por encima de lo que sale de las FICHAS. Cada clave es el slug del proyecto (el nombre de su archivo en content/projects/). Se puede poner: «title» y «synopsis» (por idioma), «short» (nombre corto para el mapa), «cover» (la foto que lo representa), «color» y «drop» (fotos del original que no entran; esto último pide volver a hacer npm run ingest). Las claves que empiezan por _ son notas.",
+  "_": "Cambios a mano en cada proyecto, por encima de lo que sale de las FICHAS. Cada clave es el slug del proyecto (el nombre de su archivo en content/projects/). Se puede poner: «portada» (el número de la foto que sale en la lista y al compartir), «mapa» (los números de las fotos que van al mapa, p. ej. [2, 5, 9]), «order» (su lugar en la lista, si la carpeta no lleva número), «title» y «synopsis» (por idioma), «short» (nombre corto para el mapa), «color» y «drop» (nombres de archivo del original que no entran; esto último pide volver a hacer npm run ingest). El número de una foto es el de su archivo: 07.jpg es la 7. Las claves que empiezan por _ son notas.",
   "roma": {
     "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
     "title": {
       "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN",
       "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION"
     },
-    "cover": "media/roma/roma-12.webp",
     "short": {
       "es": "roma",
       "en": "rome",
       "ca": "roma"
-    },
-    "drop": [
-      "virgen_13colores.jpg"
-    ]
+    }
   },
   "sicky-magazine-02": {
     "_nota": "La ficha repite el título de la primera; se distingue aquí.",
@@ -23,18 +19,5 @@
       "en": "SICKY MAGAZINE (II)",
       "ca": "SICKY MAGAZINE (II)"
     }
-  },
-  "cuerpo-esquema": {
-    "cover": "media/cuerpo-esquema/cuerpo-esquema-76.webp",
-    "_nota": "La primera imagen es una captura de pantalla; de portada va una pieza.",
-    "drop": [
-      "ANHELOS 3 colorees.jpg",
-      "ANHELOS 3 colores.jpg",
-      "CUERPO FINITO 15 COLORES 4 TRAMAS.jpg"
-    ],
-    "_drop": "Las preparaciones de color del jacquard: fuera."
-  },
-  "corporea": {
-    "cover": "media/corporea/corporea-04.webp"
   }
 }

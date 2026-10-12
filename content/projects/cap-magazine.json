@@ -1,7 +1,8 @@
 {
   "slug": "cap-magazine",
   "category": "editorial-moda",
-  "source": "originals/EDITORIAL MODA/CAP MAGAZINE",
+  "order": 8,
+  "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE",
   "title": {
     "es": "CAP MAGAZINE",
     "en": "CAP MAGAZINE",
@@ -94,149 +95,130 @@
   "images": [
     {
       "src": "media/cap-magazine/cap-magazine-01.webp",
-      "w": 1500,
+      "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-9 copia.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/01.jpg",
+      "n": 1,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-02.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-10 copia.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/02.jpg",
+      "n": 2,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-03.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-18.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/03.jpg",
+      "n": 3,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-04.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-19.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/04.jpg",
+      "n": 4,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-05.webp",
-      "w": 1400,
-      "h": 938,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-21.jpg",
+      "w": 1340,
+      "h": 2000,
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/05.jpg",
+      "n": 5,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-06.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-25.jpg",
+      "w": 1400,
+      "h": 938,
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/06.jpg",
+      "n": 6,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-07.webp",
-      "w": 1340,
+      "w": 1329,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-29.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/07.jpg",
+      "n": 7,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-08.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-30.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/08.jpg",
+      "n": 8,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-09.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-32.jpg",
+      "w": 1400,
+      "h": 938,
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/09.jpg",
+      "n": 9,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-10.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/01-35.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/10.jpg",
+      "n": 10,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-11.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-1.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/11.jpg",
+      "n": 11,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-12.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-7.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/12.jpg",
+      "n": 12,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-13.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-15.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/13.jpg",
+      "n": 13,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-14.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-24.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/14.jpg",
+      "n": 14,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-15.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-25.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/15.jpg",
+      "n": 15,
       "alt": ""
     },
     {
       "src": "media/cap-magazine/cap-magazine-16.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-27.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/cap-magazine/cap-magazine-17.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-31.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/cap-magazine/cap-magazine-18.webp",
-      "w": 1329,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-32.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/cap-magazine/cap-magazine-19.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-35.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/cap-magazine/cap-magazine-20.webp",
-      "w": 1400,
-      "h": 938,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-36.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/cap-magazine/cap-magazine-21.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/CAP MAGAZINE/FOTOS/03-38.jpg",
+      "source": "originals/EDITORIAL MODA/08 CAP MAGAZINE/FOTOS/16.jpg",
+      "n": 16,
       "alt": ""
     }
   ]

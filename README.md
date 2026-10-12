@@ -5,7 +5,7 @@ JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
 [meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cuatro archivos pequeños: el mapa, la transición, los hilos y el hilo de los proyectos.
 
-Fondo blanco, tipografía mono (DM Mono, servida desde la propia web, sin Google) en minúscula y las
+Fondo blanco, Helvetica (la del sistema: nada que descargar) en minúscula y las
 fotos mandando, unidas por hilos de píxeles del color de cada proyecto.
 
 **La interfaz**, igual en todas las páginas: el nombre arriba a la izquierda
@@ -27,10 +27,15 @@ sobre las fotos.
   zoom: un − y un + que pesan como una balanza (en el zoom de partida son
   iguales; cuanto más cerca, más grande el + y más pequeño el −).
 
-  La lista: una franja por proyecto con la portada a un lado —una a la
-  izquierda, la siguiente a la derecha— y un hilo de su color que sale de la
-  foto y acaba en el título, al otro lado. Al pasar por una, su hilo se
-  vuelve a coser.
+  La lista: una por categoría (textil, editorial moda), con su nombre
+  encima, en el orden de las carpetas. Dentro, en zigzag: un proyecto a la
+  izquierda con su nombre debajo, el siguiente a la derecha y más abajo, y
+  así, solapándose a media altura. Sin hilos. En el móvil, una columna,
+  alternando también de lado.
+
+  Los hilos del mapa van a media luz; al pasar por una foto, los de su
+  proyecto se encienden del todo. Lo que pasa por debajo de la franja de
+  arriba (el nombre y el menú) y de la de abajo se difumina.
 
   El about: el texto de `content/about.json` arriba a la izquierda, bajo el
   nombre, y detrás un telar: hilos de borde a borde, en horizontal y en
@@ -91,7 +96,7 @@ publicado.
 | `about.json` | el texto del about, en es / en / ca (vacío = sale el español) |
 | `textos.json` | las palabras del menú y el nombre de cada categoría, por idioma |
 | `mapa.json` | `mezcla`, de 0 (por zonas) a 100 (todo revuelto); ahora 50 |
-| `proyectos.json` | por proyecto: `title`, `synopsis`, `short`, `cover`, `color`, `drop` |
+| `proyectos.json` | por proyecto: `portada`, `mapa`, `order`, `title`, `synopsis`, `short`, `color`, `drop` |
 | `web.json` | título, dirección, descripción (por idioma), idiomas, orden de categorías, colores |
 
 Lo de `proyectos.json` se aplica al hacer el build, así que cambiar un título o
@@ -147,7 +152,6 @@ js/hilo.js              el hilo de la página de un proyecto
 media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
 media/portada/          GENERADO: la foto de la portada
 media/og/               GENERADO por npm run og: las imágenes para compartir, 1200×630
-fonts/                  DM Mono en woff2 (400 y 500, latin y latin-ext)
 favicon.svg             dos hilos de píxeles
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
@@ -159,7 +163,7 @@ dist/                   GENERADO por el build — FUERA DE GIT
   projects/<slug>/index.html
   en/  ca/                         lo mismo en cada idioma
   404.html  sitemap.xml  robots.txt  .nojekyll  _headers
-  css/  js/  media/  fonts/        copia tal cual
+  css/  js/  media/                copia tal cual
 ```
 
 En git va **solo el fuente**: `content/`, `media/` y el código. Las páginas no se
@@ -220,14 +224,22 @@ pero ya no se puede volver a generar en otra calidad. Copia de seguridad aparte.
 
 `source` en cada imagen dice de qué original salió: para volver atrás sin adivinar.
 
-### Qué fotos van al mapa: `home` y `noHome`
+### Los números
 
-Dentro de la carpeta de cada proyecto en `originals/`, las fotos que estén en
-una carpeta **`home`** salen en el mapa de la portada; las de **`noHome`**, solo
-en la página del proyecto. Las dos carpetas pueden ir a cualquier profundidad
-(`FOTOS/home/`, `PIEZAS/VIRGEN/home/`…) y no cuentan como grupo. Después,
-`npm run ingest`. Un proyecto sin carpeta `home` manda al mapa su portada y
-cinco fotos más, repartidas por su galería.
+La clienta numera: las carpetas de proyecto (`01 SICKY MAGAZINE`,
+`02 VEIN MAGAZINE`…) en el orden en que salen en la lista, y las fotos de cada
+proyecto (`01.jpg`, `02.jpg`…) en el orden de la galería. El número de la
+carpeta va a `order` y no entra en el nombre; el de cada foto, a `n`, y es con
+lo que se eligen la portada y las del mapa (abajo). Una carpeta sin número va
+detrás de las numeradas, por orden alfabético (o con `order` a mano).
+
+### Qué fotos van al mapa y cuál es la portada
+
+En `content/proyectos.json`, por número de foto: `"mapa": [2, 5, 9]` y
+`"portada": 3`. Sin `mapa`, valen también las fotos de una carpeta **`home`**
+dentro del proyecto (a cualquier profundidad, no cuenta como grupo); sin
+ninguna de las dos, al mapa va la portada y cinco fotos más, repartidas por su
+galería. Sin `portada`, la primera foto.
 
 ### content/proyectos.json
 
@@ -239,27 +251,25 @@ encima del JSON recién generado (en la ingesta y otra vez en el build):
 {
   "roma": {
     "title": { "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN" },
-    "short": { "es": "roma" },                     // nombre corto para la portada
-    "cover": "media/roma/roma-12.webp",       // la foto que lo representa
-    "color": "Maroon",                        // su color, si no el que le toque
-    "drop": ["virgen_13colores.jpg"]          // fotos del original que no entran
+    "short": { "es": "roma" },               // nombre corto para el mapa
+    "portada": 12,                           // la foto que lo representa (12.jpg)
+    "mapa": [1, 5, 10, 14],                  // las que van al mapa
+    "order": 3,                              // su lugar en la lista, si la carpeta no lleva número
+    "color": "#982F0C",                      // su color, si no el que le toque
+    "drop": ["13.png"]                       // fotos del original que no entran
   }
 }
 ```
 
 `drop` lo lee la ingesta: esas fotos no se convierten y sus `.webp` se borran.
-Las demás no se renumeran (el número sale del sitio en el original), así que
-quitar una no rompe ningún `cover`. Ahora mismo fuera: las cuatro
-preparaciones de color del jacquard (tres de Cuerpo Esquema y una de Roma).
+Las demás no se renumeran (el número es el del archivo), así que quitar una no
+cambia `portada` ni `mapa`. El build comprueba que esos números existen.
 
-`cover` y `short` son solo para la portada; sin `cover` se usa la primera foto del
-proyecto, y sin `short`, el título entero. Las claves que empiezan por `_` son
-notas, no contenido.
+Sin `short` se usa el título entero. Las claves que empiezan por `_` son notas,
+no contenido.
 
-Ahora mismo hay cinco correcciones: los títulos es/en de ROMA venían intercambiados
-en la ficha, las dos SICKY se llamaban igual, y las tres series textiles llevan
-portada elegida a mano (la primera foto de Cuerpo Esquema es una captura de
-pantalla).
+Ahora mismo hay dos correcciones: los títulos es/en de ROMA vienen
+intercambiados en la ficha, y las dos SICKY se llaman igual.
 
 ## El build
 
@@ -286,7 +296,7 @@ Más `404.html` (con `noindex`), `sitemap.xml` con las tres versiones de cada
 página y `robots.txt`.
 
 **Antes de escribir nada, valida.** Un JSON con una coma de menos, una foto que no
-está en `media/` o un `cover` que no es de ninguna foto paran el build con el
+está en `media/` o una `portada` que no es el número de ninguna foto paran el build con el
 archivo y lo que pasa:
 
 ```
@@ -431,31 +441,37 @@ seis primeros proyectos en fila). Las hace `npm run og` (pide ffmpeg). Si se
 cambia una portada en `content/proyectos.json`, el build avisa y hay que volver a
 hacerlas.
 
-## Los 13 proyectos
+## Los 16 proyectos
 
-**Editorial moda** (10): Águeda · Cap Magazine · Helen · Herdes Magazine ·
-Kaltbult Magazine · Lula Japan Magazine · Sicky Magazine · Sicky Magazine (II) ·
-Teeth Magazine · Vein Magazine — 143 fotos.
+Del envío del 12 de octubre de 2026 (el de antes está en `originals-antes/`,
+fuera de git).
 
-**Textil** (3): Corpórea (17) · Cuerpo Esquema (80) · Roma (15, en tres piezas:
-Laocoonte, Río de la Plata, Virgen) — 112 fotos.
+**Textil** (6): Corpórea (16) · Cuerpo Esquema (2) · Light Beam Digital (8) ·
+Mattering (15) · Roma (16, en tres piezas: Laocoonte, Río de la Plata, Virgen) ·
+Unbound Threads (6) — 63 fotos.
 
-255 fotos.
+**Editorial moda** (10), en este orden: Sicky Magazine · Vein Magazine ·
+Kaltbult Magazine · Teeth Magazine · Herdes Magazine · Águeda · Lula Japan
+Magazine · Cap Magazine · Sicky Magazine (II) · Helen — 130 fotos.
 
-### Lo que hay que mirar antes de diseñar
+193 fotos.
 
-- **Águeda va corta de resolución**: sus 9 fotos están por debajo de 1400 px (la
-  menor, 541). En la columna de 800 se defiende —las que no llegan se quedan
-  centradas a su ancho real en vez de ampliarse—, pero no aguanta un hero a
-  pantalla completa. Habría que pedirle los originales.
-- **Cuerpo Esquema** mezcla 24 fotos de piezas con 59 capturas de pantalla y
-  recursos: son dos cosas distintas y 19 bajan de 1400 px. Hay que decidir qué
-  entra en la web.
+### Lo que falta
+
+- **Qué fotos van al mapa y cuál es la portada** de cada proyecto. La clienta
+  las marcó con etiquetas de Finder (azul, mapa; roja, portada), pero las
+  etiquetas no sobreviven a WeTransfer. Mientras, portada = la primera foto y
+  al mapa van seis repartidas. Se ponen en `content/proyectos.json`
+  (`portada`, `mapa`).
+- **El orden de los textiles**: sus carpetas no llevan número, así que van por
+  orden alfabético.
+- **Las sinopsis de Light Beam Digital, Mattering y Unbound Threads** son la de
+  Cuerpo Esquema con el nombre cambiado; y los tres, con Cuerpo Esquema y Roma,
+  vienen sin catalán.
+- **Águeda va corta de resolución**: sus fotos están por debajo de 1400 px. En la
+  columna de 800 se defiende, pero no aguanta más.
 - El about solo está en español: en `/en/` y `/ca/` sale el español hasta
   que se escriba en `content/about.json`.
-- Ninguna imagen tiene `alt`. El campo está vacío en las 259, listo para escribirlo.
-- Las diez editoriales de moda salen con la primera foto de portada. Si alguna no
-  es la buena, se cambia con `cover` en `content/proyectos.json`.
 
 ## Historia
 

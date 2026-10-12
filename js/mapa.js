@@ -36,13 +36,6 @@
   /* Pone (o vuelve a poner) la forma a un hilo a partir de sus puntos. */
   const shape = (el) => el.setAttribute('d', hilos.path(el.pts));
 
-  /* En la lista, lo mismo que en el mapa: al pasar por una fila su hilo
-     se vuelve a coser entre sus extremos (data-ends, del build). */
-  for (const el of document.querySelectorAll('.row svg path[data-ends]')) {
-    el.ends = el.dataset.ends.split(' ').map((xy) => { const [x, y] = xy.split(','); return { x: +x, y: +y }; });
-    el.closest('.row').addEventListener('pointerenter', () => redraw(el));
-  }
-
   let built = false;
 
   /* Sin tamaño (pestaña aún sin pintar, oculta) no se monta: el plano
@@ -307,7 +300,10 @@
       if (on && el.ends) redraw(el);
     }
   }
+  /* Solo con ratón: en el móvil no hay «pasar por encima», y un toque
+     dejaría el proyecto encendido hasta tocar otra cosa. */
   world.addEventListener('pointerover', (e) => {
+    if (e.pointerType !== 'mouse') return;
     const pin = e.target.closest('.pin');
     light(pin?.dataset.p ?? null);
     glow(pin);

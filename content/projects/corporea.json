@@ -19,6 +19,7 @@
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/01.jpg",
+      "n": 1,
       "alt": ""
     },
     {
@@ -26,6 +27,7 @@
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/02.jpg",
+      "n": 2,
       "alt": ""
     },
     {
@@ -33,6 +35,7 @@
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/03.jpg",
+      "n": 3,
       "alt": ""
     },
     {
@@ -40,6 +43,7 @@
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/04.jpg",
+      "n": 4,
       "alt": ""
     },
     {
@@ -47,6 +51,7 @@
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/05.jpg",
+      "n": 5,
       "alt": ""
     },
     {
@@ -54,6 +59,7 @@
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/06.jpg",
+      "n": 6,
       "alt": ""
     },
     {
@@ -61,6 +67,7 @@
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/07.jpg",
+      "n": 7,
       "alt": ""
     },
     {
@@ -68,6 +75,7 @@
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/08.jpg",
+      "n": 8,
       "alt": ""
     },
     {
@@ -75,6 +83,7 @@
       "w": 2000,
       "h": 1333,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/09.jpg",
+      "n": 9,
       "alt": ""
     },
     {
@@ -82,6 +91,7 @@
       "w": 2000,
       "h": 1333,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/10.jpg",
+      "n": 10,
       "alt": ""
     },
     {
@@ -89,6 +99,7 @@
       "w": 1333,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/11.jpg",
+      "n": 11,
       "alt": ""
     },
     {
@@ -96,43 +107,40 @@
       "w": 1326,
       "h": 2000,
       "source": "originals/TEXTIL/CORPÓREA/FOTOS/12.jpg",
+      "n": 12,
       "alt": ""
     },
     {
       "src": "media/corporea/corporea-13.webp",
-      "w": 1326,
+      "w": 1333,
       "h": 2000,
-      "source": "originals/TEXTIL/CORPÓREA/FOTOS/0013 - 2024.8.29 - Almudena González Martín - Kodak Gold 200-8.jpg",
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/13.jpg",
+      "n": 13,
       "alt": ""
     },
     {
       "src": "media/corporea/corporea-14.webp",
-      "w": 1326,
-      "h": 2000,
-      "source": "originals/TEXTIL/CORPÓREA/FOTOS/0013 - 2024.8.292 - Almudena González Martín - Kodak Gold 200-6.jpg",
+      "w": 2000,
+      "h": 1508,
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/14.jpg",
+      "n": 14,
       "alt": ""
     },
     {
       "src": "media/corporea/corporea-15.webp",
-      "w": 1333,
+      "w": 1350,
       "h": 2000,
-      "source": "originals/TEXTIL/CORPÓREA/FOTOS/13.jpg",
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/15.jpg",
+      "n": 15,
       "alt": ""
     },
     {
       "src": "media/corporea/corporea-16.webp",
-      "w": 2000,
-      "h": 1508,
-      "source": "originals/TEXTIL/CORPÓREA/FOTOS/14.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/corporea/corporea-17.webp",
-      "w": 1350,
+      "w": 1326,
       "h": 2000,
-      "source": "originals/TEXTIL/CORPÓREA/FOTOS/15.jpg",
+      "source": "originals/TEXTIL/CORPÓREA/FOTOS/16.jpg",
+      "n": 16,
       "alt": ""
     }
-  ],
-  "cover": "media/corporea/corporea-04.webp"
+  ]
 }

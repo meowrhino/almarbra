@@ -1,7 +1,8 @@
 {
   "slug": "kaltbult-magazine",
   "category": "editorial-moda",
-  "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE",
+  "order": 3,
+  "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE",
   "title": {
     "es": "KALTBULT MAGAZINE",
     "en": "KALTBULT MAGAZINE",
@@ -109,135 +110,154 @@
   "images": [
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-01.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/02-28.jpg",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/01.jpg",
+      "n": 1,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-02.webp",
       "w": 2000,
       "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/03-5.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/02.jpg",
+      "n": 2,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-03.webp",
-      "w": 2000,
-      "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/03-8.jpg",
+      "w": 1340,
+      "h": 2000,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/03.jpg",
+      "n": 3,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-04.webp",
       "w": 2000,
       "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/03-10.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/04.jpg",
+      "n": 4,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-05.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/03-11.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/05.jpg",
+      "n": 5,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-06.webp",
       "w": 2000,
       "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/03-12.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/06.jpg",
+      "n": 6,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-07.webp",
       "w": 2000,
       "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/03-13.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/07.jpg",
+      "n": 7,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-08.webp",
-      "w": 2000,
-      "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-2.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/kaltbult-magazine/kaltbult-magazine-09.webp",
-      "w": 2000,
-      "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-4 copia.jpg",
+      "w": 1340,
+      "h": 2000,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/08.jpg",
+      "n": 8,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-10.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-7 copia.jpg",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/10.jpg",
+      "n": 10,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-11.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-8.jpg",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/11.jpg",
+      "n": 11,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-12.webp",
       "w": 2000,
       "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-9.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/12.jpg",
+      "n": 12,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-13.webp",
       "w": 2000,
       "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-14.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/13.jpg",
+      "n": 13,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-14.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-16.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/14.jpg",
+      "n": 14,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-15.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-17.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/15.jpg",
+      "n": 15,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-16.webp",
-      "w": 1340,
-      "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-23.jpg",
+      "w": 2000,
+      "h": 1340,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/16.jpg",
+      "n": 16,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-17.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-24.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/17.jpg",
+      "n": 17,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-18.webp",
       "w": 1340,
       "h": 2000,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-25.jpg",
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/18.jpg",
+      "n": 18,
       "alt": ""
     },
     {
       "src": "media/kaltbult-magazine/kaltbult-magazine-19.webp",
-      "w": 2000,
-      "h": 1340,
-      "source": "originals/EDITORIAL MODA/KALTBULT MAGAZINE/FOTOS/04-111.jpg",
+      "w": 1340,
+      "h": 2000,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/19.jpg",
+      "n": 19,
+      "alt": ""
+    },
+    {
+      "src": "media/kaltbult-magazine/kaltbult-magazine-20.webp",
+      "w": 1340,
+      "h": 2000,
+      "source": "originals/EDITORIAL MODA/03 KALTBULT MAGAZINE/FOTOS/20.jpg",
+      "n": 20,
       "alt": ""
     }
   ]

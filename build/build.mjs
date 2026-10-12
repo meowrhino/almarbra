@@ -11,18 +11,18 @@
    (dist/en/, dist/ca/…), cada página con sus hreflang.
 
    Más lo que pide un sitio estático: 404.html, sitemap.xml, robots.txt,
-   .nojekyll, _headers y favicon.svg, y una copia de css/, js/, media/ y
-   fonts/. dist/ no se commitea: lo publica la Action
+   .nojekyll, _headers y favicon.svg, y una copia de css/, js/ y
+   media/. dist/ no se commitea: lo publica la Action
    (.github/workflows/deploy.yml).
 
    Antes de escribir nada, valida: un JSON roto, una foto que no está o un
-   `cover` que no es de ninguna foto paran el build con un mensaje, y la
+   número de `portada` o `mapa` que no existe paran el build con un mensaje, y la
    web publicada se queda como estaba.
 
    El sitio funciona entero sin JavaScript: sin él la portada es la
    lista. Con él: js/mapa.js monta el mapa y cambia de vista,
    js/transicion.js tapa y destapa al cambiar de página, js/hilos.js da
-   la forma a los hilos (y aquí se importa para los de la lista) y
+   la forma a los hilos, js/telar.js teje el fondo del about y
    js/hilo.js dibuja el de los proyectos.
 
      node build/build.mjs      (npm run build)
@@ -48,9 +48,6 @@ import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { WIDTHS, variant } from './formats.mjs';
-import '../js/hilos.js';   // globalThis.hilos: la curva y la forma de los hilos, como en el navegador
-
-const { hilos } = globalThis;
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const OUT = join(ROOT, 'dist');
@@ -226,8 +223,7 @@ function contact() {
 /* `path` es la dirección de la página dentro del sitio, sin el idioma
    ('' la portada, 'projects/roma/' un proyecto); sin ella no hay
    canonical, hreflang ni og, que es lo que pasa en la 404. `root` va de
-   la página a la raíz del sitio, donde están css/, js/, media/ y
-   fonts/. `image` (y `og`, su versión de media/og/) es la que sale al
+   la página a la raíz del sitio, donde están css/, js/ y media/. `image` (y `og`, su versión de media/og/) es la que sale al
    compartir el enlace. */
 function page({ title, body, root = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, og = null, head = '' }) {
   const full = title ? `${title} — ${site.title}` : site.title;
@@ -253,7 +249,6 @@ ${image ? shareImage(image, og) : ''}<meta property="og:locale" content="${LOCAL
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex || path === null ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="icon" href="${attr(root)}favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#ffffff">
-<link rel="preload" href="${attr(root)}fonts/dm-mono-400.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="${attr(root)}css/style.css${version('css/style.css')}">
 ${HEAD_SCRIPT}${head}</head>
 <body${bodyClass ? ` class="${attr(bodyClass)}"` : ''}${bodyStyle ? ` style="${attr(bodyStyle)}"` : ''}>
@@ -266,16 +261,19 @@ ${['js/hilos.js', 'js/transicion.js', ...scripts].map((s) => `<script src="${att
 
 /* ── portada ─────────────────────────────────────────────────────── */
 
-/** La imagen que representa a un proyecto: `cover`, o la primera. */
+/** La foto que representa a un proyecto, en la lista y al compartir:
+    la de número `portada` (content/proyectos.json), o la primera. */
 const coverOf = (project) =>
-  project.images.find((i) => i.src === project.cover) || project.images[0];
+  project.images.find((i) => i.n === project.portada) || project.images[0];
 
-/* Al mapa van las fotos de la carpeta `home` de cada proyecto (ver
-   build/ingest.mjs). Un proyecto que aún no la tiene manda su portada y
-   unas cuantas más, repartidas a lo largo de su galería. */
+/* Al mapa van las fotos de número `mapa` (content/proyectos.json), o
+   las de una carpeta `home` (ver build/ingest.mjs). Un proyecto sin
+   ninguna de las dos manda su portada y unas cuantas más, repartidas a
+   lo largo de su galería. */
 const PER_PROJECT = 6;
 
 function mapImages(project) {
+  if (project.mapa?.length) return project.images.filter((i) => project.mapa.includes(i.n));
   const home = project.images.filter((i) => i.home);
   if (home.length) return home;
   const cover = coverOf(project);
@@ -284,50 +282,45 @@ function mapImages(project) {
   return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
 }
 
-const pct = (v, of) => `${+((v / of) * 100).toFixed(2)}%`;
-const meta = (project) => `${tr(textos.categorias?.[project.category]) || esc(project.category.replace(/-/g, ' '))} · ${project.images.length}`;
-
-/* Una fila de la lista: una franja de proporción fija (1000×500) con la
-   portada a un lado y, del centro de la foto al otro lado, un hilo de su
-   color que acaba en el título. Todo va en coordenadas de la franja —el
-   SVG, la foto y el título, en %—, así que el hilo llega a su sitio a
-   cualquier ancho. Sale distinto en cada build. */
-const ROW = { w: 1000, h: 500, side: 50 };
-
-function listRow(root, project, i) {
+/* La lista: una por categoría (textil, editorial moda…), con su nombre
+   encima. Dentro, en zigzag: un proyecto a la izquierda con su nombre
+   debajo, el siguiente a la derecha y más abajo, y así. Cada uno ocupa
+   dos filas de la rejilla y el siguiente empieza en la segunda: por eso
+   se solapan a media altura (css/style.css). Las verticales, más
+   estrechas que las apaisadas, para que no se coman la pantalla. */
+function listItem(root, project, i) {
   const cover = coverOf(project);
-  let h = 400;
-  let w = (h * cover.w) / cover.h;
-  if (w > 520) { w = 520; h = (w * cover.h) / cover.w; }
-  const flip = i % 2 === 1;
-  const x = flip ? ROW.w - ROW.side - w : ROW.side;
-  const y = (ROW.h - h) / 2;
-  const end = { x: flip ? ROW.side + 10 : ROW.w - ROW.side - 10, y: ROW.h * (0.3 + Math.random() * 0.4) };
-
-  /* Los extremos van también en data-ends, para que js/mapa.js lo vuelva
-     a coser entre ellos al pasar por encima. */
-  const pts = hilos.wander({ x: x + w / 2, y: y + h / 2 }, end);
-  const ends = [pts[0], pts[pts.length - 1]].map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
-  const edge = flip ? `left:${pct(ROW.side, ROW.w)}` : `right:${pct(ROW.side, ROW.w)}`;
-
-  return `<li><a class="row${flip ? ' flip' : ''}" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<svg viewBox="0 0 ${ROW.w} ${ROW.h}" aria-hidden="true"><path pathLength="1" d="${hilos.path(pts)}" data-ends="${ends}"/></svg>
-<div class="pic" style="left:${pct(x, ROW.w)};top:${pct(y, ROW.h)};width:${pct(w, ROW.w)}">${img(cover, { base: root, sizes: `${Math.round((w / ROW.w) * 100)}vw` })}</div>
-<h2 style="${edge};top:${pct(end.y, ROW.h)}">${tr(project.title) || esc(project.slug)} <small>${meta(project)}</small></h2>
+  const width = cover.h > cover.w ? 70 : 100;
+  return `<li style="grid-row:${i + 1} / span 2"><a class="row" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+<div class="pic" style="width:${width}%">${img(cover, { base: root, sizes: `(min-width: 700px) ${Math.round(width * 0.42)}vw, ${Math.round(width * 0.8)}vw` })}</div>
+<h3>${tr(project.title) || esc(project.slug)}</h3>
 </a></li>`;
+}
+
+function list(root, projects) {
+  const cats = Map.groupBy(projects, (p) => p.category);
+  return [...cats].map(([category, items]) => `<section class="cat">
+<h2>${tr(textos.categorias?.[category]) || esc(category.replace(/-/g, ' '))}</h2>
+<ol>
+${items.map((p, i) => listItem(root, p, i)).join('\n')}
+</ol>
+</section>`).join('\n\n');
 }
 
 /** El menú de arriba, igual en todas las páginas. El nombre lleva
     siempre a la portada. A la derecha, mapa, lista y about, con lo que
     está puesto marcado (css/style.css). Abajo, la misma página en los
-    otros idiomas. `home` va de la página a la portada de su idioma;
+    otros idiomas. Detrás de las dos franjas, la de arriba y la de abajo,
+    lo que pasa por debajo se difumina (.niebla). `home` va de la página a la portada de su idioma;
     `root`, a la raíz del sitio. */
 function topBar({ home = '', root = '', path = null }) {
   const link = (to) => `<a href="${attr(home)}#${to}" data-to="${to}">${tr(textos.menu?.[to]) || to}</a>`;
   const langs = path !== null && LANGS.length > 1
     ? `<div class="idiomas">${LANGS.map((l) => `<a href="${attr(root + prefix(l) + path)}" hreflang="${l}" lang="${l}"${l === cur ? ' aria-current="true"' : ''}>${l}</a>`).join('')}</div>`
     : '';
-  return `<header class="top">
+  return `<div class="niebla" aria-hidden="true"></div>
+<div class="niebla abajo" aria-hidden="true"></div>
+<header class="top">
 <a href="${attr(home)}#mapa" class="name">${esc(site.title)}</a>
 ${langs}
 <nav>
@@ -358,7 +351,6 @@ function homePage(projects) {
       + `<span>${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
 
-  const rows = projects.map((project, i) => listRow(root, project, i));
 
   return page({
     title: null,
@@ -389,9 +381,7 @@ ${pins.join('\n')}
 </section>
 
 <section id="lista">
-<ol>
-${rows.join('\n')}
-</ol>
+${list(root, projects)}
 </section>
 </main>`,
   });
@@ -551,13 +541,14 @@ const projects = readdirSync(dir)
   .map((n) => applyChanges(read(`content/projects/${n}`)))
   .sort((a, b) => rank(a.category) - rank(b.category)
     || a.category.localeCompare(b.category)
+    || (a.order ?? Infinity) - (b.order ?? Infinity)
     || a.slug.localeCompare(b.slug));
 
 /* Un color por proyecto: el suyo si lo tiene en content/proyectos.json,
-   y si no el de content/web.json que le toque por orden. Si a alguno no
-   le llega ninguno, el build para. */
+   y si no el de content/web.json que le toque por orden; si hay menos
+   colores que proyectos, se vuelve a empezar. */
 const colors = site.colors || [];
-projects.forEach((project, i) => { project.color ||= colors[i]; });
+projects.forEach((project, i) => { project.color ||= colors[i % colors.length]; });
 
 /* ── validar, antes de tocar dist/ ───────────────────────────────── */
 
@@ -575,8 +566,12 @@ for (const project of projects) {
   for (const image of project.images || []) {
     if (!existsSync(join(ROOT, image.src))) errors.push(`${project.slug}: no encuentro ${image.src}`);
   }
-  if (project.cover && !project.images?.some((i) => i.src === project.cover)) {
-    errors.push(`${project.slug}: el cover ${project.cover} no es ninguna de sus fotos (content/proyectos.json)`);
+  const numbers = new Set((project.images || []).map((i) => i.n));
+  if (project.portada != null && !numbers.has(project.portada)) {
+    errors.push(`${project.slug}: «portada» ${project.portada} no es el número de ninguna de sus fotos (content/proyectos.json)`);
+  }
+  for (const n of project.mapa || []) {
+    if (!numbers.has(n)) errors.push(`${project.slug}: en «mapa», ${n} no es el número de ninguna de sus fotos (content/proyectos.json)`);
   }
 }
 if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que se arregle.`);
@@ -592,7 +587,7 @@ if (stale.length) console.warn(`⚠ og:image que faltan o son de otra portada: $
    sirviendo (build/watch.mjs) y si desaparece deja de mirarla. */
 mkdirSync(OUT, { recursive: true });
 for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true, maxRetries: 5 });
-for (const d of ['css', 'js', 'media', 'fonts']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
+for (const d of ['css', 'js', 'media']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
 for (const f of ['_headers', 'favicon.svg']) cpSync(join(ROOT, f), join(OUT, f));
 
 const paths = ['', ...projects.map((p) => `projects/${p.slug}/`)];

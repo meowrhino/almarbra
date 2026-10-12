@@ -1,0 +1,64 @@
+{
+  "slug": "unbound-threads",
+  "category": "textil",
+  "source": "originals/TEXTIL/UNBOUND THREADS",
+  "title": {
+    "es": "UNBOUND THREADS",
+    "en": "UNBOUND THREADS"
+  },
+  "synopsis": {
+    "es": "UNBOUND THREADS se desarrolla en torno a la creación de territorios eco-poéticos: espacios ficticios que no ocupan un lugar físico concreto, sino que se inspiran en la no-coseidad del vacío, en espacios no territoriales, comunidades disidentes y espacios virtuales contemporáneos, lugares donde ha sido posible construir una identidad nueva, libre de los prejuicios y las definiciones normativas impuestas sobre el cuerpo.\n\nPiezas desarrolladas en su totalidad en un Telar digital Jacquard TC2.",
+    "en": "UNBOUND THREADS unfolds around the creation of eco-poetic territories: fictional spaces that occupy no concrete physical place, but instead draw on the non-thingness of the void, on non-territorial spaces, dissident communities, and contemporary virtual spaces. Places where it has been possible to construct a new identity, free from the prejudices and normative definitions imposed upon the body.\n\nPieces developed entirely on a Jacquard TC2 digital loom."
+  },
+  "credits": {},
+  "images": [
+    {
+      "src": "media/unbound-threads/unbound-threads-01.webp",
+      "w": 2000,
+      "h": 1333,
+      "source": "originals/TEXTIL/UNBOUND THREADS/FOTOS/01.jpg",
+      "n": 1,
+      "alt": ""
+    },
+    {
+      "src": "media/unbound-threads/unbound-threads-02.webp",
+      "w": 1333,
+      "h": 2000,
+      "source": "originals/TEXTIL/UNBOUND THREADS/FOTOS/02.jpg",
+      "n": 2,
+      "alt": ""
+    },
+    {
+      "src": "media/unbound-threads/unbound-threads-03.webp",
+      "w": 1333,
+      "h": 2000,
+      "source": "originals/TEXTIL/UNBOUND THREADS/FOTOS/03.jpg",
+      "n": 3,
+      "alt": ""
+    },
+    {
+      "src": "media/unbound-threads/unbound-threads-04.webp",
+      "w": 1333,
+      "h": 2000,
+      "source": "originals/TEXTIL/UNBOUND THREADS/FOTOS/04.jpg",
+      "n": 4,
+      "alt": ""
+    },
+    {
+      "src": "media/unbound-threads/unbound-threads-05.webp",
+      "w": 1688,
+      "h": 946,
+      "source": "originals/TEXTIL/UNBOUND THREADS/FOTOS/05.png",
+      "n": 5,
+      "alt": ""
+    },
+    {
+      "src": "media/unbound-threads/unbound-threads-06.webp",
+      "w": 1772,
+      "h": 1002,
+      "source": "originals/TEXTIL/UNBOUND THREADS/FOTOS/06.png",
+      "n": 6,
+      "alt": ""
+    }
+  ]
+}

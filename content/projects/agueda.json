@@ -1,7 +1,8 @@
 {
   "slug": "agueda",
   "category": "editorial-moda",
-  "source": "originals/EDITORIAL MODA/ÁGUEDA",
+  "order": 6,
+  "source": "originals/EDITORIAL MODA/06 ÁGUEDA",
   "title": {
     "es": "ÁGUEDA",
     "en": "ÁGUEDA",
@@ -78,66 +79,75 @@
   },
   "images": [
     {
+      "src": "media/agueda/agueda-00.webp",
+      "w": 575,
+      "h": 859,
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/0.jpg",
+      "n": 0,
+      "alt": ""
+    },
+    {
       "src": "media/agueda/agueda-01.webp",
-      "w": 527,
-      "h": 757,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/04-3w8.jpg",
+      "w": 450,
+      "h": 541,
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/01.jpg",
+      "n": 1,
       "alt": ""
     },
     {
       "src": "media/agueda/agueda-02.webp",
       "w": 575,
-      "h": 859,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/04-25.jpg",
+      "h": 780,
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/02.jpg",
+      "n": 2,
       "alt": ""
     },
     {
       "src": "media/agueda/agueda-03.webp",
-      "w": 575,
-      "h": 780,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/04-31 copia.jpg",
-      "alt": ""
-    },
-    {
-      "src": "media/agueda/agueda-04.webp",
-      "w": 450,
-      "h": 541,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-1 copia.jpg",
+      "w": 527,
+      "h": 757,
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/03.jpg",
+      "n": 3,
       "alt": ""
     },
     {
       "src": "media/agueda/agueda-05.webp",
       "w": 859,
       "h": 575,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-7 copia.jpg",
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/05.jpg",
+      "n": 5,
       "alt": ""
     },
     {
       "src": "media/agueda/agueda-06.webp",
       "w": 575,
       "h": 859,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-10 copia.jpg",
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/06.jpg",
+      "n": 6,
       "alt": ""
     },
     {
       "src": "media/agueda/agueda-07.webp",
       "w": 575,
       "h": 859,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-14 copia.jpg",
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/07.jpg",
+      "n": 7,
       "alt": ""
     },
     {
       "src": "media/agueda/agueda-08.webp",
       "w": 575,
       "h": 859,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-16 copia.jpg",
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/08.jpg",
+      "n": 8,
       "alt": ""
     },
     {
       "src": "media/agueda/agueda-09.webp",
       "w": 575,
       "h": 859,
-      "source": "originals/EDITORIAL MODA/ÁGUEDA/FOTOS/05-34.jpg",
+      "source": "originals/EDITORIAL MODA/06 ÁGUEDA/FOTOS/09.jpg",
+      "n": 9,
       "alt": ""
     }
   ]
