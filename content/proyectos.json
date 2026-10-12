@@ -4,13 +4,18 @@
     "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
     "title": {
       "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN",
-      "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION"
+      "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION",
+      "ca": "ROMA: CIUTAT EN RUÏNES, IDENTITAT EN CONSTRUCCIÓ"
     },
     "short": {
       "es": "roma",
       "en": "rome",
       "ca": "roma"
-    }
+    },
+    "synopsis": {
+      "ca": "Ruïnes, base per construir noves formes.\nCada part trobada, guardada i atresorada fa alhora de fonament i de biga.\nEnsorraments i inundacions. Allaus de fang cobreixen del tot la ciutat, fan de bàlsam i de mantell després de veure la terra cremar.\nFang, de natura dòcil i tova, modela el propi alliberament.\n\ntreball de recerca de textures i lligats de setí desenvolupat en un teler digital Jacquard TC2."
+    },
+    "_borrador": "El título y la sinopsis en catalán: traducción provisional, pendiente de que la revise Almudena."
   },
   "sicky-magazine-02": {
     "_nota": "La ficha repite el título de la primera; se distingue aquí.",
@@ -18,6 +23,18 @@
       "es": "SICKY MAGAZINE (II)",
       "en": "SICKY MAGAZINE (II)",
       "ca": "SICKY MAGAZINE (II)"
+    }
+  },
+  "cuerpo-esquema": {
+    "_borrador": "La sinopsis en catalán: traducción provisional, pendiente de que la revise Almudena. El título se queda en castellano hasta que diga cómo lo quiere.",
+    "synopsis": {
+      "ca": "Cuerpo esquema es desenvolupa al voltant de la creació de territoris ecopoètics: espais ficticis que no ocupen un lloc físic concret, sinó que s'inspiren en la no-coseïtat del buit, en espais no territorials, comunitats dissidents i espais virtuals contemporanis, llocs on ha estat possible construir una identitat nova, lliure dels prejudicis i de les definicions normatives imposades sobre el cos.\n\nPeces desenvolupades íntegrament en un teler digital Jacquard TC2."
+    }
+  },
+  "corporea": {
+    "_nota": "En la ficha, el último párrafo en catalán está en castellano; traducido aquí (provisional, que lo revise Almudena).",
+    "synopsis": {
+      "ca": "Corpòria sorgeix d'aquesta necessitat d'apropiar-se d'une mateixe, necessitat d'habitar els cossos com a propis, de construir-se i deconstruir-se tantes vegades com calgui.\n\nCorpòria pretén ser una sèrie en desenvolupament constant, experimentant noves tècniques, nous materials, noves maneres d'entendre els cossos.\n\nPeces realitzades en un teler Magic Dobby Louët de 24 lliços, compostes íntegrament de cotó i llana."
     }
   }
 }

@@ -263,9 +263,9 @@ html:not(.js):has(#about:target) #lista { display: none; }
 }
 
 .pixeles path { transition: opacity .6s steps(4, end); }
-.pelusa { opacity: .7; animation: hueco .4s steps(4, end) 2s backwards; }
+.pelusa { opacity: .3; animation: hueco .4s steps(4, end) 2s backwards; }   /* como su hilo, a media luz */
+.pelusa.on { opacity: .8; }
 .halo { opacity: .45; }
-.dim .pelusa:not(.on) { opacity: .1; }
 
 /* Los mandos del zoom, abajo en el centro: un − y un +, dibujados
    como píxeles, que pesan como una balanza: --s (lo largo del trazo) y
