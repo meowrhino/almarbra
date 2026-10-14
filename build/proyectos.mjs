@@ -1,9 +1,9 @@
 /* Los proyectos, como los usa build.mjs.
 
-     projects/<slug>/proyecto.json      título, sinopsis, créditos, fotos…
+     projects/<slug>/project.json       título, texto, créditos, fotos…
      projects/<slug>/img/1.webp …       sus fotos, como las saca imgToWeb
 
-   Salen en el orden de las listas de content/web.json («listas»): la
+   Salen en el orden de las listas de data/site.json («lists»): la
    lista en la que está un proyecto es su categoría. Uno que no está en
    ninguna no sale en la web.
 
@@ -32,30 +32,30 @@ export function webpSize(file) {
 }
 
 /**
- * Lee projects/ en el orden de site.listas. `read` lee un JSON (el del
+ * Lee projects/ en el orden de site.lists. `read` lee un JSON (el del
  * build para con un mensaje si está roto). Devuelve los proyectos y lo
  * que esté mal, para que el build pare o avise.
  */
-/* Los campos que entiende un proyecto.json. Otro (un «portda», un
-   «foto») se avisa: casi seguro que está mal escrito. Los que empiezan
+/* Los campos que entiende un project.json. Otro (un «covr», un
+   «photo») se avisa: casi seguro que está mal escrito. Los que empiezan
    por _ son notas. */
-const FIELDS = new Set(['title', 'short', 'synopsis', 'credits', 'color', 'portada', 'mapa', 'fotos', 'grupos']);
+const FIELDS = new Set(['title', 'short', 'text', 'credits', 'color', 'cover', 'map', 'photos', 'groups']);
 
 export function loadProjects(root, site, read) {
   const errors = [];
   const warnings = [];
-  const listas = site.listas || {};
+  const lists = site.lists || {};
   const dir = join(root, 'projects');
   const folders = readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name);
 
   const projects = [];
-  for (const [category, slugs] of Object.entries(listas)) {
+  for (const [category, { projects: slugs = [] }] of Object.entries(lists)) {
     for (const slug of slugs) {
-      if (projects.some((p) => p.slug === slug)) { errors.push(`«${slug}» está dos veces en las listas de content/web.json`); continue; }
-      if (!existsSync(join(dir, slug, 'proyecto.json'))) { errors.push(`la lista «${category}» de content/web.json nombra «${slug}», y no hay projects/${slug}/proyecto.json`); continue; }
+      if (projects.some((p) => p.slug === slug)) { errors.push(`«${slug}» está dos veces en las listas de data/site.json`); continue; }
+      const at = `projects/${slug}/project.json`;
+      if (!existsSync(join(root, at))) { errors.push(`la lista «${category}» de data/site.json nombra «${slug}», y no hay ${at}`); continue; }
 
-      const data = read(`projects/${slug}/proyecto.json`);
-      const at = `projects/${slug}/proyecto.json`;
+      const data = read(at);
       for (const key of Object.keys(data)) {
         if (!key.startsWith('_') && !FIELDS.has(key)) warnings.push(`${at}: «${key}» no es un campo que use la web (¿mal escrito?)`);
       }
@@ -78,13 +78,13 @@ export function loadProjects(root, site, read) {
         if (!size) { errors.push(`projects/${slug}: img/${file} no es un WebP de verdad (pásala por imgToWeb)`); return null; }
         return { name: file.replace(/\.webp$/, ''), file, src, ...size };
       };
-      /* Las fotos van en «fotos», o por grupos en «grupos» (Roma). */
-      const groups = list(data.grupos, 'grupos').concat(data.grupos ? [] : [{ nombre: null, fotos: data.fotos }])
-        .map((g) => ({ name: g.nombre, images: list(g.fotos, 'fotos').map(image).filter(Boolean) }));
+      /* Las fotos van en «photos», o por grupos en «groups» (Roma). */
+      const groups = list(data.groups, 'groups').concat(data.groups ? [] : [{ name: null, photos: data.photos }])
+        .map((g) => ({ name: g.name, images: list(g.photos, 'photos').map(image).filter(Boolean) }));
       const images = groups.flatMap((g) => g.images);
       if (!images.length) errors.push(`projects/${slug}: no tiene fotos`);
 
-      /* Las de «portada» y «mapa» tienen que estar entre sus fotos. */
+      /* Las de «cover» y «map» tienen que estar entre sus fotos. */
       const pick = (field) => [].concat(data[field] || []).map((name) => {
         const found = images.find((i) => i.name === String(name).replace(/\.webp$/, ''));
         if (!found) errors.push(`projects/${slug}: en «${field}», ${name} no está entre sus fotos`);
@@ -97,19 +97,19 @@ export function loadProjects(root, site, read) {
         category,
         groups,
         images,
-        cover: pick('portada')[0] || images[0],
-        map: pick('mapa'),
+        cover: pick('cover')[0] || images[0],
+        map: pick('map'),
       });
     }
   }
 
   for (const slug of folders) {
     if (!projects.some((p) => p.slug === slug) && !errors.some((e) => e.includes(`«${slug}»`))) {
-      warnings.push(`projects/${slug} no está en ninguna lista de content/web.json: no sale en la web`);
+      warnings.push(`projects/${slug} no está en ninguna lista de data/site.json: no sale en la web`);
     }
   }
 
-  /* Un color por proyecto: el suyo («color») o el de content/web.json
+  /* Un color por proyecto: el suyo («color») o el de data/site.json
      que le toque por orden; si hay menos colores que proyectos, se
      vuelve a empezar. */
   const colors = site.colors || [];

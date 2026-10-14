@@ -4,7 +4,7 @@
     "en": "KALTBULT MAGAZINE",
     "ca": "KALTBULT MAGAZINE"
   },
-  "synopsis": {},
+  "text": {},
   "credits": [
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": { "es": "Estilismo", "en": "styling", "ca": "Estilisme" }, "name": "Paloma Monago", "url": "https://www.instagram.com/palomamonago/" },
@@ -13,7 +13,7 @@
     { "role": "Set design", "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" },
     { "role": "Modelo", "name": "Yarlin Bido & Eddy", "url": "https://www.instagram.com/yarlinbido/" }
   ],
-  "portada": ["4"],
-  "mapa": ["2", "3", "4", "6", "8", "17", "19"],
-  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
+  "cover": ["4"],
+  "map": ["2", "3", "4", "6", "8", "17", "19"],
+  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
 }

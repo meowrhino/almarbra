@@ -4,7 +4,7 @@
     "en": "TEETH MAGAZINE",
     "ca": "TEETH MAGAZINE"
   },
-  "synopsis": {},
+  "text": {},
   "credits": [
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": { "es": "Asistente de fotografía", "en": "Photo assistant", "ca": "Photo assistant" }, "name": "Tamara Ruibal", "url": "https://www.instagram.com/tamararuibalrua/" },
@@ -13,7 +13,7 @@
     { "role": { "es": "Asistente Make up & hair", "en": "Make up & hair assistant", "ca": "Assistent Maquillatge i Perruqueria" }, "name": "Xina Rodriguez", "url": "https://www.instagram.com/xinaarodriguez/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Timi Adisa", "url": "https://www.instagram.com/timiadisa/" }
   ],
-  "portada": ["5"],
-  "mapa": ["1", "2", "5", "6", "10", "11"],
-  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
+  "cover": ["5"],
+  "map": ["1", "2", "5", "6", "10", "11"],
+  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
 }

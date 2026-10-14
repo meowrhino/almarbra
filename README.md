@@ -21,7 +21,7 @@ sobre las fotos.
   proyectos de las dos.
 
   El mapa es la idea de anaelleblin.com: las fotos de todos los proyectos,
-  más o menos por zonas (la `mezcla`), en un plano que se arrastra, y las de
+  más o menos por zonas (la mezcla, `mix`), en un plano que se arrastra, y las de
   un mismo proyecto unidas por un hilo fino de su color, que serpentea y se
   dibuja al cargar. Al lado de cada hilo, una pelusa de píxeles sueltos, como
   si se deshilachara. Al pasar por una foto se enciende su proyecto, le brota
@@ -30,8 +30,8 @@ sobre las fotos.
   zoom: un − y un + que pesan como una balanza (en el zoom de partida son
   iguales; cuanto más cerca, más grande el + y más pequeño el −).
 
-  Las listas: una por cada una de `listas` en `content/web.json`, cada una su
-  vista en el menú, en el orden de `listas`. Sin JavaScript salen las dos
+  Las listas: una por cada una de `lists` en `data/site.json`, cada una su
+  vista en el menú, en ese orden. Sin JavaScript salen las dos
   seguidas, con su nombre encima. Dentro, en zigzag: un proyecto a la
   izquierda con su nombre debajo, el siguiente a la derecha y más abajo, y
   así, solapándose a media altura. Sin hilos. En el móvil, una columna,
@@ -41,7 +41,7 @@ sobre las fotos.
   proyecto se encienden del todo. Sin desenfoque bajo las franjas: el
   `difference` ya las deja leer sobre las fotos.
 
-  El about: el texto de `content/about.json` arriba a la izquierda, bajo el
+  El about: el texto de `data/about.json` arriba a la izquierda, bajo el
   nombre; debajo, el email y el Instagram, y quién hizo la web. Detrás, un telar: hilos de borde a borde, en horizontal y en
   vertical, que se tejen muy despacio, se quedan y se destejen.
 
@@ -66,7 +66,7 @@ sobre las fotos.
   una con sus `hreflang`, para que Google indexe cada idioma aparte. El
   selector de abajo lleva a la misma página en otro idioma (en la portada,
   a la misma vista), con su ola. Si falta una traducción, sale el español.
-  Los textos de la interfaz y las categorías, en `content/textos.json`.
+  Las palabras del menú y el nombre de las listas, en `data/site.json`.
 
   Los hilos van a escalones de 2 px: siguen la curva, pero se ve que están
   hechos de píxeles. Solo cambian de casilla cuando la curva se ha ido tres
@@ -91,20 +91,19 @@ sobre las fotos.
 
 ## Lo que se cambia sin tocar código
 
-Cada proyecto en su carpeta, con todo lo suyo: `projects/<slug>/proyecto.json`
-y sus fotos en `img/` (`1.webp`, `2.webp`…). Lo general, en `content/`. Cada
+Cada proyecto en su carpeta, con todo lo suyo: `projects/<slug>/project.json`
+y sus fotos en `img/` (`1.webp`, `2.webp`…). Lo general, en `data/`. Cada
 JSON general lleva arriba una nota (`"_"`) que dice qué se puede poner. Se edita,
 se hace push y en un par de minutos está publicado.
 
 | archivo | qué |
 |---|---|
-| `projects/<slug>/proyecto.json` | el proyecto: título, sinopsis, créditos, fotos, portada y mapa (abajo) |
-| `content/web.json` | título, dirección, descripción (por idioma), idiomas, **las listas con sus proyectos**, colores, email, redes y `mezcla` del mapa (0 por zonas, 100 todo revuelto; ahora 50) |
-| `content/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
-| `content/textos.json` | las palabras del menú y el nombre de cada lista, por idioma |
+| `projects/<slug>/project.json` | el proyecto: título, texto, créditos, fotos, portada y mapa (abajo) |
+| `data/site.json` | título, dirección, descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, colores, email, redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
+| `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
 
 ```bash
-npm run build     # content/ + projects/ -> dist/
+npm run build     # data/ + projects/ -> dist/
 npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
 npm run watch     # rehace dist/ cada vez que se guarda algo
@@ -121,15 +120,14 @@ tarea, `npm run watch` en una terminal hace lo mismo.
 
 ```
 projects/<slug>/        un proyecto, todo junto
-  proyecto.json                    título, sinopsis, créditos, fotos, portada, mapa
+  project.json                     título, texto, créditos, fotos, portada, mapa
   img/1.webp img/2.webp …          sus fotos, tal cual salen de imgToWeb
 
-content/web.json        título, url, idiomas, listas, colores, contacto y mezcla
-content/about.json      el texto del about
-content/textos.json     menú y listas, por idioma
+data/site.json          título, url, idiomas, listas, menú, colores, contacto y mezcla
+data/about.json         el texto del about
 
 build/proyectos.mjs     lee projects/ en el orden de las listas (build y og)
-build/build.mjs         content/ + projects/ -> dist/, validando antes
+build/build.mjs         data/ + projects/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/
 build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
@@ -157,7 +155,7 @@ dist/                   GENERADO por el build — FUERA DE GIT
   media/<slug>/og.jpg              la imagen para compartir (ffmpeg, desde .cache/)
 ```
 
-En git va **solo el fuente**: `content/`, `projects/` y el código. Las páginas no
+En git va **solo el fuente**: `data/`, `projects/` y el código. Las páginas no
 se commitean; las escribe la Action. En la web las fotos se sirven desde
 `media/<slug>/` y no junto a la página de su proyecto, para que `_headers` les dé
 su caché larga sin dársela al HTML.
@@ -165,46 +163,51 @@ su caché larga sin dársela al HTML.
 ## Un proyecto
 
 ```jsonc
-// projects/roma/proyecto.json
+// projects/roma/project.json
 {
   "title":    { "es": "ROMA: CIUDAD EN RUINAS…", "en": "ROME: RUINS…" },
   "short":    { "es": "roma" },                // nombre corto para el mapa (si no, el título)
-  "synopsis": { "es": ["primer párrafo", "segundo párrafo"] },
+  "text":     { "es": ["primer párrafo", "segundo párrafo"] },
   "credits":  [                               // uno por persona; el rol por idioma, o un texto si es igual
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "…", "url": "https://…" },
     { "role": "Make up & hair", "name": "…" }
   ],
-  "color":    "#982F0C",                      // si no, el que le toque de web.json
-  "portada":  ["10"],                         // la que sale en la lista y al compartir
-  "mapa":     ["2", "3", "5"],
-  "fotos":    ["1", "2", "3"]                 // la galería, en este orden
+  "color":    "#982F0C",                      // si no, el que le toque de site.json
+  "cover":    ["10"],                         // la portada: la de la lista y al compartir
+  "map":      ["2", "3", "5"],                // las del mapa
+  "photos":   ["1", "2", "3"]                 // la galería, en este orden
 }
 ```
 
 - Las fotos se nombran por **su número**, sin `.webp` (todas lo son): `"3"` es
-  `img/3.webp`. El orden de `fotos` es el de la galería: para reordenar,
+  `img/3.webp`. El orden de `photos` es el de la galería: para reordenar,
   se mueven en la lista; para quitar una, se borra de la lista.
 - El ancho y el alto **no se escriben**: el build los lee del propio `.webp`.
-- `portada` y `mapa` tienen que estar entre las fotos; si no, el build para y
-  dice cuál. Sin `portada`, la primera foto. Sin `mapa`, va la portada y cinco
+- `cover` y `map` tienen que estar entre las fotos; si no, el build para y
+  dice cuál. Sin `cover`, la primera foto. Sin `map`, va la portada y cinco
   más, repartidas por la galería.
-- Por grupos (Roma, en tres piezas), `grupos` en vez de `fotos`:
-  `"grupos": [{ "nombre": "Laocoonte", "fotos": ["1", "2", …] }, …]`.
+- Por grupos (Roma, en tres piezas), `groups` en vez de `photos`:
+  `"groups": [{ "name": "Laocoonte", "photos": ["1", "2", …] }, …]`.
 - **Los créditos**: una lista, una persona por línea, con su enlace. Dos
   seguidas con el mismo rol lo comparten en la web (salen una debajo de otra).
-- **Los textos largos** (`synopsis`, y el about) son una **lista de párrafos**.
+- **Los textos largos** (`text`, y el about) son una **lista de párrafos**.
   Un salto de línea dentro de un párrafo (`\n`) se queda, como en los versos de
   Roma.
 - Las claves que empiezan por `_` son notas, no contenido.
 - **El nombre del proyecto es el de su carpeta**, y es su dirección:
   `projects/roma/` → `/projects/roma/`.
 
-**En qué lista sale, y en qué orden**: `listas` en `content/web.json`.
+- Los campos van **en inglés** (como en todas las webs nuevas, ver JAMstack);
+  lo que se escribe, en `es`, `en` y `ca` (`ca`, el código ISO: el mismo de
+  `hreflang` y de `/ca/`).
+
+**En qué lista sale, y en qué orden**: `lists` en `data/site.json`, cada una
+con su nombre en el menú y sus proyectos.
 
 ```json
-"listas": {
-  "textil": ["corporea", "cuerpo-esquema", "light-beam-digital", …],
-  "foto":   ["sicky-magazine", "vein-magazine", …]
+"lists": {
+  "textil": { "name": { "es": "textil", "en": "textile", "ca": "tèxtil" }, "projects": ["corporea", "cuerpo-esquema", …] },
+  "foto":   { "name": { "es": "foto", "en": "photo", "ca": "foto" },       "projects": ["sicky-magazine", "vein-magazine", …] }
 }
 ```
 
@@ -222,15 +225,15 @@ se reordenan y se renumeran. Una sola versión de cada foto: nada más que hacer
 
 1. una carpeta en `projects/` con su nombre en minúsculas y con guiones
    (`projects/nuevo-proyecto/`): es su dirección, `/projects/nuevo-proyecto/`;
-2. dentro, las fotos que saca imgToWeb en `img/`, y un `proyecto.json` (lo más
+2. dentro, las fotos que saca imgToWeb en `img/`, y un `project.json` (lo más
    fácil: copiar el de otro y cambiarlo);
-3. su nombre en una lista de `content/web.json` (`listas`), donde tenga que
+3. su nombre en los `projects` de una lista de `data/site.json`, donde tenga que
    salir.
 
 Y ya: las fotos pequeñas del mapa y la imagen para compartir las hace el build.
 
 **Fotos en un proyecto que ya está**: se dejan en su `img/` con el número
-siguiente y se añaden a `fotos`. Para rehacer el orden entero, imgToWeb con
+siguiente y se añaden a `photos`. Para rehacer el orden entero, imgToWeb con
 todas otra vez.
 
 **El mapa** no usa las grandes: enseña las fotos a 170 px como mucho (340 con
@@ -261,12 +264,12 @@ salen una vez por idioma (`/`, `/en/`, `/ca/`).
 **El SEO**, en cada página:
 
 - `title` y `description` (en un proyecto, el primer párrafo de la sinopsis;
-  en la portada, la de `content/web.json`), en su idioma.
+  en la portada, la de `data/site.json`), en su idioma.
 - `canonical`, `hreflang` de los tres idiomas y `x-default` (el español).
 - `og:*` y `twitter:card`, con su imagen de 1200×630 en JPG (abajo): al
   compartir un proyecto se ve ese proyecto.
 - JSON-LD: en la portada, `Person` (con `email` y `sameAs` si se ponen en
-  `content/web.json`); en cada proyecto, `CreativeWork` con ella de autora.
+  `data/site.json`); en cada proyecto, `CreativeWork` con ella de autora.
 - `<main>`, un solo `h1` y `alt` en las fotos de la galería: el suyo si lo
   tiene en el JSON y si no, el título del proyecto y el del grupo.
 - `favicon.svg` y `theme-color`.
@@ -275,12 +278,12 @@ Más `404.html` (con `noindex`), `sitemap.xml` con las tres versiones de cada
 página y `robots.txt`.
 
 **Antes de escribir nada, valida.** Un JSON con una coma de menos, una foto que no
-está en su carpeta, una `portada` o `mapa` que no está entre las fotos, o una
+está en su carpeta, una `cover` o `map` que no está entre las fotos, o una
 lista que nombra un proyecto que no existe paran el build con el archivo y lo que
 pasa:
 
 ```
-✗ projects/helen/proyecto.json no es un JSON válido: … (line 3 column 3)
+✗ projects/helen/project.json no es un JSON válido: … (line 3 column 3)
 ✗ projects/helen: no encuentro 99.webp
 ✗ projects/helen: en «mapa», 07.webp no está entre sus fotos
 ```
@@ -296,11 +299,11 @@ en la pestaña **Actions** de GitHub, verde es publicado.
 
 En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
 
-En `content/web.json`, `colors` da un color por proyecto, en el orden de
-`listas`: nombres de CSS de las cuatro
+En `data/site.json`, `colors` da un color por proyecto, en el orden de
+`lists`: nombres de CSS de las cuatro
 familias de Maroon, MediumSpringGreen, Turquoise y Violet, alternadas para que
 dos proyectos seguidos no sean de la misma. Un proyecto con `color` en
-su `proyecto.json` usa el suyo. Si a alguno no le llega color, el build para y
+su `project.json` usa el suyo. Si a alguno no le llega color, el build para y
 lo dice.
 
 El ancho de la columna de un proyecto —800 px— vive en `--col`, en
@@ -311,10 +314,10 @@ otro.
 ## El JavaScript de navegador
 
 El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
-(las de `mapa`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
+(las de `map`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
 pisarse y por zonas: primero la primera foto de cada proyecto, separadas entre
-sí, y luego el resto alrededor de la suya (`REACH`). La `mezcla` de
-`content/web.json` tira de cada foto desde su zona hacia un sitio cualquiera
+sí, y luego el resto alrededor de la suya (`REACH`). La mezcla (`mix`) de
+`data/site.json` tira de cada foto desde su zona hacia un sitio cualquiera
 del plano: 0 son zonas limpias, 100 todo revuelto.
 
 Las fotos de un mismo proyecto van unidas por hilos —cada una con la más
@@ -384,9 +387,9 @@ web de verdad.
 
 El Instagram y el email ya están. Lo que falta es el dominio.
 
-**1. En `content/web.json`:**
+**1. En `data/site.json`:**
 
-- `"redes": ["https://www.instagram.com/usuario/"]`: sale al pie del about como
+- `"social": ["https://www.instagram.com/usuario/"]`: sale al pie del about como
   `@usuario`, y en el JSON-LD como `sameAs` (Google une la web con la cuenta).
 - `"email": "…"`: al pie del about, delante de las redes. Vacío, no sale.
 - `"url": "https://eldominio.com/"`: la dirección definitiva, con la `/` del
@@ -443,7 +446,7 @@ en el mapa.
 ### Lo que falta
 
 - **El orden de los textiles**: sus carpetas no llevan número; van por orden
-  alfabético hasta que diga otro (se cambia en `listas`).
+  alfabético hasta que diga otro (se cambia en `lists`).
 - **Las sinopsis de Light Beam Digital, Mattering y Unbound Threads** son la de
   Cuerpo Esquema con el nombre cambiado, a propósito (la clienta, 14/10): es el
   mismo proyecto. Los tres vienen sin catalán.

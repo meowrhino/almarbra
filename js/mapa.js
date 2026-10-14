@@ -56,7 +56,7 @@
        alrededor de la suya, a REACH px como mucho. Las zonas se tocan y
        se mezclan un poco por los bordes. Si no hay hueco se va aflojando.
 
-       La mezcla (content/web.json, de 0 a 100, en data-mezcla) tira de
+       La mezcla («mix» en data/site.json, de 0 a 100, en data-mezcla) tira de
        cada foto desde su zona hacia un sitio cualquiera del plano: con 0
        son zonas limpias; con 100, todo revuelto. */
     const mix = Number(map.dataset.mezcla ?? 50) / 100;

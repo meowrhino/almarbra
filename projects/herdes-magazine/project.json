@@ -4,7 +4,7 @@
     "en": "HERDES MAGAZINE",
     "ca": "HERDES MAGAZINE"
   },
-  "synopsis": {},
+  "text": {},
   "credits": [
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Rayana & Yesid" },
@@ -13,7 +13,7 @@
     { "role": { "es": "Asistente Make up & hair", "en": "Make up & hair assistant", "ca": "Make up & hair assistant" }, "name": "Rose", "url": "https://www.instagram.com/roselyroe/" },
     { "role": { "es": "Agencia", "en": "Agency", "ca": "Agència" }, "name": "Two Management Barcelona" }
   ],
-  "portada": ["1"],
-  "mapa": ["1", "2", "3", "5", "8"],
-  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8"]
+  "cover": ["1"],
+  "map": ["1", "2", "3", "5", "8"],
+  "photos": ["1", "2", "3", "4", "5", "6", "7", "8"]
 }

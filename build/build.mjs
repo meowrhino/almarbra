@@ -1,4 +1,4 @@
-/* content/ + projects/ -> dist/
+/* data/ + projects/ -> dist/
 
    Dos plantillas y ya:
 
@@ -29,12 +29,11 @@
 
    Lo que se edita:
 
-     content/web.json        título, dirección, descripción, idiomas, las
-                             listas con sus proyectos, colores, email, redes
-                             y la mezcla del mapa (0 por zonas, 100 revuelto)
-     content/about.json      el texto del about, por idioma
-     content/textos.json     el menú y el nombre de las listas, por idioma
-     projects/<slug>/proyecto.json   cada proyecto: título, sinopsis,
+     data/site.json          título, dirección, descripción, idiomas, las
+                             listas con su nombre y sus proyectos, el menú,
+                             colores, email, redes y la mezcla del mapa
+     data/about.json         el texto del about, por idioma
+     projects/<slug>/project.json    cada proyecto: título, texto,
                              créditos, fotos, portada y mapa (ver
                              build/proyectos.mjs) */
 
@@ -59,10 +58,9 @@ function read(file) {
   try { return JSON.parse(text); } catch (e) { fail(`${file} no es un JSON válido: ${e.message}`); }
 }
 
-const site = read('content/web.json');
-if (!site.url) fail('falta "url" en content/web.json: la dirección donde se publica la web');
-const about = read('content/about.json');
-const textos = read('content/textos.json');
+const site = read('data/site.json');
+if (!site.url) fail('falta "url" en data/site.json: la dirección donde se publica la web');
+const about = read('data/about.json');
 
 /* Las páginas se enlazan entre sí con rutas relativas; solo lo que se lee
    desde fuera —canonical, og:image, sitemap— y la 404 necesitan la
@@ -94,7 +92,7 @@ const tr = (field, render = esc) => {
 
 /* ── imágenes ────────────────────────────────────────────────────── */
 
-/* Las fotos viven en projects/<slug>/ junto a su proyecto.json, y en la
+/* Las fotos viven en projects/<slug>/img/ junto a su project.json, y en la
    web se sirven desde media/<slug>/ (ahí las copia el build), aparte de
    las páginas: así _headers les da su caché larga sin tocar el HTML. */
 const pub = (src) => src.replace(/^projects\//, 'media/');
@@ -226,18 +224,18 @@ function shareImage(image, og) {
    cierre el <script> antes de tiempo. */
 const ld = (data) => `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', ...data }).replace(/</g, '\\u003c')}</script>\n`;
 
-/* Quién es: va en la portada, y como autora en cada proyecto. «redes»
-   en content/web.json, si las hay, van en sameAs. */
+/* Quién es: va en la portada, y como autora en cada proyecto. «social»
+   en data/site.json, si las hay, van en sameAs. */
 const person = () => ({
   '@type': 'Person',
   name: site.title,
   url: site.url,
   description: paras(t(about))[0] || t(site.description),
   ...(site.email ? { email: site.email } : {}),
-  ...(site.redes?.length ? { sameAs: site.redes } : {}),
+  ...(site.social?.length ? { sameAs: site.social } : {}),
 });
 
-/* Al pie del about: el email y las redes de content/web.json (de
+/* Al pie del about: el email y las redes de data/site.json (de
    Instagram sale @usuario; de lo demás, el nombre del sitio), y quién
    hizo la web. */
 function contact() {
@@ -249,7 +247,7 @@ function contact() {
   };
   const links = [
     ...(site.email ? [`<a href="mailto:${attr(site.email)}">${esc(site.email)}</a>`] : []),
-    ...(site.redes || []).map((url) => `<a href="${attr(url)}" target="_blank" rel="noopener me">${esc(handle(url))}</a>`),
+    ...(site.social || []).map((url) => `<a href="${attr(url)}" target="_blank" rel="noopener me">${esc(handle(url))}</a>`),
   ];
   return (links.length ? `\n<p class="contacto">${links.join('\n')}</p>` : '')
     + '\n<p class="credito">web: <a href="https://meowrhino.studio" target="_blank" rel="noopener">meowrhino</a></p>';
@@ -322,7 +320,7 @@ function mini(image) {
   return { ...image, src: `projects/${slug}/mapa/${image.file}` };
 }
 
-/* Al mapa van las fotos de «mapa» (su proyecto.json). Un proyecto sin
+/* Al mapa van las fotos de «map» (su project.json). Un proyecto sin
    ellas manda su portada y unas cuantas más, repartidas a lo largo de su
    galería. La portada (`cover`) es la de «portada», o la primera. */
 const PER_PROJECT = 6;
@@ -335,7 +333,7 @@ function mapImages(project) {
   return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
 }
 
-/* Las listas: una por cada una de content/web.json (textil, foto), cada
+/* Las listas: una por cada una de data/site.json (textil, foto), cada
    una su vista en el menú; sin JavaScript, todas seguidas con su nombre
    encima. Dentro, en zigzag: un proyecto a la izquierda con su nombre
    debajo, el siguiente a la derecha y más abajo, y así. Cada uno ocupa
@@ -354,7 +352,7 @@ function listItem(root, project, i) {
 function list(root, projects) {
   const cats = Map.groupBy(projects, (p) => p.category);
   return [...cats].map(([category, items]) => `<section class="cat" id="${attr(category)}">
-<h2>${tr(textos.categorias?.[category]) || esc(category.replace(/-/g, ' '))}</h2>
+<h2>${label(category)}</h2>
 <ol>
 ${items.map((p, i) => listItem(root, p, i)).join('\n')}
 </ol>
@@ -363,9 +361,12 @@ ${items.map((p, i) => listItem(root, p, i)).join('\n')}
 
 /* Las vistas de la portada, en el orden del menú: el mapa, una por lista
    y el about. */
-const LISTS = Object.keys(site.listas || {});
+const LISTS = Object.keys(site.lists || {});
 const VIEWS = ['mapa', ...LISTS, 'about'];
-const label = (view) => tr(textos.menu?.[view] || textos.categorias?.[view]) || esc(view);
+/* El nombre de una vista en el menú: el de su lista, o el de «menu»
+   (las vistas mapa y about, y el back de los proyectos). */
+const MENU = { mapa: 'map', about: 'about', volver: 'back' };
+const label = (view) => tr(site.lists?.[view]?.name || site.menu?.[MENU[view]]) || esc(view.replace(/-/g, ' '));
 
 /** El menú de arriba, igual en todas las páginas. El nombre lleva
     siempre a la portada. A la derecha, mapa, las listas y about, con lo que
@@ -426,7 +427,7 @@ function homePage(projects) {
 ${topBar({ root, path: '' })}
 
 <main>
-<section id="mapa" aria-hidden="true" data-mezcla="${site.mezcla ?? 50}">
+<section id="mapa" aria-hidden="true" data-mezcla="${site.mix ?? 50}">
 <div class="world">
 ${pins.join('\n')}
 </div>
@@ -438,7 +439,7 @@ ${pins.join('\n')}
 </div>
 
 <section id="about">
-<div>${tr(about, synopsis)}${contact()}</div>
+<div>${tr(about, prose)}${contact()}</div>
 </section>
 
 <section id="lista">
@@ -471,14 +472,14 @@ function summary(text) {
   return first.length > 160 ? `${first.slice(0, 157).replace(/\s+\S*$/, '').replace(/[\s.,;:]+$/, '')}…` : first;
 }
 
-/* Los textos largos (sinopsis, about) son una lista de párrafos; un
+/* Los textos largos (el de un proyecto, el about) son una lista de párrafos; un
    texto suelto también vale, partido por las líneas en blanco. Un salto
    de línea dentro de un párrafo se queda. */
 function paras(text) {
   return [].concat(text || []).flatMap((p) => p.split(/\n{2,}/)).filter((p) => p.trim());
 }
 
-const synopsis = (text) => paras(text).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('\n');
+const prose = (text) => paras(text).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('\n');
 
 function projectPage(project) {
   const home = '../../';   // las páginas cuelgan de projects/<slug>/
@@ -486,7 +487,7 @@ function projectPage(project) {
   const path = `projects/${project.slug}/`;
 
   const title = t(project.title) || project.slug;
-  const description = summary(t(project.synopsis));
+  const description = summary(t(project.text));
 
   /* La primera foto se carga con prioridad; las demás, según hagan
      falta. Sin `alt` propio, el título del proyecto y el del grupo. */
@@ -510,7 +511,7 @@ function projectPage(project) {
       ...(description ? { description } : {}),
       url: abs(prefix(cur) + path),
       inLanguage: cur,
-      genre: t(textos.categorias?.[project.category]) || project.category,
+      genre: t(site.lists?.[project.category]?.name) || project.category,
       image: project.images.slice(0, 10).map((i) => abs(pub(i.src))),   // con unas pocas basta
       creator: person(),
     }),
@@ -524,7 +525,7 @@ function projectPage(project) {
 <article>
 <div class="ficha">
 <h1>${esc(title)}</h1>
-${tr(project.synopsis, synopsis)}
+${tr(project.text, prose)}
 ${credits(project.credits)}
 </div>
 
@@ -533,7 +534,7 @@ ${gallery.join('\n\n')}
 </main>
 
 <footer class="bar">
-<a href="${attr(home)}#${attr(project.category)}" class="back">${tr(textos.menu?.volver) || 'back'}</a>
+<a href="${attr(home)}#${attr(project.category)}" class="back">${label('volver')}</a>
 </footer>
 <script>try { const v = sessionStorage.getItem('almarbra-vista'); if (v) document.querySelector('.back').hash = v; } catch {}</script>`,
   });
@@ -567,10 +568,10 @@ function notFoundPage() {
 const { projects, errors, warnings } = loadProjects(ROOT, site, read);
 
 for (const project of projects) {
-  if (!project.color) errors.push(`${project.slug}: no tiene color; añade uno a «colors» en content/web.json o ponle «color» en su proyecto.json`);
+  if (!project.color) errors.push(`${project.slug}: no tiene color; añade uno a «colors» en data/site.json o ponle «color» en su project.json`);
 }
-if (!projects.length) errors.push('content/web.json: no hay proyectos en «listas»');
-if (!(site.mezcla >= 0 && site.mezcla <= 100)) errors.push(`content/web.json: «mezcla» va de 0 a 100 y es ${JSON.stringify(site.mezcla)}`);
+if (!projects.length) errors.push('data/site.json: no hay proyectos en «lists»');
+if (!(site.mix >= 0 && site.mix <= 100)) errors.push(`data/site.json: «mix» va de 0 a 100 y es ${JSON.stringify(site.mix)}`);
 for (const w of warnings) console.warn(`⚠ ${w}`);
 if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que se arregle.`);
 

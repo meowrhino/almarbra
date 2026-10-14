@@ -5,7 +5,7 @@
     "en": "CORPOREAL",
     "ca": "Corpòria"
   },
-  "synopsis": {
+  "text": {
     "es": [
       "Corpórea surge de esa necesidad de apropiarse de une misme, necesidad de habitar los cuerpos como propios, de construirse y deconstruirse tantas veces como haga falta.",
       "Corpórea pretende ser una serie en desarrollo constante , experimentando nuevas técnicas, nuevos materiales, nuevas formas de entender los cuerpos.\nPiezas realizadas en Telar Magic Dobby Louët 24 lizos, compuestas en su totalidad de algodón y lana."
@@ -21,7 +21,7 @@
     ]
   },
   "credits": [],
-  "portada": ["9"],
-  "mapa": ["1", "4", "5", "6", "9"],
-  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
+  "cover": ["9"],
+  "map": ["1", "4", "5", "6", "9"],
+  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
 }

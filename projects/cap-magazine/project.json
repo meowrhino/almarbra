@@ -4,7 +4,7 @@
     "en": "CAP MAGAZINE",
     "ca": "CAP MAGAZINE"
   },
-  "synopsis": {},
+  "text": {},
   "credits": [
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Hugo", "url": "https://www.instagram.com/hugomboume/" },
@@ -12,7 +12,7 @@
     { "role": "Make up & hair", "name": "Melissa Morena", "url": "https://www.instagram.com/bissamorena/" },
     { "role": "Set design", "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" }
   ],
-  "portada": ["6"],
-  "mapa": ["1", "4", "5", "7", "9", "10", "11", "13"],
-  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
+  "cover": ["6"],
+  "map": ["1", "4", "5", "7", "9", "10", "11", "13"],
+  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
 }

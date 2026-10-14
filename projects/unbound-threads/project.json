@@ -3,7 +3,7 @@
     "es": "UNBOUND THREADS",
     "en": "UNBOUND THREADS"
   },
-  "synopsis": {
+  "text": {
     "es": [
       "UNBOUND THREADS se desarrolla en torno a la creación de territorios eco-poéticos: espacios ficticios que no ocupan un lugar físico concreto, sino que se inspiran en la no-coseidad del vacío, en espacios no territoriales, comunidades disidentes y espacios virtuales contemporáneos, lugares donde ha sido posible construir una identidad nueva, libre de los prejuicios y las definiciones normativas impuestas sobre el cuerpo.",
       "Piezas desarrolladas en su totalidad en un Telar digital Jacquard TC2."
@@ -14,7 +14,7 @@
     ]
   },
   "credits": [],
-  "portada": ["1"],
-  "mapa": ["1", "5", "6"],
-  "fotos": ["1", "2", "3", "4", "5", "6"]
+  "cover": ["1"],
+  "map": ["1", "5", "6"],
+  "photos": ["1", "2", "3", "4", "5", "6"]
 }

@@ -5,7 +5,7 @@
     "en": "SICKY MAGAZINE (II)",
     "ca": "SICKY MAGAZINE (II)"
   },
-  "synopsis": {},
+  "text": {},
   "credits": [
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": { "es": "Asistente de fotografía", "en": "Photo assistant", "ca": "Photo assistant" }, "name": "Tamara Ruibal", "url": "https://www.instagram.com/tamararuibalrua/" },
@@ -13,7 +13,7 @@
     { "role": "Make up & hair", "name": "Lu Romero", "url": "https://www.instagram.com/luromeromakeup/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Esther Murphy", "url": "https://www.instagram.com/estheermurphy/" }
   ],
-  "portada": ["8"],
-  "mapa": ["1", "2", "4", "6", "8", "9", "11", "15"],
-  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
+  "cover": ["8"],
+  "map": ["1", "2", "4", "6", "8", "9", "11", "15"],
+  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
 }

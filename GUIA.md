@@ -5,7 +5,7 @@ proyecto, cambiar fotos o textos, cambiar qué sale en el mapa… Todo se hace
 desde el navegador, en GitHub, sin instalar nada.
 
 > **La regla de oro**: solo tocas **dos carpetas**: `projects/` (tus proyectos)
-> y `content/` (lo general de la web). Lo demás es el código: mejor no tocarlo.
+> y `data/` (lo general de la web). Lo demás es el código: mejor no tocarlo.
 
 Cuando guardas un cambio, la web se actualiza sola en **2 o 3 minutos**. Si te
 equivocas en algo, la web **no se rompe**: se queda como estaba hasta que lo
@@ -33,16 +33,15 @@ imgToWeb se salta las fotos.
 ```
 projects/                     ← tus proyectos, uno por carpeta
   roma/
-    proyecto.json             ← los textos del proyecto
+    project.json              ← los textos del proyecto
     img/                      ← sus fotos: 1.webp, 2.webp, 3.webp…
   helen/
-    proyecto.json
+    project.json
     img/
   …
-content/
-  web.json                    ← qué proyectos salen y en qué orden, tu email, Instagram…
+data/
+  site.json                   ← qué proyectos salen y en qué orden, tu email, Instagram, el menú…
   about.json                  ← el texto del about
-  textos.json                 ← las palabras del menú
 ```
 
 El **nombre de la carpeta** de un proyecto es su dirección en la web:
@@ -53,7 +52,7 @@ espacios (con guiones: `nuevo-proyecto`).
 
 ## 2. Cómo se edita un archivo en GitHub
 
-1. Entra en el archivo (por ejemplo `projects/helen/proyecto.json`).
+1. Entra en el archivo (por ejemplo `projects/helen/project.json`).
 2. Pulsa el **lápiz** ✏️ (arriba a la derecha del archivo).
 3. Cambia lo que quieras.
 4. Pulsa **Commit changes…** (botón verde), escribe en una línea qué has
@@ -70,14 +69,16 @@ Ya está: en 2-3 minutos sale en la web.
 
 ### Cambiar un texto de un proyecto
 
-En su `proyecto.json`. Los textos van en los tres idiomas: `es`, `en`, `ca`. Si
-uno se queda vacío, sale el español.
+En su `project.json`. Los nombres de los campos van en inglés (`title`, el
+título; `text`, el texto…: la tabla del punto 5 los explica todos), y lo que
+escribes, en los tres idiomas: `es`, `en`, `ca`. Si uno se queda vacío, sale el
+español.
 
-La sinopsis es una **lista de párrafos**, cada uno entre comillas y separados por
+El texto es una **lista de párrafos**, cada uno entre comillas y separados por
 comas:
 
 ```json
-"synopsis": {
+"text": {
   "es": ["Primer párrafo.", "Segundo párrafo."],
   "en": ["First paragraph.", "Second paragraph."],
   "ca": ["Primer paràgraf.", "Segon paràgraf."]
@@ -86,25 +87,26 @@ comas:
 
 ### Cambiar qué fotos salen en el mapa, o la portada
 
-En su `proyecto.json`, por el **número** de la foto (`"5"` es la `5.webp` de su
+En su `project.json`, por el **número** de la foto (`"5"` es la `5.webp` de su
 carpeta `img/`):
 
 ```json
-"portada": ["8"],
-"mapa": ["1", "3", "5", "8"],
+"cover": ["8"],
+"map": ["1", "3", "5", "8"],
 ```
 
-- `portada`: la foto que sale en la lista y cuando alguien comparte el enlace.
-- `mapa`: las que salen en el mapa de la portada.
+- `cover` (portada): la foto que sale en la lista y cuando alguien comparte el
+  enlace.
+- `map` (mapa): las que salen en el mapa de la portada.
 
 ### Cambiar el orden de las fotos, o quitar una
 
-En `fotos`, el orden es el de la galería. Para cambiarlo, mueve los números;
+En `photos`, el orden es el de la galería. Para cambiarlo, mueve los números;
 para quitar una, bórrala de la lista (la foto puede quedarse en `img/`, no
 pasa nada):
 
 ```json
-"fotos": ["1", "2", "4", "3", "5"]
+"photos": ["1", "2", "4", "3", "5"]
 ```
 
 ### Añadir fotos a un proyecto
@@ -114,17 +116,24 @@ pasa nada):
    o pasa por imgToWeb **todas** las fotos del proyecto otra vez (en el orden
    que quieras) y súbelas todas, sustituyendo las de antes.
 2. Súbelas a su carpeta `img/`.
-3. Añade sus números a `fotos` en el `proyecto.json`.
+3. Añade sus números a `photos` en el `project.json`.
 
 ### Cambiar el orden de los proyectos, o esconder uno
 
-En `content/web.json`, en `listas`. Hay dos, **textil** y **foto**, cada una con
-los nombres de las carpetas de sus proyectos, en el orden en que salen:
+En `data/site.json`, en `lists`. Hay dos, **textil** y **foto**, cada una con su
+nombre en el menú (`name`) y los nombres de las carpetas de sus proyectos
+(`projects`), en el orden en que salen:
 
 ```json
-"listas": {
-  "textil": ["corporea", "cuerpo-esquema", "light-beam-digital", "mattering", "roma", "unbound-threads"],
-  "foto": ["sicky-magazine", "vein-magazine", "kaltbult-magazine", …]
+"lists": {
+  "textil": {
+    "name": { "es": "textil", "en": "textile", "ca": "tèxtil" },
+    "projects": ["corporea", "cuerpo-esquema", "light-beam-digital", "mattering", "roma", "unbound-threads"]
+  },
+  "foto": {
+    "name": { "es": "foto", "en": "photo", "ca": "foto" },
+    "projects": ["sicky-magazine", "vein-magazine", "kaltbult-magazine", …]
+  }
 }
 ```
 
@@ -135,9 +144,9 @@ los nombres de las carpetas de sus proyectos, en el orden en que salen:
 
 ### Cambiar el about, tu email o tu Instagram
 
-- El texto, en `content/about.json` (igual que la sinopsis: lista de párrafos
+- El texto, en `data/about.json` (igual que el de un proyecto: lista de párrafos
   en `es`, `en` y `ca`).
-- El email y el Instagram, en `content/web.json`: `"email"` y `"redes"`.
+- El email y el Instagram, en `data/site.json`: `"email"` y `"social"`.
 
 ---
 
@@ -147,23 +156,23 @@ los nombres de las carpetas de sus proyectos, en el orden en que salen:
    (puedes arrastrarlas para ordenarlas) y descarga el zip.
 2. **La carpeta y sus textos**: en GitHub, entra en `projects/`, pulsa
    **Add file → Create new file** y en el nombre escribe
-   `nuevo-proyecto/proyecto.json` (al escribir la barra `/`, se crea la
-   carpeta). Pega dentro el contenido de otro `proyecto.json` (por ejemplo el
+   `nuevo-proyecto/project.json` (al escribir la barra `/`, se crea la
+   carpeta). Pega dentro el contenido de otro `project.json` (por ejemplo el
    de `helen`) o el de abajo, y cámbialo. **Commit changes**.
 3. **Las fotos**: en tu ordenador, mete las fotos del zip en una carpeta que
    se llame `img`. En GitHub, entra en `projects/nuevo-proyecto/`, pulsa
    **Add file → Upload files** y arrastra **la carpeta `img`** entera (en
    Chrome se puede arrastrar una carpeta y GitHub la respeta). **Commit
    changes**.
-4. **Que salga**: en `content/web.json`, añade `"nuevo-proyecto"` a la lista
-   `textil` o `foto`, donde quieras que salga.
+4. **Que salga**: en `data/site.json`, añade `"nuevo-proyecto"` a los
+   `projects` de la lista `textil` o `foto`, donde quieras que salga.
 
-Un `proyecto.json` mínimo:
+Un `project.json` mínimo:
 
 ```json
 {
   "title": { "es": "NUEVO PROYECTO", "en": "NEW PROJECT", "ca": "NOU PROJECTE" },
-  "synopsis": {
+  "text": {
     "es": ["Texto."],
     "en": ["Text."],
     "ca": ["Text."]
@@ -172,9 +181,9 @@ Un `proyecto.json` mínimo:
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": "Make up & hair", "name": "Nombre Apellido", "url": "https://www.instagram.com/usuario/" }
   ],
-  "portada": ["1"],
-  "mapa": ["1", "2", "3"],
-  "fotos": ["1", "2", "3", "4"]
+  "cover": ["1"],
+  "map": ["1", "2", "3"],
+  "photos": ["1", "2", "3", "4"]
 }
 ```
 
@@ -189,11 +198,12 @@ pequeñas del mapa **se hacen solas**: no tienes que hacer nada.
 |---|---|---|
 | `title` | el título, por idioma | `{ "es": "ROMA", "en": "ROME", "ca": "ROMA" }` |
 | `short` | *(opcional)* un nombre corto para el mapa | `{ "es": "roma" }` |
-| `synopsis` | el texto, lista de párrafos por idioma | `{ "es": ["Uno.", "Dos."] }` |
+| `text` | el texto, lista de párrafos por idioma | `{ "es": ["Uno.", "Dos."] }` |
 | `credits` | quién hizo qué: una persona por línea | ver arriba |
-| `portada` | la foto de la lista y de compartir | `["8"]` |
-| `mapa` | las fotos del mapa | `["1", "3", "5"]` |
-| `fotos` | la galería, en orden | `["1", "2", "3"]` |
+| `cover` | la portada: la foto de la lista y de compartir | `["8"]` |
+| `map` | las fotos del mapa | `["1", "3", "5"]` |
+| `photos` | la galería, en orden | `["1", "2", "3"]` |
+| `groups` | *(en vez de `photos`)* la galería por partes, cada una con su nombre, como en Roma | `[{ "name": "Virgen", "photos": ["10", "11"] }]` |
 | `color` | *(opcional)* su color, si no le toca uno solo | `"#982F0C"` |
 
 En `credits`, el rol (`role`) va por idioma; si es igual en los tres, basta con
@@ -221,9 +231,9 @@ has guardado sale con un círculo:
   **build** y verás una línea con ✗ que dice qué pasa y dónde. Por ejemplo:
 
   ```
-  ✗ projects/helen/proyecto.json no es un JSON válido: … (line 12 column 5)
-  ✗ projects/helen: en «mapa», 9 no está entre sus fotos
-  ✗ la lista «foto» de content/web.json nombra «helenn», y no hay projects/helenn/proyecto.json
+  ✗ projects/helen/project.json no es un JSON válido: … (line 12 column 5)
+  ✗ projects/helen: en «map», 9 no está entre sus fotos
+  ✗ la lista «foto» de data/site.json nombra «helenn», y no hay projects/helenn/project.json
   ```
 
   Arréglalo (el número de línea te dice dónde mirar), guarda otra vez, y listo.
