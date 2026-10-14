@@ -9,13 +9,14 @@ Fondo blanco, Helvetica (la del sistema: nada que descargar) en minúscula y las
 fotos mandando, unidas por hilos de píxeles del color de cada proyecto.
 
 **La interfaz**, igual en todas las páginas: el nombre arriba a la izquierda
-(lleva siempre a la portada); **mapa · lista · about** arriba a la derecha,
+(lleva siempre a la portada); **mapa · textil · foto · about** arriba a la derecha,
 con lo que está puesto marcado; el idioma (**es · en · ca**) abajo a la
 derecha, salvo en el mapa. Todo sin fondo y en `difference`, para que se lea
 sobre las fotos.
 
-- **portada** (`/`): el **mapa** (`#mapa`), la **lista** (`#lista`) o el
-  **about** (`#about`).
+- **portada** (`/`): el **mapa** (`#mapa`), una de las dos **listas**
+  (`#textil`, `#foto`) o el **about** (`#about`). En el mapa salen los
+  proyectos de las dos.
 
   El mapa es la idea de anaelleblin.com: las fotos de todos los proyectos,
   más o menos por zonas (la `mezcla`), en un plano que se arrastra, y las de
@@ -27,18 +28,19 @@ sobre las fotos.
   zoom: un − y un + que pesan como una balanza (en el zoom de partida son
   iguales; cuanto más cerca, más grande el + y más pequeño el −).
 
-  La lista: una por categoría (textil, editorial moda), con su nombre
-  encima, en el orden de las carpetas. Dentro, en zigzag: un proyecto a la
+  Las listas: una por cada una de `listas` en `content/web.json`, cada una su
+  vista en el menú, en el orden de `listas`. Sin JavaScript salen las dos
+  seguidas, con su nombre encima. Dentro, en zigzag: un proyecto a la
   izquierda con su nombre debajo, el siguiente a la derecha y más abajo, y
   así, solapándose a media altura. Sin hilos. En el móvil, una columna,
   alternando también de lado.
 
   Los hilos del mapa van a media luz; al pasar por una foto, los de su
-  proyecto se encienden del todo. Lo que pasa por debajo de la franja de
-  arriba (el nombre y el menú) y de la de abajo se difumina.
+  proyecto se encienden del todo. Sin desenfoque bajo las franjas: el
+  `difference` ya las deja leer sobre las fotos.
 
   El about: el texto de `content/about.json` arriba a la izquierda, bajo el
-  nombre, y detrás un telar: hilos de borde a borde, en horizontal y en
+  nombre; debajo, el email y el Instagram, y quién hizo la web. Detrás, un telar: hilos de borde a borde, en horizontal y en
   vertical, que se tejen muy despacio, se quedan y se destejen.
 
   **Al cargar**, primero salen los huecos de las fotos —una trama de píxeles
@@ -76,8 +78,8 @@ sobre las fotos.
   cada proyecto) y su panel, antes de «Fuera las hilachas».
 - **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con
   aire alrededor —ficha técnica arriba, galería en scroll vertical debajo y,
-  al final, un **back** centrado que vuelve al mapa o a la lista, a la que se
-  venía—. Un hilo de su color baja ondulando de lado a lado y **se inventa
+  al final, un **back** centrado que vuelve a la vista de la que se venía (el
+  mapa o una lista; si no, la lista del proyecto)—. Un hilo de su color baja ondulando de lado a lado y **se inventa
   según avanza** (`js/hilo.js`): la punta apunta a un sitio del otro lado,
   más abajo, y al llegar elige otro, así que no sale una onda igual a otra.
   Solo hay hilo en la pantalla: se teje al ritmo del scroll hasta el 85 % y
@@ -87,26 +89,22 @@ sobre las fotos.
 
 ## Lo que se cambia sin tocar código
 
-Todo en `content/`, un archivo por cosa. Cada uno lleva arriba una nota (`"_"`)
-que dice qué se puede poner. Se edita, se hace push y en un par de minutos está
-publicado.
+Cada proyecto en su carpeta, con todo lo suyo: `projects/<slug>/proyecto.json`
+y sus fotos al lado (`01.webp`, `02.webp`…). Lo general, en `content/`. Cada
+JSON general lleva arriba una nota (`"_"`) que dice qué se puede poner. Se edita,
+se hace push y en un par de minutos está publicado.
 
 | archivo | qué |
 |---|---|
-| `about.json` | el texto del about, en es / en / ca (vacío = sale el español) |
-| `textos.json` | las palabras del menú y el nombre de cada categoría, por idioma |
-| `mapa.json` | `mezcla`, de 0 (por zonas) a 100 (todo revuelto); ahora 50 |
-| `proyectos.json` | por proyecto: `portada`, `mapa`, `order`, `title`, `synopsis`, `short`, `color`, `drop` |
-| `web.json` | título, dirección, descripción (por idioma), idiomas, orden de categorías, colores |
-
-Lo de `proyectos.json` se aplica al hacer el build, así que cambiar un título o
-una portada no pide reingerir; solo `drop` (quitar fotos) necesita
-`npm run ingest`. `content/projects/` y `content/home.json` los escribe la
-ingesta: no se tocan a mano.
+| `projects/<slug>/proyecto.json` | el proyecto: título, sinopsis, créditos, fotos, portada y mapa (abajo) |
+| `content/web.json` | título, dirección, descripción (por idioma), idiomas, **las listas con sus proyectos**, colores, email, redes y `mezcla` del mapa (0 por zonas, 100 todo revuelto; ahora 50) |
+| `content/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
+| `content/textos.json` | las palabras del menú y el nombre de cada lista, por idioma |
 
 ```bash
-npm run ingest    # originals/ -> media/*.webp + content/projects/*.json
-npm run build     # content/ + media/ -> dist/
+npm run ingest    # originals/ -> projects/<slug>/*.webp (y proyecto.json si es nuevo)
+npm run build     # content/ + projects/ -> dist/
+npm run og        # las imágenes para compartir (pide ffmpeg)
 npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
 npm run watch     # rehace dist/ cada vez que se guarda algo
@@ -123,35 +121,36 @@ tarea, `npm run watch` en una terminal hace lo mismo.
 
 ```
 originals/              material de la clienta — FUERA DE GIT
-  <CATEGORÍA>/<PROYECTO>/…/*.jpg + FICHA <PROYECTO>.rtf
-  PORTADA/*.png                    la foto de la portada, aparte
+  <CATEGORÍA>/<NN PROYECTO>/…/*.jpg + FICHA <PROYECTO>.rtf
+  .cache.json                      caché de la ingesta
 
-content/web.json        título, url, idiomas, orden y colores
+projects/<slug>/        un proyecto, todo junto
+  proyecto.json                    título, sinopsis, créditos, fotos, portada, mapa
+  01.webp 02.webp …                sus fotos (GENERADAS por la ingesta)
+  400/ 800/ 1400/                  las mismas, más pequeñas, para el srcset
+  og.jpg                           la imagen para compartir (npm run og)
+
+content/web.json        título, url, idiomas, listas, colores, contacto y mezcla
 content/about.json      el texto del about
-content/textos.json     menú y categorías, por idioma
-content/mapa.json       la mezcla del mapa
-content/proyectos.json  correcciones a mano por proyecto
-content/home.json       GENERADO: la foto de la portada y sus medidas
-content/projects/*.json GENERADO por la ingesta
+content/textos.json     menú y listas, por idioma
+og.jpg                  la imagen para compartir de la portada (npm run og)
 
-build/ingest.mjs        originals/ -> media/ + content/projects/
+build/ingest.mjs        originals/ -> projects/
 build/ficha.mjs         lector de las FICHAS .rtf
 build/formats.mjs       tamaño y calidad de los WebP, en un solo sitio
+build/proyectos.mjs     lee projects/ en el orden de las listas (build y og)
 build/slug.mjs          slugs y nombres legibles
-build/og.mjs            las imágenes para compartir (media/og/), con ffmpeg
-build/build.mjs         content/ + media/ -> dist/, validando antes
+build/og.mjs            las imágenes para compartir, con ffmpeg
+build/build.mjs         content/ + projects/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/
 build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
 css/style.css           todo el estilo
-js/mapa.js              el mapa (con su halo y su pelusa), la lista y el cambio de vista
+js/mapa.js              el mapa (con su halo y su pelusa), las listas y el cambio de vista
 js/telar.js             el telar de detrás del about
 js/transicion.js        la transición al cambiar de página o de vista, y la entrada de las fotos
 js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
 js/hilo.js              el hilo de la página de un proyecto
-media/<slug>/           GENERADO por la ingesta: 825 webp, 133 MB
-media/portada/          GENERADO: la foto de la portada
-media/og/               GENERADO por npm run og: las imágenes para compartir, 1200×630
 favicon.svg             dos hilos de píxeles
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
@@ -162,114 +161,101 @@ dist/                   GENERADO por el build — FUERA DE GIT
   index.html
   projects/<slug>/index.html
   en/  ca/                         lo mismo en cada idioma
-  404.html  sitemap.xml  robots.txt  .nojekyll  _headers
-  css/  js/  media/                copia tal cual
+  404.html  sitemap.xml  robots.txt  .nojekyll  _headers  og.jpg
+  css/  js/                        copia tal cual
+  media/<slug>/                    las fotos de cada proyecto (sin su JSON)
 ```
 
-En git va **solo el fuente**: `content/`, `media/` y el código. Las páginas no se
-commitean; las escribe la Action.
+En git va **solo el fuente**: `content/`, `projects/` y el código. Las páginas no
+se commitean; las escribe la Action. En la web las fotos se sirven desde
+`media/<slug>/` y no junto a la página de su proyecto, para que `_headers` les dé
+su caché larga sin dársela al HTML.
+
+## Un proyecto
+
+```jsonc
+// projects/roma/proyecto.json
+{
+  "title":    { "es": "ROMA: CIUDAD EN RUINAS…", "en": "ROME: RUINS…" },
+  "short":    { "es": "roma" },                // nombre corto para el mapa (si no, el título)
+  "synopsis": { "es": ["primer párrafo", "segundo párrafo"] },
+  "credits":  { "es": [ { "role": "Fotografía", "name": "…", "url": "https://…" } ] },
+  "color":    "#982F0C",                      // si no, el que le toque de web.json
+  "portada":  ["10.webp"],                    // la que sale en la lista y al compartir
+  "mapa":     ["02.webp", "03.webp", "05.webp"],
+  "fotos":    ["01.webp", "02.webp", "03.webp"]   // la galería, en este orden
+}
+```
+
+- Las fotos se nombran por **su archivo**, que está al lado. El orden de
+  `fotos` es el de la galería: para reordenar, se mueven en la lista; para
+  quitar una, se borra de la lista.
+- El ancho y el alto **no se escriben**: el build los lee del propio `.webp`.
+- `portada` y `mapa` tienen que estar entre las fotos; si no, el build para y
+  dice cuál. Sin `portada`, la primera foto. Sin `mapa`, va la portada y cinco
+  más, repartidas por la galería.
+- Por grupos (Roma, en tres piezas), `grupos` en vez de `fotos`:
+  `"grupos": [{ "nombre": "Laocoonte", "fotos": ["01.webp", …] }, …]`.
+- **Los textos largos** (`synopsis`, y el about) son una **lista de párrafos**.
+  Un salto de línea dentro de un párrafo (`\n`) se queda, como en los versos de
+  Roma.
+- Las claves que empiezan por `_` son notas, no contenido.
+- **El nombre del proyecto es el de su carpeta**, y es su dirección:
+  `projects/roma/` → `/projects/roma/`.
+
+**En qué lista sale, y en qué orden**: `listas` en `content/web.json`.
+
+```json
+"listas": {
+  "textil": ["corporea", "cuerpo-esquema", "light-beam-digital", …],
+  "foto":   ["sicky-magazine", "vein-magazine", …]
+}
+```
+
+Un proyecto que no está en ninguna lista no sale en la web (el build avisa).
+Los colores de `colors` se reparten en este orden.
 
 ## La ingesta
 
 `npm run ingest` se come `originals/` entero:
 
-1. convierte cada foto a WebP a `media/<proyecto>/<proyecto>-NN.webp`,
-   más tres variantes pequeñas para el `srcset` —400, 800 y 1400 px de ancho—
+1. convierte cada foto a WebP a `projects/<proyecto>/NN.webp` (`NN`, el número
+   de su archivo: `07.jpg` → `07.webp`), más tres variantes pequeñas para el
+   `srcset` —400, 800 y 1400 px de ancho— en `400/`, `800/` y `1400/`
    (946 MB → 133 MB);
-2. lee la FICHA `.rtf` con `textutil` y saca título, sinopsis y créditos
-   (rol, nombre, enlace) **en los tres idiomas** de la ficha: es, en, ca;
-3. escribe `content/projects/<proyecto>.json`.
+2. si el proyecto **no tiene aún** `proyecto.json`, lo escribe: lee la FICHA
+   `.rtf` con `textutil` y saca título, sinopsis y créditos (rol, nombre,
+   enlace) **en los tres idiomas** de la ficha, más la lista de fotos. Las
+   subcarpetas (las PIEZAS de Roma) salen como `grupos`.
 
-`originals/PORTADA/` no es una categoría: es la foto que abre el sitio. Sale a
-`media/portada/portada.webp` y a `content/home.json`. Cambiar la portada es dejar
-otra foto ahí y volver a ingerir. Es un PNG con transparencia y `cwebp` la
-conserva: en la web se ve la pieza recortada sobre el fondo de la página, con los
-flecos al aire.
+Desde ahí **`proyecto.json` es de quien lo edite**: la ingesta no lo vuelve a
+tocar. Si hay fotos nuevas que no están en él, lo dice. Un proyecto nuevo no sale
+en la web hasta que se pone en una lista de `content/web.json`. Lo que esté en
+`projects/` y no en `originals/` no se borra: solo avisa.
 
-Es idempotente: se apoya en `content/.media-cache.json` y solo reconvierte lo que
+Las carpetas de proyecto llevan número (`03 KALTBULT MAGAZINE`): el número no
+entra en el nombre. Dos con el mismo nombre (las dos SICKY): la segunda,
+`sicky-magazine-02`.
+
+Es idempotente: se apoya en `originals/.cache.json` y solo reconvierte lo que
 haya cambiado. Sin cambios tarda menos de un segundo. `npm run ingest -- --force`
-rehace todo. Al terminar cada proyecto borra los `.webp` que ya no genera, así que
-quitar una foto del original o cambiar el tamaño no deja huérfanos en `media/`.
+rehace todo. Borra los `.webp` que ya no genera, así que quitar una foto del
+original no deja huérfanos.
 
 **La conversión es la de `meowrhino/imgToWeb`**, que es la de todos los sitios:
 calidad **0.85** y el **lado largo** topado a **2000 px**, con la proporción
 intacta. Está en `build/formats.mjs`, que leen tanto la ingesta —que los escribe—
-como el build —que los busca para el `srcset`—; si no coincidieran, se generarían
-variantes que nadie pide o se pedirían variantes que no existen. Ojo: el tope es el lado largo, no el ancho — una foto vertical de
-3840×5760 sale a 1333×2000, no a 2000×3000. Por eso las verticales rondan los
-1333 px de ancho, y en las galerías cada foto lleva un `max-width` con su ancho
-real para que no se amplíe en pantallas grandes.
+como el build —que los busca para el `srcset`—. Ojo: el tope es el lado largo, no
+el ancho — una foto vertical de 3840×5760 sale a 1333×2000, no a 2000×3000. Por
+eso las verticales rondan los 1333 px de ancho, y en las galerías cada foto lleva
+un `max-width` con su ancho real para que no se amplíe en pantallas grandes.
 
 No genera una variante más ancha que el original, así que el `srcset` de cada foto
 lista solo los anchos que existen de verdad.
 
-**Los originales no están en git.** Si se pierde `originals/`, `media/` sigue ahí
-pero ya no se puede volver a generar en otra calidad. Copia de seguridad aparte.
-
-### Un proyecto
-
-```jsonc
-{
-  "slug": "roma",
-  "category": "textil",
-  "source": "originals/TEXTIL/ROMA",
-  "title":    { "es": "ROMA: CIUDAD EN RUINAS…", "en": "ROME: RUINS…" },
-  "synopsis": { "es": "Ruinas, base para construir…", "en": "…" },
-  "credits":  { "es": [ { "role": "Fotografía", "name": "…", "url": "https://…" } ] },
-  "groups":   [ { "slug": "laocoonte", "name": "Laocoonte" } ],   // subcarpetas de PIEZAS
-  "images":   [ { "src": "media/roma/roma-01.webp", "w": 2000, "h": 3016,
-                  "source": "originals/…/7047 - ….jpg", "alt": "", "group": "laocoonte" } ]
-}
-```
-
-`source` en cada imagen dice de qué original salió: para volver atrás sin adivinar.
-
-### Los números
-
-La clienta numera: las carpetas de proyecto (`01 SICKY MAGAZINE`,
-`02 VEIN MAGAZINE`…) en el orden en que salen en la lista, y las fotos de cada
-proyecto (`01.jpg`, `02.jpg`…) en el orden de la galería. El número de la
-carpeta va a `order` y no entra en el nombre; el de cada foto, a `n`, y es con
-lo que se eligen la portada y las del mapa (abajo). Una carpeta sin número va
-detrás de las numeradas, por orden alfabético (o con `order` a mano).
-
-### Qué fotos van al mapa y cuál es la portada
-
-En `content/proyectos.json`, por número de foto: `"mapa": [2, 5, 9]` y
-`"portada": 3`. Sin `mapa`, valen también las fotos de una carpeta **`home`**
-dentro del proyecto (a cualquier profundidad, no cuenta como grupo); sin
-ninguna de las dos, al mapa va la portada y cinco fotos más, repartidas por su
-galería. Sin `portada`, la primera foto.
-
-### content/proyectos.json
-
-`content/projects/*.json` lo **reescribe la ingesta cada vez**, así que editarlo a
-mano no sirve de nada. Las correcciones van aquí, indexadas por slug, y se aplican
-encima del JSON recién generado (en la ingesta y otra vez en el build):
-
-```jsonc
-{
-  "roma": {
-    "title": { "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN" },
-    "short": { "es": "roma" },               // nombre corto para el mapa
-    "portada": 12,                           // la foto que lo representa (12.jpg)
-    "mapa": [1, 5, 10, 14],                  // las que van al mapa
-    "order": 3,                              // su lugar en la lista, si la carpeta no lleva número
-    "color": "#982F0C",                      // su color, si no el que le toque
-    "drop": ["13.png"]                       // fotos del original que no entran
-  }
-}
-```
-
-`drop` lo lee la ingesta: esas fotos no se convierten y sus `.webp` se borran.
-Las demás no se renumeran (el número es el del archivo), así que quitar una no
-cambia `portada` ni `mapa`. El build comprueba que esos números existen.
-
-Sin `short` se usa el título entero. Las claves que empiezan por `_` son notas,
-no contenido.
-
-Ahora mismo hay dos correcciones: los títulos es/en de ROMA vienen
-intercambiados en la ficha, y las dos SICKY se llaman igual.
+**Los originales no están en git.** Si se pierde `originals/`, las fotos de
+`projects/` siguen ahí pero ya no se pueden volver a generar en otra calidad.
+Copia de seguridad aparte.
 
 ## El build
 
@@ -283,7 +269,7 @@ salen una vez por idioma (`/`, `/en/`, `/ca/`).
 - `title` y `description` (en un proyecto, el primer párrafo de la sinopsis;
   en la portada, la de `content/web.json`), en su idioma.
 - `canonical`, `hreflang` de los tres idiomas y `x-default` (el español).
-- `og:*` y `twitter:card`, con su imagen de `media/og/` (1200×630, JPG):
+- `og:*` y `twitter:card`, con su `og.jpg` (1200×630, JPG):
   al compartir un proyecto se ve ese proyecto. Si falta, la portada del
   proyecto en la variante de 1400 px.
 - JSON-LD: en la portada, `Person` (con `email` y `sameAs` si se ponen en
@@ -296,12 +282,14 @@ Más `404.html` (con `noindex`), `sitemap.xml` con las tres versiones de cada
 página y `robots.txt`.
 
 **Antes de escribir nada, valida.** Un JSON con una coma de menos, una foto que no
-está en `media/` o una `portada` que no es el número de ninguna foto paran el build con el
-archivo y lo que pasa:
+está en su carpeta, una `portada` o `mapa` que no está entre las fotos, o una
+lista que nombra un proyecto que no existe paran el build con el archivo y lo que
+pasa:
 
 ```
-✗ content/projects/helen.json no es un JSON válido: … (line 3 column 3)
-✗ helen: no encuentro media/helen/helen-99.webp
+✗ projects/helen/proyecto.json no es un JSON válido: … (line 3 column 3)
+✗ projects/helen: no encuentro 99.webp
+✗ projects/helen: en «mapa», 07.webp no está entre sus fotos
 ```
 
 En la Action eso sale en rojo y la web publicada se queda como estaba.
@@ -310,20 +298,17 @@ En la Action eso sale en rojo y la web publicada se queda como estaba.
 
 Cada push a `main` lanza `.github/workflows/deploy.yml`: `node build/build.mjs` y
 sube `dist/` a GitHub Pages. La ingesta no corre ahí (necesita `originals/`,
-`cwebp` y `sips`): `media/` y `content/` llegan ya hechos. Tarda un par de minutos;
+`cwebp` y `sips`): `projects/` y `content/` llegan ya hechos. Tarda un par de minutos;
 en la pestaña **Actions** de GitHub, verde es publicado.
 
 En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
 
-En `content/web.json`, `order` dice en qué orden salen las categorías y
-`colors` da un color por proyecto, en ese orden: nombres de CSS de las cuatro
+En `content/web.json`, `colors` da un color por proyecto, en el orden de
+`listas`: nombres de CSS de las cuatro
 familias de Maroon, MediumSpringGreen, Turquoise y Violet, alternadas para que
 dos proyectos seguidos no sean de la misma. Un proyecto con `color` en
-`proyectos.json` usa el suyo. Si a alguno no le llega color, el build para y
+su `proyecto.json` usa el suyo. Si a alguno no le llega color, el build para y
 lo dice.
-
-La foto de `originals/PORTADA/` ya no sale en la web: es la `og:image` de la
-portada, la que se ve al compartir el enlace.
 
 El ancho de la columna de un proyecto —800 px— vive en `--col`, en
 `css/style.css`, y `build/build.mjs` lo repite en el `sizes` de cada foto para
@@ -333,10 +318,10 @@ otro.
 ## El JavaScript de navegador
 
 El mapa cambia **en cada carga**, así que no se hornea: el HTML trae las fotos
-(las de `home`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
+(las de `mapa`, ver arriba) y `js/mapa.js` las reparte por todo el plano, sin
 pisarse y por zonas: primero la primera foto de cada proyecto, separadas entre
 sí, y luego el resto alrededor de la suya (`REACH`). La `mezcla` de
-`content/mapa.json` tira de cada foto desde su zona hacia un sitio cualquiera
+`content/web.json` tira de cada foto desde su zona hacia un sitio cualquiera
 del plano: 0 son zonas limpias, 100 todo revuelto.
 
 Las fotos de un mismo proyecto van unidas por hilos —cada una con la más
@@ -387,11 +372,13 @@ centro y en `difference` como el menú, para que se vean sobre las fotos; lo
 que mide cada uno en cada escalón, en `SIZES`.
 
 La vista la dice el hash, así que atrás y adelante funcionan y se puede enlazar
-`/#lista`. Un `<script>` en el `<head>` la pone antes de pintar; otro, en
+`/#textil`. Un `<script>` en el `<head>` la pone antes de pintar, con un
+`<style>` que esconde las otras listas y marca la vista en el menú (dependen de
+las listas que haya, así que los escribe el build); otro, en
 todas las páginas, pone lo demás que no puede esperar: `.js` y si
 la página nace tapada (`HEAD_SCRIPT`, en `build/build.mjs`).
 
-**Sin JavaScript la portada es la lista**, que es también lo que leen el teclado
+**Sin JavaScript la portada son las listas**, seguidas, que es también lo que leen el teclado
 y los lectores de pantalla: el mapa va con `aria-hidden`.
 
 El CSS y los scripts se enlazan con `?v=<hash>` de su contenido: un deploy nunca deja a nadie con
@@ -402,7 +389,7 @@ web de verdad.
 
 ## Lanzar
 
-Lo que falta es solo dato: el Instagram, el email (si se quiere) y el dominio.
+El Instagram y el email ya están. Lo que falta es el dominio.
 
 **1. En `content/web.json`:**
 
@@ -431,47 +418,42 @@ Lo que falta es solo dato: el Instagram, el email (si se quiere) y el dominio.
 - [Rich Results Test](https://search.google.com/test/rich-results) con la portada
   y un proyecto: tiene que salir la `Person` y el `CreativeWork`.
 - Pegar un enlace en WhatsApp o en el [Post Inspector de LinkedIn](https://www.linkedin.com/post-inspector/):
-  la imagen de `media/og/`.
+  su `og.jpg`.
 - Dar de alta el dominio en [Search Console](https://search.google.com/search-console)
   y mandarle `sitemap.xml`.
 
-**Las imágenes para compartir** están hechas: `media/og/`, 1200×630 en JPG, una
-por proyecto (su portada entera sobre blanco) y la de la portada (las de los
-seis primeros proyectos en fila). Las hace `npm run og` (pide ffmpeg). Si se
-cambia una portada en `content/proyectos.json`, el build avisa y hay que volver a
-hacerlas.
+**Las imágenes para compartir** están hechas: 1200×630 en JPG, `og.jpg` en cada
+proyecto (su portada entera sobre blanco) y la de la portada en la raíz (las de
+los seis primeros proyectos en fila). Las hace `npm run og` (pide ffmpeg). Si se
+cambia una portada, hay que volver a hacerlas; si falta alguna, el build avisa.
 
 ## Los 16 proyectos
 
-Del envío del 12 de octubre de 2026 (el de antes está en `originals-antes/`,
-fuera de git).
+Del envío del 12 de octubre de 2026, con el mapa y las portadas del 14 (el de
+antes está en `originals-antes/`, fuera de git).
 
-**Textil** (6): Corpórea (16) · Cuerpo Esquema (2) · Light Beam Digital (8) ·
+**Textil** (6): Corpórea (16) · Cuerpo Esquema (3) · Light Beam Digital (8) ·
 Mattering (15) · Roma (16, en tres piezas: Laocoonte, Río de la Plata, Virgen) ·
-Unbound Threads (6) — 63 fotos.
+Unbound Threads (6) — 64 fotos.
 
-**Editorial moda** (10), en este orden: Sicky Magazine · Vein Magazine ·
+**Foto** (10; en el material, EDITORIAL MODA), en este orden: Sicky Magazine · Vein Magazine ·
 Kaltbult Magazine · Teeth Magazine · Herdes Magazine · Águeda · Lula Japan
 Magazine · Cap Magazine · Sicky Magazine (II) · Helen — 130 fotos.
 
-193 fotos.
+194 fotos. La 03 de Cuerpo Esquema es una captura de Photoshop que la clienta
+mandó solo en su carpeta `MAPA`, con otro nombre: va a propósito, en la galería y
+en el mapa.
 
 ### Lo que falta
 
-- **Qué fotos van al mapa y cuál es la portada** de cada proyecto. La clienta
-  las marcó con etiquetas de Finder (azul, mapa; roja, portada), pero las
-  etiquetas no sobreviven a WeTransfer. Mientras, portada = la primera foto y
-  al mapa van seis repartidas. Se ponen en `content/proyectos.json`
-  (`portada`, `mapa`).
-- **El orden de los textiles**: sus carpetas no llevan número, así que van por
-  orden alfabético.
+- **El orden de los textiles**: sus carpetas no llevan número; van por orden
+  alfabético hasta que diga otro (se cambia en `listas`).
 - **Las sinopsis de Light Beam Digital, Mattering y Unbound Threads** son la de
-  Cuerpo Esquema con el nombre cambiado; y los tres, con Cuerpo Esquema y Roma,
-  vienen sin catalán.
+  Cuerpo Esquema con el nombre cambiado, a propósito (la clienta, 14/10): es el
+  mismo proyecto. Los tres vienen sin catalán.
 - **Águeda va corta de resolución**: sus fotos están por debajo de 1400 px. En la
   columna de 800 se defiende, pero no aguanta más.
-- El about solo está en español: en `/en/` y `/ca/` sale el español hasta
-  que se escriba en `content/about.json`.
+- El about en inglés y catalán es traducción provisional: que lo revise ella.
 
 ## Historia
 

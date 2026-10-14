@@ -1,7 +1,7 @@
 /* Los formatos de imagen, en un solo sitio.
 
    `build/ingest.mjs` los escribe y `build/build.mjs` los busca para
-   montar el srcset: si los dos no coinciden, o se generan variantes que
+   montar el srcset (dónde van, `variant`, en build/proyectos.mjs): si los dos no coinciden, o se generan variantes que
    nadie pide o se piden variantes que no existen. Por eso viven aquí y
    no duplicados en cada archivo. */
 
@@ -14,6 +14,3 @@ export const QUALITY = 85;
 
 /** Variantes pequeñas del srcset. Estas sí van por ancho. */
 export const WIDTHS = [400, 800, 1400];
-
-/** Ruta de una variante: media/foo.webp + 800 -> media/foo-800.webp */
-export const variant = (src, width) => src.replace(/\.webp$/, `-${width}.webp`);

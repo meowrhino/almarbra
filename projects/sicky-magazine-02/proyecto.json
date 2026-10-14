@@ -1,0 +1,95 @@
+{
+  "_nota": "La ficha repite el título de la primera; se distingue aquí.",
+  "title": {
+    "es": "SICKY MAGAZINE (II)",
+    "en": "SICKY MAGAZINE (II)",
+    "ca": "SICKY MAGAZINE (II)"
+  },
+  "synopsis": {},
+  "credits": {
+    "es": [
+      {
+        "role": "Fotografía",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Asistente de fotografía",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "Estilismo",
+        "name": "Luciana",
+        "url": "https://www.instagram.com/lucianacbe/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Lu Romero",
+        "url": "https://www.instagram.com/luromeromakeup/"
+      },
+      {
+        "role": "Modelo",
+        "name": "Esther Murphy",
+        "url": "https://www.instagram.com/estheermurphy/"
+      }
+    ],
+    "en": [
+      {
+        "role": "Photography",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Photo assistant",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "styling",
+        "name": "Luciana",
+        "url": "https://www.instagram.com/lucianacbe/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Lu Romero",
+        "url": "https://www.instagram.com/luromeromakeup/"
+      },
+      {
+        "role": "Model",
+        "name": "Esther Murphy",
+        "url": "https://www.instagram.com/estheermurphy/"
+      }
+    ],
+    "ca": [
+      {
+        "role": "Fotografia",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Photo assistant",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "Estilisme",
+        "name": "Luciana",
+        "url": "https://www.instagram.com/lucianacbe/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Lu Romero",
+        "url": "https://www.instagram.com/luromeromakeup/"
+      },
+      {
+        "role": "Model",
+        "name": "Esther Murphy",
+        "url": "https://www.instagram.com/estheermurphy/"
+      }
+    ]
+  },
+  "portada": ["08.webp"],
+  "mapa": ["01.webp", "02.webp", "04.webp", "06.webp", "08.webp", "09.webp", "11.webp", "15.webp"],
+  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp", "12.webp", "13.webp", "14.webp", "15.webp", "16.webp"]
+}

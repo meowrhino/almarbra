@@ -1,7 +1,13 @@
 {
-  "_": "El texto del about, que sale al pulsar el nombre en la portada. Uno por idioma; si uno se deja vacío, sale el español. Para separar párrafos, \\n\\n.",
-  "es": "Artista visual e investigadora cuya práctica se sitúa en la intersección entre la fotografía, la investigación de materiales y el tejido Jacquard digital. Mi trabajo se centra en la construcción de territorios ficticios y materiales en los que poder existir como identidades disidentes al margen de las definiciones normativas del cuerpo y el espacio.",
-  "en": "Visual artist and researcher whose practice sits at the intersection of photography, material research and digital Jacquard weaving. My work focuses on building fictional and material territories in which to exist as dissident identities, outside the normative definitions of the body and space.",
-  "ca": "Artista visual i investigadora la pràctica de la qual se situa en la intersecció entre la fotografia, la investigació de materials i el teixit Jacquard digital. El meu treball se centra en la construcció de territoris ficticis i materials en què poder existir com a identitats dissidents al marge de les definicions normatives del cos i l'espai.",
-  "_borrador": "en y ca: traducción provisional (13/10/2026), pendiente de que la revise Almudena."
+  "_": "El texto del about, que sale al pulsar «about». Uno por idioma, como una lista de párrafos: [\"primero\", \"segundo\"]. Si uno se deja vacío, sale el español.",
+  "es": [
+    "Almudena González, artista visual e investigadora cuya práctica se sitúa en la intersección entre la fotografía, la investigación de materiales y el tejido Jacquard digital. Mi trabajo se centra en la construcción de territorios ficticios y materiales en los que poder existir como identidades disidentes al margen de las definiciones normativas del cuerpo y el espacio."
+  ],
+  "en": [
+    "Almudena González, visual artist and researcher whose practice sits at the intersection of photography, material research and digital Jacquard weaving. My work focuses on building fictional and material territories in which to exist as dissident identities, outside the normative definitions of the body and space."
+  ],
+  "ca": [
+    "Almudena González, artista visual i investigadora la pràctica de la qual se situa en la intersecció entre la fotografia, la investigació de materials i el teixit Jacquard digital. El meu treball se centra en la construcció de territoris ficticis i materials en què poder existir com a identitats dissidents al marge de les definicions normatives del cos i l'espai."
+  ],
+  "_borrador": "en y ca: traducción provisional (14/10/2026), pendiente de que la revise Almudena."
 }

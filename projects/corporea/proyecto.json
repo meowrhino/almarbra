@@ -1,0 +1,27 @@
+{
+  "_nota": "En la ficha, el último párrafo en catalán está en castellano; traducido aquí (provisional, que lo revise Almudena).",
+  "title": {
+    "es": "CORPÓREA",
+    "en": "CORPOREAL",
+    "ca": "Corpòria"
+  },
+  "synopsis": {
+    "es": [
+      "Corpórea surge de esa necesidad de apropiarse de une misme, necesidad de habitar los cuerpos como propios, de construirse y deconstruirse tantas veces como haga falta.",
+      "Corpórea pretende ser una serie en desarrollo constante , experimentando nuevas técnicas, nuevos materiales, nuevas formas de entender los cuerpos.\nPiezas realizadas en Telar Magic Dobby Louët 24 lizos, compuestas en su totalidad de algodón y lana."
+    ],
+    "en": [
+      "Corporeal emerges from the need to reclaim oneself, the need to inhabit bodies as our own, to construct and deconstruct ourselves as many times as necessary.",
+      "Corporeal aims to be an ever-evolving series, experimenting with new techniques, new materials, and new ways of understanding bodies.\nNeutral mercerized cotton and two-ply twisted wool pieces collection developed in Magic Dobby Louët 24 shafts Loom"
+    ],
+    "ca": [
+      "Corpòria sorgeix d'aquesta necessitat d'apropiar-se d'une mateixe, necessitat d'habitar els cossos com a propis, de construir-se i deconstruir-se tantes vegades com calgui.",
+      "Corpòria pretén ser una sèrie en desenvolupament constant, experimentant noves tècniques, nous materials, noves maneres d'entendre els cossos.",
+      "Peces realitzades en un teler Magic Dobby Louët de 24 lliços, compostes íntegrament de cotó i llana."
+    ]
+  },
+  "credits": {},
+  "portada": ["09.webp"],
+  "mapa": ["01.webp", "04.webp", "05.webp", "06.webp", "09.webp"],
+  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp", "12.webp", "13.webp", "14.webp", "15.webp", "16.webp"]
+}

@@ -1,5 +1,5 @@
 # Cada push a main genera dist/ y lo publica en GitHub Pages. La ingesta
-# no corre aquí: media/ y content/ ya llegan hechos en el repo.
+# no corre aquí: projects/ y content/ ya llegan hechos en el repo.
 name: build & deploy
 on:
   push:

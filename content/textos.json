@@ -1,15 +1,10 @@
 {
-  "_": "Las palabras de la web en cada idioma: el menú de arriba y el nombre de cada categoría (la clave es el nombre de la carpeta de la categoría, en minúsculas y con guiones).",
+  "_": "Las palabras de la web en cada idioma: el menú de arriba y el nombre de cada lista (la clave es la de «listas» en content/web.json).",
   "menu": {
     "mapa": {
       "es": "mapa",
       "en": "map",
       "ca": "mapa"
-    },
-    "lista": {
-      "es": "lista",
-      "en": "list",
-      "ca": "llista"
     },
     "about": {
       "es": "about",
@@ -28,10 +23,10 @@
       "en": "textile",
       "ca": "tèxtil"
     },
-    "editorial-moda": {
-      "es": "editorial moda",
-      "en": "fashion editorial",
-      "ca": "editorial de moda"
+    "foto": {
+      "es": "foto",
+      "en": "photo",
+      "ca": "foto"
     }
   }
 }

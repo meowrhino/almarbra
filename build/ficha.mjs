@@ -71,12 +71,11 @@ const isTitleBlock = (block) => TITLE_LINE.test(block[0]);
 const isSynopsisBlock = (block) => SYNOPSIS_LINE.test(block[0]);
 const isCreditBlock = (block) => block.some((l) => CREDIT_LINE.test(l));
 
-/** Bloques de sinopsis y de continuación -> un texto con sus párrafos. */
+/** Bloques de sinopsis y de continuación -> una lista de párrafos. */
 function synopsisText(blocks) {
   return blocks
-    .map((block) => block.map((l) => l.replace(SYNOPSIS_LINE, '$1').trim()).join('\n'))
-    .join('\n\n')
-    .trim();
+    .map((block) => block.map((l) => l.replace(SYNOPSIS_LINE, '$1').trim()).join('\n').trim())
+    .filter(Boolean);
 }
 
 /**
@@ -105,7 +104,7 @@ export function parseFicha(file) {
       const synopsisAt = rest.findIndex(isSynopsisBlock);
       if (synopsisAt >= 0) {
         const text = synopsisText(rest.slice(synopsisAt).filter((b) => !isCreditBlock(b) || isSynopsisBlock(b)));
-        if (text) out.synopsis[lang] = text;
+        if (text.length) out.synopsis[lang] = text;
       }
 
       const credits = rest.filter((b) => isCreditBlock(b) && !isSynopsisBlock(b)).flat()

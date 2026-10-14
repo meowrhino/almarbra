@@ -1,5 +1,5 @@
 {
-  "_": "Lo general de la web. Casi nunca hace falta tocarlo. «description», por idioma, es la que sale en Google y al compartir. «email» y «redes» (direcciones enteras, p. ej. https://www.instagram.com/usuario/) salen al pie del about; vacíos, no sale nada. «order»: en qué orden salen las categorías. «colors»: los colores de los proyectos, que se reparten en el orden de la lista y vuelven a empezar si hay más proyectos que colores (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en proyectos.json.",
+  "_": "Lo general de la web. Casi nunca hace falta tocarlo. «description», por idioma, es la que sale en Google y al compartir. «email» y «redes» (direcciones enteras, p. ej. https://www.instagram.com/usuario/) salen al pie del about; vacíos, no sale nada. «listas»: las listas del menú (textil, foto) con los proyectos de cada una, en el orden en que salen; el nombre de cada proyecto es el de su carpeta en projects/. Uno que no está en ninguna lista no sale en la web. «mezcla», de 0 a 100: en el mapa, con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto. «colors»: los colores de los proyectos, que se reparten en el orden de la lista y vuelven a empezar si hay más proyectos que colores (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en su proyecto.json.",
   "title": "almudena gonzalez",
   "url": "https://meowrhino.github.io/almarbra/",
   "lang": "es",
@@ -14,12 +14,32 @@
     "ca": "Portfoli d'Almudena González — art tèxtil i fotografia de moda."
   },
   "noindex": true,
-  "email": "",
-  "redes": [],
-  "order": [
-    "textil",
-    "editorial-moda"
+  "email": "algonzalezmarbra@gmail.com",
+  "redes": [
+    "https://www.instagram.com/almarbra/"
   ],
+  "listas": {
+    "textil": [
+      "corporea",
+      "cuerpo-esquema",
+      "light-beam-digital",
+      "mattering",
+      "roma",
+      "unbound-threads"
+    ],
+    "foto": [
+      "sicky-magazine",
+      "vein-magazine",
+      "kaltbult-magazine",
+      "teeth-magazine",
+      "herdes-magazine",
+      "agueda",
+      "lula-japan-magazine",
+      "cap-magazine",
+      "sicky-magazine-02",
+      "helen"
+    ]
+  },
   "colors": [
     "#BEC045",
     "#F9B69F",
@@ -28,5 +48,6 @@
     "#71ADB3",
     "#5B9DC8",
     "#B2AAEE"
-  ]
+  ],
+  "mezcla": 50
 }

@@ -1,0 +1,109 @@
+{
+  "title": {
+    "es": "TEETH MAGAZINE",
+    "en": "TEETH MAGAZINE",
+    "ca": "TEETH MAGAZINE"
+  },
+  "synopsis": {},
+  "credits": {
+    "es": [
+      {
+        "role": "Fotografía",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Asistente de fotografía",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "Estilismo",
+        "name": "Paloma Monago",
+        "url": "https://www.instagram.com/palomamonago/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Barbara Mattel",
+        "url": "https://www.instagram.com/barbaramattel/"
+      },
+      {
+        "role": "Asistente Make up & hair",
+        "name": "Xina Rodriguez",
+        "url": "https://www.instagram.com/xinaarodriguez/"
+      },
+      {
+        "role": "Modelo",
+        "name": "Timi Adisa",
+        "url": "https://www.instagram.com/timiadisa/"
+      }
+    ],
+    "en": [
+      {
+        "role": "Photography",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Photo assistant",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "styling",
+        "name": "Paloma Monago",
+        "url": "https://www.instagram.com/palomamonago/"
+      },
+      {
+        "role": "Make up & hair",
+        "name": "Barbara Mattel",
+        "url": "https://www.instagram.com/barbaramattel/"
+      },
+      {
+        "role": "Make up & hair assistant",
+        "name": "Xina Rodriguez",
+        "url": "https://www.instagram.com/xinaarodriguez/"
+      },
+      {
+        "role": "Model",
+        "name": "Timi Adisa",
+        "url": "https://www.instagram.com/timiadisa/"
+      }
+    ],
+    "ca": [
+      {
+        "role": "Fotografia",
+        "name": "Almudena González",
+        "url": "https://www.instagram.com/almarbra_/"
+      },
+      {
+        "role": "Photo assistant",
+        "name": "Tamara Ruibal",
+        "url": "https://www.instagram.com/tamararuibalrua/"
+      },
+      {
+        "role": "Estilisme",
+        "name": "Paloma Monago",
+        "url": "https://www.instagram.com/palomamonago/"
+      },
+      {
+        "role": "Maquillatge i Perruqueria",
+        "name": "Barbara Mattel",
+        "url": "https://www.instagram.com/barbaramattel/"
+      },
+      {
+        "role": "Assistent Maquillatge i Perruqueria",
+        "name": "Xina Rodriguez",
+        "url": "https://www.instagram.com/xinaarodriguez/"
+      },
+      {
+        "role": "Model",
+        "name": "Timi Adisa",
+        "url": "https://www.instagram.com/timiadisa/"
+      }
+    ]
+  },
+  "portada": ["05.webp"],
+  "mapa": ["01.webp", "02.webp", "05.webp", "06.webp", "10.webp", "11.webp"],
+  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp"]
+}

@@ -12,5 +12,3 @@ originals-antes/
 # Entrega anterior, ya superada por originals/
 CONTENIDO/
 
-# Caché de la ingesta: se regenera sola
-content/.media-cache.json

@@ -1,0 +1,45 @@
+{
+  "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
+  "_borrador": "El título y la sinopsis en catalán: traducción provisional, pendiente de que la revise Almudena.",
+  "title": {
+    "es": "ROMA: CIUDAD EN RUINAS, IDENTIDAD EN CONSTRUCCIÓN",
+    "en": "ROME: RUINS, IDENTITY UNDER CONSTRUCTION",
+    "ca": "ROMA: CIUTAT EN RUÏNES, IDENTITAT EN CONSTRUCCIÓ"
+  },
+  "short": {
+    "es": "roma",
+    "en": "rome",
+    "ca": "roma"
+  },
+  "synopsis": {
+    "es": [
+      "Ruinas, base para construir nuevas formas.\nCada parte encontrada, guardada y atesorada hace a su vez de cimiento y viga.\nDerrumbamientos e inundaciones. Aludes de barro cubren por completo la ciudad, sirven de bálsamo y manto después de ver la tierra arder.\nBarro, de naturaleza dócil y blanda, moldea la propia liberación.",
+      "trabajo de investigación de texturas y ligamentos de raso desarrollado en Telar digital Jacquard TC2."
+    ],
+    "en": [
+      "City in ruins, identity under construction.\nRuins, the base to build the new.\nEvery piece found, stored and treasured becomes a foundation, a beam.\nLandslides and floods. Avalanches of mud cloaks the city,\na salve for the scorched earth, for those who watched it burn.\nMud, docile and soft in nature, molds one’s own liberation.",
+      "working variations of satins and textures, entirely developed on a Jacquard TC2 digital loom."
+    ],
+    "ca": [
+      "Ruïnes, base per construir noves formes.\nCada part trobada, guardada i atresorada fa alhora de fonament i de biga.\nEnsorraments i inundacions. Allaus de fang cobreixen del tot la ciutat, fan de bàlsam i de mantell després de veure la terra cremar.\nFang, de natura dòcil i tova, modela el propi alliberament.",
+      "treball de recerca de textures i lligats de setí desenvolupat en un teler digital Jacquard TC2."
+    ]
+  },
+  "credits": {},
+  "portada": ["10.webp"],
+  "mapa": ["02.webp", "03.webp", "05.webp", "06.webp", "11.webp", "12.webp", "15.webp"],
+  "grupos": [
+    {
+      "nombre": "Laocoonte",
+      "fotos": ["01.webp", "02.webp", "03.webp", "04.webp"]
+    },
+    {
+      "nombre": "Rio de la Plata",
+      "fotos": ["05.webp", "06.webp", "07.webp", "08.webp", "09.webp"]
+    },
+    {
+      "nombre": "Virgen",
+      "fotos": ["10.webp", "11.webp", "12.webp", "13.webp", "14.webp", "15.webp", "16.webp"]
+    }
+  ]
+}

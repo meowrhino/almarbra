@@ -12,7 +12,7 @@
 
      entrar en un proyecto     hacia delante
      volver de un proyecto     hacia atrás
-     mapa · lista · about      hacia delante si vas a la de la derecha
+     mapa · listas · about     hacia delante si vas a la de la derecha
                                del menú, hacia atrás si a la izquierda
      otro idioma               de lado, hacia delante
 
@@ -28,7 +28,7 @@
    donde avanza —lo inclinada que va y cómo se curva— sale distinta cada
    vez, y se mueve mientras avanza.
 
-   La usa js/mapa.js para mapa, lista y about (window.transicion).
+   La usa js/mapa.js para mapa, listas y about (window.transicion).
 
    Aquí también entran las fotos: cada una aparece cuando ha llegado. */
 
@@ -56,17 +56,17 @@
 
   /* Dónde está una dirección: los proyectos, al fondo; en la portada, por
      el hash, en el orden del menú. */
-  const ORDER = { mapa: 0, lista: 1, about: 2 };
+  const ORDER = [...document.querySelectorAll('.top nav [data-to]')].map((a) => a.dataset.to);
   const place = (url) => (url.pathname.includes('/projects/')
     ? 'proyecto'
-    : { '#about': 'about', '#lista': 'lista' }[url.hash] || 'mapa');
+    : ORDER.includes(url.hash.slice(1)) ? url.hash.slice(1) : 'mapa');
 
   /* De un sitio a otro: eje (para el barrido) y sentido. Al mismo sitio
      (otro idioma), de lado. */
   function way(from, to) {
     if (from === to) return { axis: 'x', sign: 1 };
     if (from === 'proyecto' || to === 'proyecto') return { axis: 'y', sign: to === 'proyecto' ? 1 : -1 };
-    return { axis: 'x', sign: ORDER[to] >= ORDER[from] ? 1 : -1 };
+    return { axis: 'x', sign: ORDER.indexOf(to) >= ORDER.indexOf(from) ? 1 : -1 };
   }
 
   /* ── la ola ────────────────────────────────────────────────────────

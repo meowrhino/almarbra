@@ -1,4 +1,4 @@
-/* La portada: el mapa, la lista y el paso de una vista a otra.
+/* La portada: el mapa, las listas y el paso de una vista a otra.
 
    El mapa son las fotos de todos los proyectos, por zonas, en un plano
    más grande que la pantalla, que se arrastra con el ratón y se recorre
@@ -8,11 +8,11 @@
    sitio distinto en cada carga. Los botones + y − acercan y alejan.
    (El telar del about, en js/telar.js.)
 
-   La vista la dice el hash: #mapa, #lista o #about. El menú
-   son enlaces a esos hashes, así que atrás y adelante funcionan solos.
-   Al cambiar, la transición de js/transicion.js, de lado.
+   La vista la dice el hash: #mapa, una lista (#textil, #foto) o #about.
+   El menú son enlaces a esos hashes, así que atrás y adelante funcionan
+   solos. Al cambiar, la transición de js/transicion.js, de lado.
 
-   Sin este archivo la portada es la lista (ver css/style.css). */
+   Sin este archivo la portada son las listas (ver css/style.css). */
 
 (() => {
   const root = document.documentElement;
@@ -24,7 +24,7 @@
   const colorOf = (el) => el.style.getPropertyValue('--c');
   const palette = [...new Set(pins.map(colorOf))];
 
-  const DENSITY = 0.15;  // cuánto del plano tapan las fotos
+  const DENSITY = 0.12;  // cuánto del plano tapan las fotos
   const REACH = 230;     // hasta dónde se apartan las fotos de un proyecto de la primera
   const MARGIN = 60;     // aire entre las fotos y el borde del plano
 
@@ -56,7 +56,7 @@
        alrededor de la suya, a REACH px como mucho. Las zonas se tocan y
        se mezclan un poco por los bordes. Si no hay hueco se va aflojando.
 
-       La mezcla (content/mapa.json, de 0 a 100, en data-mezcla) tira de
+       La mezcla (content/web.json, de 0 a 100, en data-mezcla) tira de
        cada foto desde su zona hacia un sitio cualquiera del plano: con 0
        son zonas limpias; con 100, todo revuelto. */
     const mix = Number(map.dataset.mezcla ?? 50) / 100;
@@ -71,7 +71,7 @@
       const p = pin.dataset.p;
       const { w, h } = boxes[i];
       const home = anchors.get(p);
-      let gap = home ? 18 : 18 + 142 * (1 - mix);
+      let gap = home ? 30 : 30 + 130 * (1 - mix);
       let reach = REACH;
       let spot = null;
       for (let t = 0; t < 800 && !spot; t++) {
@@ -373,13 +373,14 @@
 
   /* ── la vista ──────────────────────────────────────────────────── */
 
-  const wanted = () => ({ '#lista': 'lista', '#about': 'about' }[location.hash] || 'mapa');
+  const views = [...document.querySelectorAll('.top nav [data-to]')].map((a) => a.dataset.to);
+  const wanted = () => (views.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mapa');
 
   /* La vista se apunta para el «back» de los proyectos (build/build.mjs). */
   function show(view) {
     root.dataset.vista = view;
     for (const a of document.querySelectorAll('.idiomas a')) a.hash = view;   // otro idioma, en la misma vista
-    if (view !== 'about') try { sessionStorage.setItem('almarbra-vista', view); } catch { /* sin él, back va a la lista */ }
+    if (view !== 'about') try { sessionStorage.setItem('almarbra-vista', view); } catch { /* sin él, back va a la lista del proyecto */ }
     scrollTo(0, 0);
     if (view === 'mapa') build();
   }

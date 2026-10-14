@@ -1,0 +1,20 @@
+{
+  "title": {
+    "es": "MATTERING",
+    "en": "MATTERING"
+  },
+  "synopsis": {
+    "es": [
+      "MATTERING se desarrolla en torno a la creación de territorios eco-poéticos: espacios ficticios que no ocupan un lugar físico concreto, sino que se inspiran en la no-coseidad del vacío, en espacios no territoriales, comunidades disidentes y espacios virtuales contemporáneos, lugares donde ha sido posible construir una identidad nueva, libre de los prejuicios y las definiciones normativas impuestas sobre el cuerpo.",
+      "Piezas desarrolladas en su totalidad en un Telar digital Jacquard TC2."
+    ],
+    "en": [
+      "MATTERING unfolds around the creation of eco-poetic territories: fictional spaces that occupy no concrete physical place, but instead draw on the non-thingness of the void, on non-territorial spaces, dissident communities, and contemporary virtual spaces. Places where it has been possible to construct a new identity, free from the prejudices and normative definitions imposed upon the body.",
+      "Pieces developed entirely on a Jacquard TC2 digital loom."
+    ]
+  },
+  "credits": {},
+  "portada": ["01.webp"],
+  "mapa": ["01.webp", "03.webp", "04.webp", "05.webp", "08.webp", "09.webp", "11.webp", "12.webp"],
+  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp", "12.webp", "13.webp", "14.webp", "15.webp"]
+}

@@ -1,4 +1,5 @@
-/* Rehace dist/ cada vez que cambia algo de content/, css/, js/ o build/.
+/* Rehace dist/ cada vez que cambia algo de content/, projects/, css/, js/
+   o build/.
    Para trabajar con Live Server de VS Code, que sirve dist/ (ver
    .vscode/settings.json) y recarga el navegador cuando dist/ cambia.
 
@@ -29,13 +30,12 @@ function build() {
   });
 }
 
-for (const dir of ['content', 'css', 'js', 'build']) {
-  watch(join(ROOT, dir), { recursive: true }, (_, file) => {
-    if (file?.includes('.media-cache')) return;   // la escribe la ingesta, no cambia la web
+for (const dir of ['content', 'projects', 'css', 'js', 'build']) {
+  watch(join(ROOT, dir), { recursive: true }, () => {
     clearTimeout(timer);
     timer = setTimeout(build, 150);
   });
 }
 
 build();
-console.log('mirando content/, css/, js/ y build/…');
+console.log('mirando content/, projects/, css/, js/ y build/…');
