@@ -387,13 +387,17 @@ ${list(root, projects)}
 
 /* ── proyecto ────────────────────────────────────────────────────── */
 
+/* Los créditos: una lista, un nombre (y su enlace) por persona; el rol,
+   por idioma, o un texto si es igual en todos. Dos seguidos con el mismo
+   rol lo comparten. */
 function credits(list) {
   if (!list?.length) return '';
-  const rows = list.map((c) => {
+  const role = (c) => (typeof c.role === 'string' ? c.role : t(c.role)) || '';
+  const rows = list.map((c, i) => {
     const name = c.url
       ? `<a href="${attr(c.url)}" target="_blank" rel="noopener">${esc(c.name || c.url)}</a>`
       : esc(c.name);
-    return `<dt>${esc(c.role)}</dt><dd>${name}</dd>`;
+    return `${i && role(list[i - 1]) === role(c) ? '' : `<dt>${esc(role(c))}</dt>`}<dd>${name}</dd>`;
   });
   return `<dl class="credits">\n${rows.join('\n')}\n</dl>`;
 }
@@ -463,7 +467,7 @@ function projectPage(project) {
 <div class="ficha">
 <h1>${esc(title)}</h1>
 ${tr(project.synopsis, synopsis)}
-${tr(project.credits, credits)}
+${credits(project.credits)}
 </div>
 
 ${gallery.join('\n\n')}

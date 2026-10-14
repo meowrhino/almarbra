@@ -87,6 +87,20 @@ function fichaOf(projectDir) {
   return file ? join(projectDir, file) : null;
 }
 
+/* Los créditos de la ficha vienen por idioma, la misma gente en cada
+   uno: se juntan en una lista, con el rol por idioma (o un texto, si es
+   igual en todos). Una línea con varios enlaces se queda con el primero.
+   ponytail: si un idioma trae otra gente u otro orden, mandan los del
+   primero; se corrige a mano en proyecto.json. */
+function mergeCredits(byLang) {
+  const langs = Object.keys(byLang);
+  return (byLang[langs[0]] || []).map((c, i) => {
+    const roles = Object.fromEntries(langs.map((l) => [l, byLang[l][i]?.role || c.role]));
+    const role = new Set(Object.values(roles)).size === 1 ? c.role : roles;
+    return { role, name: c.name, ...(c.url ? { url: c.url } : {}) };
+  });
+}
+
 /* «03 KALTBULT MAGAZINE» -> 'KALTBULT MAGAZINE' */
 const nameOf = (folder) => folder.replace(/^\d+\s+/, '');
 
@@ -177,7 +191,7 @@ async function ingestProject(dir, slug, cache) {
   const data = {
     title: Object.keys(meta.title).length ? meta.title : { es: titleize(nameOf(basename(dir))) },
     synopsis: meta.synopsis,
-    credits: meta.credits,
+    credits: mergeCredits(meta.credits),
     portada: names.slice(0, 1),
     mapa: [],
     ...(groups.some(Boolean)

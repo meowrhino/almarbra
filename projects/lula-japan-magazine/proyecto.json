@@ -5,89 +5,13 @@
     "ca": "LULA JAPAN MAGAZINE"
   },
   "synopsis": {},
-  "credits": {
-    "es": [
-      {
-        "role": "Fotografía",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Asistente de fotografía",
-        "name": "Tamara Ruibal",
-        "url": "https://www.instagram.com/tamararuibalrua/"
-      },
-      {
-        "role": "Estilismo",
-        "name": "Paloma Monago",
-        "url": "https://www.instagram.com/palomamonago/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Regina Khanipova",
-        "url": "https://www.instagram.com/reginakhanipova/"
-      },
-      {
-        "role": "Agencia",
-        "name": "Two Management Barcelona",
-        "url": "https://www.instagram.com/twomanagementbarcelona/"
-      }
-    ],
-    "en": [
-      {
-        "role": "Photography",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Photo assistant",
-        "name": "Tamara Ruibal",
-        "url": "https://www.instagram.com/tamararuibalrua/"
-      },
-      {
-        "role": "styling",
-        "name": "Paloma Monago",
-        "url": "https://www.instagram.com/palomamonago/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Regina Khanipova",
-        "url": "https://www.instagram.com/reginakhanipova/"
-      },
-      {
-        "role": "Agency",
-        "name": "Two Management Barcelona",
-        "url": "https://www.instagram.com/twomanagementbarcelona/"
-      }
-    ],
-    "ca": [
-      {
-        "role": "Fotografia",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Photo assistant",
-        "name": "Tamara Ruibal",
-        "url": "https://www.instagram.com/tamararuibalrua/"
-      },
-      {
-        "role": "Estilisme",
-        "name": "Paloma Monago",
-        "url": "https://www.instagram.com/palomamonago/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Regina Khanipova",
-        "url": "https://www.instagram.com/reginakhanipova/"
-      },
-      {
-        "role": "Agencia",
-        "name": "Two Management Barcelona",
-        "url": "https://www.instagram.com/twomanagementbarcelona/"
-      }
-    ]
-  },
+  "credits": [
+    { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
+    { "role": { "es": "Asistente de fotografía", "en": "Photo assistant", "ca": "Photo assistant" }, "name": "Tamara Ruibal", "url": "https://www.instagram.com/tamararuibalrua/" },
+    { "role": { "es": "Estilismo", "en": "styling", "ca": "Estilisme" }, "name": "Paloma Monago", "url": "https://www.instagram.com/palomamonago/" },
+    { "role": "Make up & hair", "name": "Regina Khanipova", "url": "https://www.instagram.com/reginakhanipova/" },
+    { "role": { "es": "Agencia", "en": "Agency", "ca": "Agencia" }, "name": "Two Management Barcelona", "url": "https://www.instagram.com/twomanagementbarcelona/" }
+  ],
   "portada": ["04.webp"],
   "mapa": ["01.webp", "04.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp"],
   "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp"]

@@ -5,86 +5,13 @@
     "ca": "VEIN MAGAZINE"
   },
   "synopsis": {},
-  "credits": {
-    "es": [
-      {
-        "role": "Fotografía",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Estilismo",
-        "name": "Rocco Marvin",
-        "url": "https://www.instagram.com/rocco_marvin/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Barbara Mattel",
-        "url": "https://www.instagram.com/barbaramattel/"
-      },
-      {
-        "role": "Modelo",
-        "name": "Dani Lazo & Alexandrina Graur",
-        "url": "https://www.instagram.com/danilahozzc/",
-        "urls": [
-          "https://www.instagram.com/danilahozzc/",
-          "https://www.instagram.com/alexandrina_g/"
-        ]
-      }
-    ],
-    "en": [
-      {
-        "role": "Photography",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "styling",
-        "name": "Rocco Marvin",
-        "url": "https://www.instagram.com/rocco_marvin/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Barbara Mattel",
-        "url": "https://www.instagram.com/barbaramattel/"
-      },
-      {
-        "role": "Model",
-        "name": "Dani Lazo & Alexandrina Graur",
-        "url": "https://www.instagram.com/danilahozzc/",
-        "urls": [
-          "https://www.instagram.com/danilahozzc/",
-          "https://www.instagram.com/alexandrina_g/"
-        ]
-      }
-    ],
-    "ca": [
-      {
-        "role": "Fotografia",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Estilisme",
-        "name": "Rocco Marvin",
-        "url": "https://www.instagram.com/rocco_marvin/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Barbara Mattel",
-        "url": "https://www.instagram.com/barbaramattel/"
-      },
-      {
-        "role": "Model",
-        "name": "Dani Lazo & Alexandrina Graur",
-        "url": "https://www.instagram.com/danilahozzc/",
-        "urls": [
-          "https://www.instagram.com/danilahozzc/",
-          "https://www.instagram.com/alexandrina_g/"
-        ]
-      }
-    ]
-  },
+  "credits": [
+    { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
+    { "role": { "es": "Estilismo", "en": "styling", "ca": "Estilisme" }, "name": "Rocco Marvin", "url": "https://www.instagram.com/rocco_marvin/" },
+    { "role": "Make up & hair", "name": "Barbara Mattel", "url": "https://www.instagram.com/barbaramattel/" },
+    { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Dani Lazo", "url": "https://www.instagram.com/danilahozzc/" },
+    { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Alexandrina Graur", "url": "https://www.instagram.com/alexandrina_g/" }
+  ],
   "portada": ["12.webp"],
   "mapa": ["01.webp", "02.webp", "07.webp", "08.webp", "11.webp", "12.webp", "16.webp"],
   "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp", "12.webp", "13.webp", "14.webp", "15.webp", "16.webp"]

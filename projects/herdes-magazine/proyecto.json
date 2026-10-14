@@ -5,104 +5,14 @@
     "ca": "HERDES MAGAZINE"
   },
   "synopsis": {},
-  "credits": {
-    "es": [
-      {
-        "role": "Fotografía",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Modelo",
-        "name": "Rayana & Yesid",
-        "url": null
-      },
-      {
-        "role": "Estilismo",
-        "name": "Paloma Monago",
-        "url": "https://www.instagram.com/palomamonago/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Adriana Rodríguez",
-        "url": "https://www.instagram.com/adrianarodriguezmakeup/"
-      },
-      {
-        "role": "Asistente Make up & hair",
-        "name": "Rose",
-        "url": "https://www.instagram.com/roselyroe/"
-      },
-      {
-        "role": "Agencia",
-        "name": "Two Management Barcelona",
-        "url": null
-      }
-    ],
-    "en": [
-      {
-        "role": "Photography",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Model",
-        "name": "Rayana & Yesid",
-        "url": null
-      },
-      {
-        "role": "styling",
-        "name": "Paloma Monago",
-        "url": "https://www.instagram.com/palomamonago/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Adriana Rodríguez",
-        "url": "https://www.instagram.com/adrianarodriguezmakeup/"
-      },
-      {
-        "role": "Make up & hair assistant",
-        "name": "Rose",
-        "url": "https://www.instagram.com/roselyroe/"
-      },
-      {
-        "role": "Agency",
-        "name": "Two Management Barcelona",
-        "url": null
-      }
-    ],
-    "ca": [
-      {
-        "role": "Fotografia",
-        "name": "Almudena González",
-        "url": "https://www.instagram.com/almarbra_/"
-      },
-      {
-        "role": "Model",
-        "name": "Rayana & Yesid",
-        "url": null
-      },
-      {
-        "role": "Estilisme",
-        "name": "Paloma Monago",
-        "url": "https://www.instagram.com/palomamonago/"
-      },
-      {
-        "role": "Make up & hair",
-        "name": "Adriana Rodríguez",
-        "url": "https://www.instagram.com/adrianarodriguezmakeup/"
-      },
-      {
-        "role": "Make up & hair assistant",
-        "name": "Rose",
-        "url": "https://www.instagram.com/roselyroe/"
-      },
-      {
-        "role": "Agència",
-        "name": "Two Management Barcelona",
-        "url": null
-      }
-    ]
-  },
+  "credits": [
+    { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
+    { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Rayana & Yesid" },
+    { "role": { "es": "Estilismo", "en": "styling", "ca": "Estilisme" }, "name": "Paloma Monago", "url": "https://www.instagram.com/palomamonago/" },
+    { "role": "Make up & hair", "name": "Adriana Rodríguez", "url": "https://www.instagram.com/adrianarodriguezmakeup/" },
+    { "role": { "es": "Asistente Make up & hair", "en": "Make up & hair assistant", "ca": "Make up & hair assistant" }, "name": "Rose", "url": "https://www.instagram.com/roselyroe/" },
+    { "role": { "es": "Agencia", "en": "Agency", "ca": "Agència" }, "name": "Two Management Barcelona" }
+  ],
   "portada": ["01.webp"],
   "mapa": ["01.webp", "02.webp", "03.webp", "05.webp", "08.webp"],
   "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp"]

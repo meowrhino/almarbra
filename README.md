@@ -179,7 +179,10 @@ su caché larga sin dársela al HTML.
   "title":    { "es": "ROMA: CIUDAD EN RUINAS…", "en": "ROME: RUINS…" },
   "short":    { "es": "roma" },                // nombre corto para el mapa (si no, el título)
   "synopsis": { "es": ["primer párrafo", "segundo párrafo"] },
-  "credits":  { "es": [ { "role": "Fotografía", "name": "…", "url": "https://…" } ] },
+  "credits":  [                               // uno por persona; el rol por idioma, o un texto si es igual
+    { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "…", "url": "https://…" },
+    { "role": "Make up & hair", "name": "…" }
+  ],
   "color":    "#982F0C",                      // si no, el que le toque de web.json
   "portada":  ["10.webp"],                    // la que sale en la lista y al compartir
   "mapa":     ["02.webp", "03.webp", "05.webp"],
@@ -196,6 +199,8 @@ su caché larga sin dársela al HTML.
   más, repartidas por la galería.
 - Por grupos (Roma, en tres piezas), `grupos` en vez de `fotos`:
   `"grupos": [{ "nombre": "Laocoonte", "fotos": ["01.webp", …] }, …]`.
+- **Los créditos**: una lista, una persona por línea, con su enlace. Dos
+  seguidas con el mismo rol lo comparten en la web (salen una debajo de otra).
 - **Los textos largos** (`synopsis`, y el about) son una **lista de párrafos**.
   Un salto de línea dentro de un párrafo (`\n`) se queda, como en los versos de
   Roma.

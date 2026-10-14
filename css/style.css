@@ -524,6 +524,7 @@ html:not(.js):has(#about:target) #lista { display: none; }
 
 .credits dt { color: var(--dim); }
 .credits dd { margin: 0; }
+.credits dd + dd { grid-column: 2; }   /* dos con el mismo rol */
 .credits a { border-bottom: 1px solid var(--dim); }
 
 .group { margin: 0 0 clamp(2rem, 8vh, 5rem); }
