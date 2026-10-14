@@ -4,11 +4,6 @@
 dist/
 .wrangler/
 
-# Material original de la clienta (946 MB). Vive fuera de git: de aquí
-# sale img/ con `npm run ingest`. Copia de seguridad aparte, por favor.
-originals/
-originals-antes/
-
-# Entrega anterior, ya superada por originals/
-CONTENIDO/
+# Las fotos pequeñas del mapa: las hace el build con cwebp
+.cache/
 

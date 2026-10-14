@@ -38,15 +38,15 @@
                              créditos, fotos, portada y mapa (ver
                              build/proyectos.mjs) */
 
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
-  cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync,
+  cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync,
 } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { WIDTHS } from './formats.mjs';
-import { loadProjects, variant } from './proyectos.mjs';
+import { loadProjects } from './proyectos.mjs';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const OUT = join(ROOT, 'dist');
@@ -99,22 +99,15 @@ const tr = (field, render = esc) => {
    las páginas: así _headers les da su caché larga sin tocar el HTML. */
 const pub = (src) => src.replace(/^projects\//, 'media/');
 
-/* De cada foto hay varias anchuras (ver build/ingest.mjs). El srcset
-   lista solo las que existen: de un original pequeño no se genera una
-   variante más ancha que él. */
-function srcset(image, base) {
-  const found = WIDTHS
-    .filter((w) => existsSync(join(ROOT, variant(image.src, w))))
-    .map((w) => `${base}${pub(variant(image.src, w))} ${w}w`);
-  return found.length ? [...found, `${base}${pub(image.src)} ${image.w}w`].join(', ') : null;
-}
+/* De cada foto hay una sola, la de imgToWeb (2000 px de lado largo).
+   El mapa, que las enseña pequeñas y a docenas, usa las suyas: las hace
+   el build (abajo, `mini`). La clienta solo sube las grandes.
 
-/* `cap` limita la foto a su ancho real. Como la ingesta topa el lado
-   largo a 2000 px, las verticales rondan los 1333 de ancho: sin este
-   tope se ampliarían en pantallas grandes y se verían blandas. */
-function img(image, { base = '', sizes = '100vw', eager = false, cap = false } = {}) {
-  const set = srcset(image, base);
-  return `<img src="${attr(base + pub(image.src))}"${set ? ` srcset="${attr(set)}" sizes="${attr(sizes)}"` : ''}`
+   `cap` limita la foto a su ancho real: las verticales rondan los 1333
+   de ancho, y sin este tope se ampliarían en pantallas grandes y se
+   verían blandas. */
+function img(image, { base = '', eager = false, cap = false } = {}) {
+  return `<img src="${attr(base + pub(image.src))}"`
     + ` width="${image.w}" height="${image.h}" alt="${attr(image.alt || '')}"`
     + (cap ? ` style="max-width:${image.w}px"` : '')
     + (eager ? ' fetchpriority="high"' : ' loading="lazy"') + ' decoding="async">';
@@ -168,7 +161,7 @@ const LOCALES = { es: 'es_ES', en: 'en_GB', ca: 'ca_ES' };
 
 /* La foto al compartir: `og`, de 1200×630 (build/og.mjs, npm run og:
    projects/<slug>/og.jpg, y og.jpg la de la portada), si está. Si no,
-   la variante de 1400 px de `image`, que pesa mucho menos que la grande. */
+   `image` tal cual. */
 function shareImage(image, og) {
   if (og && existsSync(join(ROOT, og))) {
     return `<meta property="og:image" content="${attr(abs(pub(og)))}">
@@ -177,11 +170,9 @@ function shareImage(image, og) {
 <meta property="og:image:type" content="image/jpeg">
 `;
   }
-  const w = image.w > 1400 && existsSync(join(ROOT, variant(image.src, 1400))) ? 1400 : image.w;
-  const src = w === image.w ? image.src : variant(image.src, w);
-  return `<meta property="og:image" content="${attr(abs(pub(src)))}">
-<meta property="og:image:width" content="${w}">
-<meta property="og:image:height" content="${Math.round((image.h * w) / image.w)}">
+  return `<meta property="og:image" content="${attr(abs(pub(image.src)))}">
+<meta property="og:image:width" content="${image.w}">
+<meta property="og:image:height" content="${image.h}">
 `;
 }
 
@@ -259,6 +250,32 @@ ${['js/hilos.js', 'js/transicion.js', ...scripts].map((s) => `<script src="${att
 
 /* ── portada ─────────────────────────────────────────────────────── */
 
+/* Las fotos del mapa salen a 170 px como mucho (340 con el zoom): las de
+   2000 serían 30 MB de golpe. Así que el build hace de cada una otra de
+   MINI px de ancho con cwebp, en .cache/mapa/ (solo si no está o la foto
+   ha cambiado), y la publica en media/<slug>/mapa/. En la Action, cwebp
+   lo instala el workflow. Sin cwebp, el mapa usa las grandes y se avisa. */
+const MINI = 600;
+let cwebp = true;
+
+function mini(image) {
+  const rel = image.src.replace(/^projects\//, '');
+  const out = join(ROOT, '.cache', 'mapa', rel);
+  const src = join(ROOT, image.src);
+  if (!existsSync(out) || statSync(out).mtimeMs < statSync(src).mtimeMs) {
+    if (!cwebp) return image;
+    try {
+      mkdirSync(dirname(out), { recursive: true });
+      execFileSync('cwebp', ['-q', '85', '-quiet', '-resize', String(Math.min(MINI, image.w)), '0', src, '-o', out]);
+    } catch {
+      cwebp = false;
+      console.warn('⚠ sin cwebp (brew install webp): el mapa usa las fotos grandes');
+      return image;
+    }
+  }
+  return { ...image, src: `projects/${dirname(rel)}/mapa/${image.file}` };
+}
+
 /* Al mapa van las fotos de «mapa» (su proyecto.json). Un proyecto sin
    ellas manda su portada y unas cuantas más, repartidas a lo largo de su
    galería. La portada (`cover`) es la de «portada», o la primera. */
@@ -283,7 +300,7 @@ function listItem(root, project, i) {
   const { cover } = project;
   const width = cover.h > cover.w ? 70 : 100;
   return `<li style="grid-row:${i + 1} / span 2"><a class="row" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
-<div class="pic" style="width:${width}%">${img(cover, { base: root, sizes: `(min-width: 700px) ${Math.round(width * 0.42)}vw, ${Math.round(width * 0.8)}vw` })}</div>
+<div class="pic" style="width:${width}%">${img(cover, { base: root })}</div>
 <h3>${tr(project.title) || esc(project.slug)}</h3>
 </a></li>`;
 }
@@ -345,7 +362,7 @@ function homePage(projects) {
     const long = [170, 120, 145][i % 3];   // de tres tamaños, para que no parezca una rejilla
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
     return `<a class="pin" href="projects/${attr(project.slug)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
-      + img(image, { base: root, sizes: `${width * 2}px` })
+      + img(mini(image), { base: root })
       + `<span>${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
 
@@ -417,11 +434,6 @@ function paras(text) {
 
 const synopsis = (text) => paras(text).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('\n');
 
-/* Las fotos del proyecto van en una columna de 800 px como mucho, con
-   aire a los lados; por debajo de ahí ocupan el ancho que quede. El 800
-   sale de `--col` en css/style.css: si cambia allí, cambia aquí. */
-const GALLERY_SIZES = '(min-width: 896px) 800px, 100vw';
-
 function projectPage(project) {
   const home = '../../';   // las páginas cuelgan de projects/<slug>/
   const root = home + (cur === lang ? '' : '../');
@@ -435,7 +447,7 @@ function projectPage(project) {
   const gallery = project.groups.map(({ name, images }, g) =>
     `<section class="group">\n${name ? `<h2>${esc(name)}</h2>\n` : ''}`
     + images.map((image, i) =>
-        `<figure>${img({ ...image, alt: image.alt || [title, name].filter(Boolean).join(' — ') }, { base: root, sizes: GALLERY_SIZES, cap: true, eager: g === 0 && i === 0 })}</figure>`
+        `<figure>${img({ ...image, alt: [title, name].filter(Boolean).join(' — ') }, { base: root, cap: true, eager: g === 0 && i === 0 })}</figure>`
       ).join('\n')
     + '\n</section>'
   );
@@ -529,6 +541,8 @@ mkdirSync(OUT, { recursive: true });
 for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true, maxRetries: 5 });
 for (const d of ['css', 'js']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
 for (const f of ['_headers', 'favicon.svg', 'og.jpg']) if (existsSync(join(ROOT, f))) cpSync(join(ROOT, f), join(OUT, f));
+/* Las fotos de cada proyecto, sin su JSON, y las del mapa las copia
+   después, al escribir la portada (`mini`). */
 for (const p of projects) {
   cpSync(join(ROOT, 'projects', p.slug), join(OUT, 'media', p.slug), { recursive: true, filter: (f) => !f.endsWith('.json') });
 }
@@ -545,6 +559,12 @@ for (const l of LANGS) {
     writeFileSync(join(at, 'projects', project.slug, 'index.html'), projectPage(project));
   }
   console.log(`${prefix(l) || '/'}`.padEnd(8) + `portada y ${projects.length} proyectos`);
+}
+
+/* Las fotos pequeñas del mapa, que `mini` ha dejado en .cache/mapa/. */
+for (const p of projects) {
+  const minis = join(ROOT, '.cache', 'mapa', p.slug);
+  if (existsSync(minis)) cpSync(minis, join(OUT, 'media', p.slug, 'mapa'), { recursive: true });
 }
 
 cur = lang;

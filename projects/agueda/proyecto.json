@@ -11,7 +11,7 @@
     { "role": { "es": "Estilismo", "en": "Styling", "ca": "Estilisme" }, "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Helen Mariana Vanín", "url": "https://www.instagram.com/helenmarianavanin/" }
   ],
-  "portada": ["01.webp"],
-  "mapa": ["01.webp", "02.webp", "05.webp", "07.webp"],
-  "fotos": ["00.webp", "01.webp", "02.webp", "03.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp"]
+  "portada": ["2"],
+  "mapa": ["2", "3", "5", "7"],
+  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 }

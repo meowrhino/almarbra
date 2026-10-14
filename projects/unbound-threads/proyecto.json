@@ -14,7 +14,7 @@
     ]
   },
   "credits": [],
-  "portada": ["01.webp"],
-  "mapa": ["01.webp", "05.webp", "06.webp"],
-  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp"]
+  "portada": ["1"],
+  "mapa": ["1", "5", "6"],
+  "fotos": ["1", "2", "3", "4", "5", "6"]
 }

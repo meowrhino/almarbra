@@ -13,7 +13,7 @@
     { "role": { "es": "Asistente Make up & hair", "en": "Make up & hair assistant", "ca": "Make up & hair assistant" }, "name": "Rose", "url": "https://www.instagram.com/roselyroe/" },
     { "role": { "es": "Agencia", "en": "Agency", "ca": "Agència" }, "name": "Two Management Barcelona" }
   ],
-  "portada": ["01.webp"],
-  "mapa": ["01.webp", "02.webp", "03.webp", "05.webp", "08.webp"],
-  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp"]
+  "portada": ["1"],
+  "mapa": ["1", "2", "3", "5", "8"],
+  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8"]
 }

@@ -13,7 +13,7 @@
     { "role": "Set design", "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" },
     { "role": "Modelo", "name": "Yarlin Bido & Eddy", "url": "https://www.instagram.com/yarlinbido/" }
   ],
-  "portada": ["04.webp"],
-  "mapa": ["02.webp", "03.webp", "04.webp", "06.webp", "08.webp", "18.webp", "20.webp"],
-  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "10.webp", "11.webp", "12.webp", "13.webp", "14.webp", "15.webp", "16.webp", "17.webp", "18.webp", "19.webp", "20.webp"]
+  "portada": ["4"],
+  "mapa": ["2", "3", "4", "6", "8", "17", "19"],
+  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
 }

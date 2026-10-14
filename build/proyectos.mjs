@@ -1,20 +1,18 @@
 /* Los proyectos, como los usan build.mjs y og.mjs.
 
      projects/<slug>/proyecto.json      título, sinopsis, créditos, fotos…
-     projects/<slug>/01.webp …          sus fotos (y 400/, 800/, 1400/)
+     projects/<slug>/1.webp 2.webp …    sus fotos, como las saca imgToWeb
 
    Salen en el orden de las listas de content/web.json («listas»): la
    lista en la que está un proyecto es su categoría. Uno que no está en
    ninguna no sale en la web.
 
-   Las fotos se nombran por archivo («01.webp»), en el orden en que van.
-   El ancho y el alto no se escriben: se leen del propio .webp. */
+   Las fotos se nombran por su número, sin .webp («1», «2»…: todas son
+   .webp), en el orden en que van. El ancho y el alto no se escriben: se
+   leen del propio .webp. */
 
 import { closeSync, existsSync, openSync, readdirSync, readSync } from 'node:fs';
 import { join } from 'node:path';
-
-/** Ruta de una variante: projects/roma/01.webp + 800 -> projects/roma/800/01.webp */
-export const variant = (src, width) => src.replace(/([^/]+)$/, `${width}/$1`);
 
 /** Ancho y alto de un .webp, de su cabecera (los primeros 30 bytes). */
 export function webpSize(file) {
@@ -50,10 +48,11 @@ export function loadProjects(root, site, read) {
       if (!existsSync(join(dir, slug, 'proyecto.json'))) { errors.push(`la lista «${category}» de content/web.json nombra «${slug}», y no hay projects/${slug}/proyecto.json`); continue; }
 
       const data = read(`projects/${slug}/proyecto.json`);
-      const image = (file) => {
+      const image = (name) => {
+        const file = `${String(name).replace(/\.webp$/, '')}.webp`;
         const src = `projects/${slug}/${file}`;
         if (!existsSync(join(root, src))) { errors.push(`projects/${slug}: no encuentro ${file}`); return null; }
-        return { file, src, ...webpSize(join(root, src)) };
+        return { name: file.replace(/\.webp$/, ''), file, src, ...webpSize(join(root, src)) };
       };
       /* Las fotos van en «fotos», o por grupos en «grupos» (Roma). */
       const groups = (data.grupos || [{ nombre: null, fotos: data.fotos || [] }])
@@ -62,9 +61,9 @@ export function loadProjects(root, site, read) {
       if (!images.length) errors.push(`projects/${slug}: no tiene fotos`);
 
       /* Las de «portada» y «mapa» tienen que estar entre sus fotos. */
-      const pick = (field) => [].concat(data[field] || []).map((file) => {
-        const found = images.find((i) => i.file === file);
-        if (!found) errors.push(`projects/${slug}: en «${field}», ${file} no está entre sus fotos`);
+      const pick = (field) => [].concat(data[field] || []).map((name) => {
+        const found = images.find((i) => i.name === String(name).replace(/\.webp$/, ''));
+        if (!found) errors.push(`projects/${slug}: en «${field}», ${name} no está entre sus fotos`);
         return found;
       }).filter(Boolean);
 

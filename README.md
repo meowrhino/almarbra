@@ -90,7 +90,7 @@ sobre las fotos.
 ## Lo que se cambia sin tocar código
 
 Cada proyecto en su carpeta, con todo lo suyo: `projects/<slug>/proyecto.json`
-y sus fotos al lado (`01.webp`, `02.webp`…). Lo general, en `content/`. Cada
+y sus fotos al lado (`1.webp`, `2.webp`…). Lo general, en `content/`. Cada
 JSON general lleva arriba una nota (`"_"`) que dice qué se puede poner. Se edita,
 se hace push y en un par de minutos está publicado.
 
@@ -102,7 +102,6 @@ se hace push y en un par de minutos está publicado.
 | `content/textos.json` | las palabras del menú y el nombre de cada lista, por idioma |
 
 ```bash
-npm run ingest    # originals/ -> projects/<slug>/*.webp (y proyecto.json si es nuevo)
 npm run build     # content/ + projects/ -> dist/
 npm run og        # las imágenes para compartir (pide ffmpeg)
 npm run serve     # dist/ en http://localhost:8000
@@ -120,14 +119,9 @@ tarea, `npm run watch` en una terminal hace lo mismo.
 ## Estructura
 
 ```
-originals/              material de la clienta — FUERA DE GIT
-  <CATEGORÍA>/<NN PROYECTO>/…/*.jpg + FICHA <PROYECTO>.rtf
-  .cache.json                      caché de la ingesta
-
 projects/<slug>/        un proyecto, todo junto
   proyecto.json                    título, sinopsis, créditos, fotos, portada, mapa
-  01.webp 02.webp …                sus fotos (GENERADAS por la ingesta)
-  400/ 800/ 1400/                  las mismas, más pequeñas, para el srcset
+  1.webp 2.webp …                  sus fotos, tal cual salen de imgToWeb
   og.jpg                           la imagen para compartir (npm run og)
 
 content/web.json        título, url, idiomas, listas, colores, contacto y mezcla
@@ -135,11 +129,7 @@ content/about.json      el texto del about
 content/textos.json     menú y listas, por idioma
 og.jpg                  la imagen para compartir de la portada (npm run og)
 
-build/ingest.mjs        originals/ -> projects/
-build/ficha.mjs         lector de las FICHAS .rtf
-build/formats.mjs       tamaño y calidad de los WebP, en un solo sitio
 build/proyectos.mjs     lee projects/ en el orden de las listas (build y og)
-build/slug.mjs          slugs y nombres legibles
 build/og.mjs            las imágenes para compartir, con ffmpeg
 build/build.mjs         content/ + projects/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/
@@ -184,21 +174,21 @@ su caché larga sin dársela al HTML.
     { "role": "Make up & hair", "name": "…" }
   ],
   "color":    "#982F0C",                      // si no, el que le toque de web.json
-  "portada":  ["10.webp"],                    // la que sale en la lista y al compartir
-  "mapa":     ["02.webp", "03.webp", "05.webp"],
-  "fotos":    ["01.webp", "02.webp", "03.webp"]   // la galería, en este orden
+  "portada":  ["10"],                         // la que sale en la lista y al compartir
+  "mapa":     ["2", "3", "5"],
+  "fotos":    ["1", "2", "3"]                 // la galería, en este orden
 }
 ```
 
-- Las fotos se nombran por **su archivo**, que está al lado. El orden de
-  `fotos` es el de la galería: para reordenar, se mueven en la lista; para
-  quitar una, se borra de la lista.
+- Las fotos se nombran por **su número**, sin `.webp` (todas lo son): `"3"` es
+  `3.webp`, al lado. El orden de `fotos` es el de la galería: para reordenar,
+  se mueven en la lista; para quitar una, se borra de la lista.
 - El ancho y el alto **no se escriben**: el build los lee del propio `.webp`.
 - `portada` y `mapa` tienen que estar entre las fotos; si no, el build para y
   dice cuál. Sin `portada`, la primera foto. Sin `mapa`, va la portada y cinco
   más, repartidas por la galería.
 - Por grupos (Roma, en tres piezas), `grupos` en vez de `fotos`:
-  `"grupos": [{ "nombre": "Laocoonte", "fotos": ["01.webp", …] }, …]`.
+  `"grupos": [{ "nombre": "Laocoonte", "fotos": ["1", "2", …] }, …]`.
 - **Los créditos**: una lista, una persona por línea, con su enlace. Dos
   seguidas con el mismo rol lo comparten en la web (salen una debajo de otra).
 - **Los textos largos** (`synopsis`, y el about) son una **lista de párrafos**.
@@ -220,47 +210,44 @@ su caché larga sin dársela al HTML.
 Un proyecto que no está en ninguna lista no sale en la web (el build avisa).
 Los colores de `colors` se reparten en este orden.
 
-## La ingesta
+## Fotos nuevas: con imgToWeb
 
-`npm run ingest` se come `originals/` entero:
+Las fotos se preparan con [imgToWeb](https://github.com/meowrhino/imgToWeb), en
+el navegador: WebP a calidad 85 y con el lado largo topado a 2000 px, y las
+numera solas (`1.webp`, `2.webp`…) en el orden en que se dejan; arrastrándolas
+se reordenan y se renumeran. Una sola versión de cada foto: nada más que hacer.
 
-1. convierte cada foto a WebP a `projects/<proyecto>/NN.webp` (`NN`, el número
-   de su archivo: `07.jpg` → `07.webp`), más tres variantes pequeñas para el
-   `srcset` —400, 800 y 1400 px de ancho— en `400/`, `800/` y `1400/`
-   (946 MB → 133 MB);
-2. si el proyecto **no tiene aún** `proyecto.json`, lo escribe: lee la FICHA
-   `.rtf` con `textutil` y saca título, sinopsis y créditos (rol, nombre,
-   enlace) **en los tres idiomas** de la ficha, más la lista de fotos. Las
-   subcarpetas (las PIEZAS de Roma) salen como `grupos`.
+**Un proyecto nuevo**:
 
-Desde ahí **`proyecto.json` es de quien lo edite**: la ingesta no lo vuelve a
-tocar. Si hay fotos nuevas que no están en él, lo dice. Un proyecto nuevo no sale
-en la web hasta que se pone en una lista de `content/web.json`. Lo que esté en
-`projects/` y no en `originals/` no se borra: solo avisa.
+1. una carpeta en `projects/` con su nombre en minúsculas y con guiones
+   (`projects/nuevo-proyecto/`): es su dirección, `/projects/nuevo-proyecto/`;
+2. dentro, las fotos que saca imgToWeb, y un `proyecto.json` (lo más fácil:
+   copiar el de otro y cambiarlo);
+3. su nombre en una lista de `content/web.json` (`listas`), donde tenga que
+   salir;
+4. `npm run og` si se quiere su imagen para compartir (si no, se comparte la
+   portada tal cual).
 
-Las carpetas de proyecto llevan número (`03 KALTBULT MAGAZINE`): el número no
-entra en el nombre. Dos con el mismo nombre (las dos SICKY): la segunda,
-`sicky-magazine-02`.
+**Fotos en un proyecto que ya está**: se dejan en su carpeta con el número
+siguiente y se añaden a `fotos`. Para rehacer el orden entero, imgToWeb con
+todas otra vez.
 
-Es idempotente: se apoya en `originals/.cache.json` y solo reconvierte lo que
-haya cambiado. Sin cambios tarda menos de un segundo. `npm run ingest -- --force`
-rehace todo. Borra los `.webp` que ya no genera, así que quitar una foto del
-original no deja huérfanos.
+**El mapa** no usa las grandes: enseña las fotos a 170 px como mucho (340 con
+el zoom), y bajarse 94 de 2000 px eran 30 MB. El build hace de cada foto del mapa
+una de 600 px con `cwebp` (en `.cache/mapa/`, fuera de git, y solo las que no
+estén o hayan cambiado; desde cero, unos 4 s) y las publica en
+`media/<slug>/mapa/`: 5 MB. La clienta no ve nada de esto. En la Action, `cwebp`
+lo instala el workflow; en local, `brew install webp`. Sin él, el build avisa y el
+mapa usa las grandes.
 
-**La conversión es la de `meowrhino/imgToWeb`**, que es la de todos los sitios:
-calidad **0.85** y el **lado largo** topado a **2000 px**, con la proporción
-intacta. Está en `build/formats.mjs`, que leen tanto la ingesta —que los escribe—
-como el build —que los busca para el `srcset`—. Ojo: el tope es el lado largo, no
-el ancho — una foto vertical de 3840×5760 sale a 1333×2000, no a 2000×3000. Por
-eso las verticales rondan los 1333 px de ancho, y en las galerías cada foto lleva
-un `max-width` con su ancho real para que no se amplíe en pantallas grandes.
+El resto —las listas y las galerías— usa las grandes, con `loading="lazy"`; en
+las galerías cada foto lleva un `max-width` con su ancho real (las verticales
+rondan los 1333 px) para que no se amplíe en pantallas grandes.
 
-No genera una variante más ancha que el original, así que el `srcset` de cada foto
-lista solo los anchos que existen de verdad.
-
-**Los originales no están en git.** Si se pierde `originals/`, las fotos de
-`projects/` siguen ahí pero ya no se pueden volver a generar en otra calidad.
-Copia de seguridad aparte.
+El material original de la clienta no está en el repo (1,2 GB): lo guarda ella.
+Las fotos de los 16 proyectos de octubre salieron de ahí con la misma
+conversión; la ingesta que lo hacía (y leía las FICHAS `.rtf`) está en el
+historial, hasta el commit `18ba9b4`.
 
 ## El build
 
@@ -276,7 +263,7 @@ salen una vez por idioma (`/`, `/en/`, `/ca/`).
 - `canonical`, `hreflang` de los tres idiomas y `x-default` (el español).
 - `og:*` y `twitter:card`, con su `og.jpg` (1200×630, JPG):
   al compartir un proyecto se ve ese proyecto. Si falta, la portada del
-  proyecto en la variante de 1400 px.
+  proyecto tal cual.
 - JSON-LD: en la portada, `Person` (con `email` y `sameAs` si se ponen en
   `content/web.json`); en cada proyecto, `CreativeWork` con ella de autora.
 - `<main>`, un solo `h1` y `alt` en las fotos de la galería: el suyo si lo
@@ -302,8 +289,8 @@ En la Action eso sale en rojo y la web publicada se queda como estaba.
 ### Publicar
 
 Cada push a `main` lanza `.github/workflows/deploy.yml`: `node build/build.mjs` y
-sube `dist/` a GitHub Pages. La ingesta no corre ahí (necesita `originals/`,
-`cwebp` y `sips`): `projects/` y `content/` llegan ya hechos. Tarda un par de minutos;
+sube `dist/` a GitHub Pages, con `cwebp` instalado antes para las fotos del mapa.
+Tarda un par de minutos;
 en la pestaña **Actions** de GitHub, verde es publicado.
 
 En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
@@ -434,8 +421,8 @@ cambia una portada, hay que volver a hacerlas; si falta alguna, el build avisa.
 
 ## Los 16 proyectos
 
-Del envío del 12 de octubre de 2026, con el mapa y las portadas del 14 (el de
-antes está en `originals-antes/`, fuera de git).
+Del envío del 12 de octubre de 2026, con el mapa y las portadas del 14. Las
+fotos, numeradas seguidas en cada proyecto (1, 2, 3…), como las numera imgToWeb.
 
 **Textil** (6): Corpórea (16) · Cuerpo Esquema (3) · Light Beam Digital (8) ·
 Mattering (15) · Roma (16, en tres piezas: Laocoonte, Río de la Plata, Virgen) ·

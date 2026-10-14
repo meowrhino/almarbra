@@ -13,11 +13,11 @@
      node build/og.mjs        (npm run og) */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { loadProjects, variant } from './proyectos.mjs';
+import { loadProjects } from './proyectos.mjs';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const W = 1200;
@@ -28,11 +28,7 @@ const MOSAIC = 6;    // portadas en la de la portada
 const read = (file) => JSON.parse(readFileSync(join(ROOT, file), 'utf8'));
 const { projects } = loadProjects(ROOT, read('content/web.json'), read);
 
-/* La variante de 800 basta y se lee mucho más deprisa que la grande. */
-const source = (src) => {
-  const small = variant(src, 800);
-  return join(ROOT, existsSync(join(ROOT, small)) ? small : src);
-};
+const source = (src) => join(ROOT, src);
 
 const ffmpeg = (args) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...args, '-q:v', '3'], { stdio: 'inherit' });
 

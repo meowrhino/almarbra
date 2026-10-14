@@ -21,7 +21,7 @@
     ]
   },
   "credits": [],
-  "portada": ["09.webp"],
-  "mapa": ["01.webp", "04.webp", "05.webp", "06.webp", "09.webp"],
-  "fotos": ["01.webp", "02.webp", "03.webp", "04.webp", "05.webp", "06.webp", "07.webp", "08.webp", "09.webp", "10.webp", "11.webp", "12.webp", "13.webp", "14.webp", "15.webp", "16.webp"]
+  "portada": ["9"],
+  "mapa": ["1", "4", "5", "6", "9"],
+  "fotos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
 }
