@@ -4,6 +4,6 @@
 dist/
 .wrangler/
 
-# Las fotos pequeñas del mapa: las hace el build con cwebp
+# Las fotos pequeñas del mapa (cwebp) y las imágenes para compartir (ffmpeg): las hace el build
 .cache/
 

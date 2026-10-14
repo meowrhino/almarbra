@@ -1,4 +1,4 @@
-/* Los proyectos, como los usan build.mjs y og.mjs.
+/* Los proyectos, como los usa build.mjs.
 
      projects/<slug>/proyecto.json      título, sinopsis, créditos, fotos…
      projects/<slug>/img/1.webp …       sus fotos, como las saca imgToWeb

@@ -6,7 +6,6 @@
   "type": "module",
   "scripts": {
     "build": "node build/build.mjs",
-    "og": "node build/og.mjs",
     "serve": "node build/serve.mjs",
     "dev": "npm run build && npm run serve",
     "watch": "node build/watch.mjs"

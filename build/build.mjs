@@ -159,14 +159,60 @@ window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListe
 
 const LOCALES = { es: 'es_ES', en: 'en_GB', ca: 'ca_ES' };
 
-/* La foto al compartir: `og`, de 1200×630 (build/og.mjs, npm run og:
-   projects/<slug>/og.jpg, y og.jpg la de la portada), si está. Si no,
-   `image` tal cual. */
+/* La imagen al compartir (og:image): 1200×630 en JPG, que es lo que
+   esperan WhatsApp, Instagram, LinkedIn y compañía. La de un proyecto, su
+   portada entera sobre blanco, con aire; la de la portada de la web, las
+   portadas de los primeros proyectos en fila.
+
+   Las hace el build con ffmpeg (en la Action lo instala el workflow) en
+   .cache/og/, con nombre según las fotos de las que sale, así que solo se
+   rehacen si cambia la portada o su foto; y las copia a dist/. Sin ffmpeg
+   se comparte la portada tal cual y se avisa. */
+const OG_W = 1200;
+const OG_H = 630;
+const AIR = 48;      // margen blanco alrededor, en px
+const MOSAIC = 6;    // portadas en la de la portada
+const FIT = `scale=${OG_W - 2 * AIR}:${OG_H - 2 * AIR}:force_original_aspect_ratio=decrease,pad=${OG_W}:${OG_H}:(ow-iw)/2:(oh-ih)/2:white`;
+let ffmpeg = true;
+const ogs = new Map();
+
+/** Hace (o saca de la caché) la og:image `out` (su ruta en dist/) a partir
+    de las fotos `srcs`; devuelve `out`, o null si no ha podido. */
+function ogImage(out, srcs, filter) {
+  if (ogs.has(out)) return ogs.get(out);
+  const key = createHash('sha1').update(srcs.join('|')).digest('hex').slice(0, 12);
+  const cached = join(ROOT, '.cache', 'og', `${key}.jpg`);
+  const newest = Math.max(...srcs.map((src) => statSync(join(ROOT, src)).mtimeMs));
+  let ok = existsSync(cached) && statSync(cached).mtimeMs >= newest;
+  if (!ok && ffmpeg) {
+    try {
+      mkdirSync(dirname(cached), { recursive: true });
+      execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...srcs.flatMap((src) => ['-i', join(ROOT, src)]), ...filter, '-q:v', '3', cached]);
+      ok = true;
+    } catch {
+      ffmpeg = false;
+      console.warn('⚠ sin ffmpeg (brew install ffmpeg): al compartir sale la portada tal cual');
+    }
+  }
+  if (ok) cpSync(cached, join(OUT, out));
+  ogs.set(out, ok ? out : null);
+  return ogs.get(out);
+}
+
+const projectOg = (project) => ogImage(`media/${project.slug}/og.jpg`, [project.cover.src], ['-vf', FIT]);
+
+function homeOg(projects) {
+  const picks = projects.slice(0, MOSAIC).map((p) => p.cover.src);
+  const row = picks.map((_, i) => `[${i}:v]scale=-2:440,pad=iw+24:ih:12:0:white[p${i}]`).join(';');
+  return ogImage('og.jpg', picks, ['-filter_complex', `${row};${picks.map((_, i) => `[p${i}]`).join('')}hstack=inputs=${picks.length},${FIT}`]);
+}
+
+/* `og`, la de 1200×630 si la hay; si no, `image` tal cual. */
 function shareImage(image, og) {
-  if (og && existsSync(join(ROOT, og))) {
-    return `<meta property="og:image" content="${attr(abs(pub(og)))}">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+  if (og) {
+    return `<meta property="og:image" content="${attr(abs(og))}">
+<meta property="og:image:width" content="${OG_W}">
+<meta property="og:image:height" content="${OG_H}">
 <meta property="og:image:type" content="image/jpeg">
 `;
   }
@@ -212,7 +258,7 @@ function contact() {
 /* `path` es la dirección de la página dentro del sitio, sin el idioma
    ('' la portada, 'projects/roma/' un proyecto); sin ella no hay
    canonical, hreflang ni og, que es lo que pasa en la 404. `root` va de
-   la página a la raíz del sitio, donde están css/, js/ y media/. `image` (y `og`, su versión de 1200×630) es la que sale al
+   la página a la raíz del sitio, donde están css/, js/ y media/. `image` (y `og`, su versión de 1200×630, ya en dist/) es la que sale al
    compartir el enlace. */
 function page({ title, body, root = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, og = null, head = '' }) {
   const full = title ? `${title} — ${site.title}` : site.title;
@@ -372,7 +418,7 @@ function homePage(projects) {
     path: '',
     root,
     image: projects[0].cover,
-    og: 'og.jpg',
+    og: homeOg(projects),
     bodyClass: 'home',
     head: VIEW_SCRIPT + ld(person()),
     scripts: ['js/mapa.js', 'js/telar.js'],
@@ -457,7 +503,7 @@ function projectPage(project) {
     path,
     description,
     image: project.cover,
-    og: `projects/${project.slug}/og.jpg`,
+    og: projectOg(project),
     head: ld({
       '@type': 'CreativeWork',
       name: title,
@@ -527,10 +573,6 @@ if (!projects.length) errors.push('content/web.json: no hay proyectos en «lista
 if (!(site.mezcla >= 0 && site.mezcla <= 100)) errors.push(`content/web.json: «mezcla» va de 0 a 100 y es ${JSON.stringify(site.mezcla)}`);
 if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que se arregle.`);
 
-/* Las og:image (build/og.mjs) no paran el build: sin ellas se comparte la
-   foto tal cual. Si se cambia una portada, hay que rehacerlas. */
-const noOg = projects.filter((p) => !existsSync(join(ROOT, 'projects', p.slug, 'og.jpg'))).map((p) => p.slug);
-if (noOg.length) warnings.push(`faltan og.jpg: ${noOg.join(', ')}. Hazlas con npm run og`);
 for (const w of warnings) console.warn(`⚠ ${w}`);
 
 /* ── escribir ────────────────────────────────────────────────────── */
@@ -540,7 +582,7 @@ for (const w of warnings) console.warn(`⚠ ${w}`);
 mkdirSync(OUT, { recursive: true });
 for (const name of readdirSync(OUT)) rmSync(join(OUT, name), { recursive: true, force: true, maxRetries: 5 });
 for (const d of ['css', 'js']) cpSync(join(ROOT, d), join(OUT, d), { recursive: true });
-for (const f of ['_headers', 'favicon.svg', 'og.jpg']) if (existsSync(join(ROOT, f))) cpSync(join(ROOT, f), join(OUT, f));
+for (const f of ['_headers', 'favicon.svg']) cpSync(join(ROOT, f), join(OUT, f));
 /* Las fotos de cada proyecto, sin su JSON, y las del mapa las copia
    después, al escribir la portada (`mini`). */
 for (const p of projects) {

@@ -103,7 +103,6 @@ se hace push y en un par de minutos está publicado.
 
 ```bash
 npm run build     # content/ + projects/ -> dist/
-npm run og        # las imágenes para compartir (pide ffmpeg)
 npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
 npm run watch     # rehace dist/ cada vez que se guarda algo
@@ -122,16 +121,12 @@ tarea, `npm run watch` en una terminal hace lo mismo.
 projects/<slug>/        un proyecto, todo junto
   proyecto.json                    título, sinopsis, créditos, fotos, portada, mapa
   img/1.webp img/2.webp …          sus fotos, tal cual salen de imgToWeb
-  og.jpg                           la imagen para compartir: su portada en
-                                   1200×630 JPG (npm run og)
 
 content/web.json        título, url, idiomas, listas, colores, contacto y mezcla
 content/about.json      el texto del about
 content/textos.json     menú y listas, por idioma
-og.jpg                  la imagen para compartir de la portada (npm run og)
 
 build/proyectos.mjs     lee projects/ en el orden de las listas (build y og)
-build/og.mjs            las imágenes para compartir, con ffmpeg
 build/build.mjs         content/ + projects/ -> dist/, validando antes
 build/serve.mjs         servidor local de dist/
 build/watch.mjs         rehace dist/ al guardar (para Live Server)
@@ -152,9 +147,12 @@ dist/                   GENERADO por el build — FUERA DE GIT
   index.html
   projects/<slug>/index.html
   en/  ca/                         lo mismo en cada idioma
-  404.html  sitemap.xml  robots.txt  .nojekyll  _headers  og.jpg
+  404.html  sitemap.xml  robots.txt  .nojekyll  _headers
+  og.jpg                           la imagen para compartir de la portada
   css/  js/                        copia tal cual
-  media/<slug>/                    las fotos de cada proyecto (sin su JSON)
+  media/<slug>/img/                las fotos de cada proyecto
+  media/<slug>/mapa/               las del mapa, a 600 px (cwebp, desde .cache/)
+  media/<slug>/og.jpg              la imagen para compartir (ffmpeg, desde .cache/)
 ```
 
 En git va **solo el fuente**: `content/`, `projects/` y el código. Las páginas no
@@ -225,9 +223,9 @@ se reordenan y se renumeran. Una sola versión de cada foto: nada más que hacer
 2. dentro, las fotos que saca imgToWeb en `img/`, y un `proyecto.json` (lo más
    fácil: copiar el de otro y cambiarlo);
 3. su nombre en una lista de `content/web.json` (`listas`), donde tenga que
-   salir;
-4. `npm run og` si se quiere su imagen para compartir (si no, se comparte la
-   portada tal cual).
+   salir.
+
+Y ya: las fotos pequeñas del mapa y la imagen para compartir las hace el build.
 
 **Fotos en un proyecto que ya está**: se dejan en su `img/` con el número
 siguiente y se añaden a `fotos`. Para rehacer el orden entero, imgToWeb con
@@ -237,7 +235,8 @@ todas otra vez.
 el zoom), y bajarse 94 de 2000 px eran 30 MB. El build hace de cada foto del mapa
 una de 600 px con `cwebp` (en `.cache/mapa/`, fuera de git, y solo las que no
 estén o hayan cambiado; desde cero, unos 4 s) y las publica en
-`media/<slug>/mapa/`: 5 MB. La clienta no ve nada de esto. En la Action, `cwebp`
+`media/<slug>/mapa/`: 5 MB. Desde cero, con las imágenes para compartir, el build
+tarda unos 6 s; con la caché, menos de uno. La clienta no ve nada de esto. En la Action, `cwebp`
 lo instala el workflow; en local, `brew install webp`. Sin él, el build avisa y el
 mapa usa las grandes.
 
@@ -262,9 +261,8 @@ salen una vez por idioma (`/`, `/en/`, `/ca/`).
 - `title` y `description` (en un proyecto, el primer párrafo de la sinopsis;
   en la portada, la de `content/web.json`), en su idioma.
 - `canonical`, `hreflang` de los tres idiomas y `x-default` (el español).
-- `og:*` y `twitter:card`, con su `og.jpg` (1200×630, JPG):
-  al compartir un proyecto se ve ese proyecto. Si falta, la portada del
-  proyecto tal cual.
+- `og:*` y `twitter:card`, con su imagen de 1200×630 en JPG (abajo): al
+  compartir un proyecto se ve ese proyecto.
 - JSON-LD: en la portada, `Person` (con `email` y `sameAs` si se ponen en
   `content/web.json`); en cada proyecto, `CreativeWork` con ella de autora.
 - `<main>`, un solo `h1` y `alt` en las fotos de la galería: el suyo si lo
@@ -415,10 +413,13 @@ El Instagram y el email ya están. Lo que falta es el dominio.
 - Dar de alta el dominio en [Search Console](https://search.google.com/search-console)
   y mandarle `sitemap.xml`.
 
-**Las imágenes para compartir** están hechas: 1200×630 en JPG, `og.jpg` en cada
-proyecto (su portada entera sobre blanco) y la de la portada en la raíz (las de
-los seis primeros proyectos en fila). Las hace `npm run og` (pide ffmpeg). Si se
-cambia una portada, hay que volver a hacerlas; si falta alguna, el build avisa.
+**Las imágenes para compartir** (og:image) las hace el build: 1200×630 en JPG,
+que es lo que esperan WhatsApp, Instagram y LinkedIn. La de cada proyecto es su
+portada entera sobre blanco; la de la portada de la web, las portadas de los seis
+primeros proyectos en fila. Con ffmpeg (en la Action lo instala el workflow; en
+local, `brew install ffmpeg`), en `.cache/og/` con nombre según las fotos de las
+que sale: solo se rehacen si cambia una portada. Sin ffmpeg, el build avisa y se
+comparte la portada tal cual.
 
 ## Los 16 proyectos
 
