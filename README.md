@@ -5,6 +5,8 @@ JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
 [meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cuatro archivos pequeños: el mapa, la transición, los hilos y el hilo de los proyectos.
 
+**Para actualizar la web (la clienta): [GUIA.md](GUIA.md).**
+
 Fondo blanco, Helvetica (la del sistema: nada que descargar) en minúscula y las
 fotos mandando, unidas por hilos de píxeles del color de cada proyecto.
 

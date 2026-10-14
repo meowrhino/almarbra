@@ -571,11 +571,24 @@ for (const project of projects) {
 }
 if (!projects.length) errors.push('content/web.json: no hay proyectos en «listas»');
 if (!(site.mezcla >= 0 && site.mezcla <= 100)) errors.push(`content/web.json: «mezcla» va de 0 a 100 y es ${JSON.stringify(site.mezcla)}`);
+for (const w of warnings) console.warn(`⚠ ${w}`);
 if (errors.length) fail(`${errors.join('\n  ')}\n\nNo se escribe nada hasta que se arregle.`);
 
-for (const w of warnings) console.warn(`⚠ ${w}`);
-
 /* ── escribir ────────────────────────────────────────────────────── */
+
+/* Un build a la vez: con `npm run watch` en marcha (VS Code lo arranca
+   solo), un build a mano vaciaría dist/ mientras el otro la llena. El
+   segundo espera a que acabe el primero; un candado de hace más de un
+   minuto es de un build que se cayó, y no cuenta. */
+const LOCK = join(ROOT, '.cache', 'build.lock');
+mkdirSync(dirname(LOCK), { recursive: true });
+for (let tries = 0; ; tries++) {
+  try { mkdirSync(LOCK); break; } catch {
+    if (tries > 600 || Date.now() - statSync(LOCK).mtimeMs > 60_000) { rmSync(LOCK, { recursive: true, force: true }); continue; }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);   // 0,1 s
+  }
+}
+process.on('exit', () => rmSync(LOCK, { recursive: true, force: true }));
 
 /* Se vacía dist/ pero no se borra la carpeta: Live Server la está
    sirviendo (build/watch.mjs) y si desaparece deja de mirarla. */

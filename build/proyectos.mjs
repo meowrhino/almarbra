@@ -14,12 +14,14 @@
 import { closeSync, existsSync, openSync, readdirSync, readSync } from 'node:fs';
 import { join } from 'node:path';
 
-/** Ancho y alto de un .webp, de su cabecera (los primeros 30 bytes). */
+/** Ancho y alto de un .webp, de su cabecera (los primeros 30 bytes);
+    null si no es un WebP de verdad (un .jpg renombrado, por ejemplo). */
 export function webpSize(file) {
   const b = Buffer.alloc(30);
   const fd = openSync(file, 'r');
   readSync(fd, b, 0, 30, 0);
   closeSync(fd);
+  if (b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WEBP') return null;
   const chunk = b.toString('ascii', 12, 16);
   if (chunk === 'VP8X') return { w: 1 + b.readUIntLE(24, 3), h: 1 + b.readUIntLE(27, 3) };
   if (chunk === 'VP8L') {
@@ -34,6 +36,11 @@ export function webpSize(file) {
  * build para con un mensaje si está roto). Devuelve los proyectos y lo
  * que esté mal, para que el build pare o avise.
  */
+/* Los campos que entiende un proyecto.json. Otro (un «portda», un
+   «foto») se avisa: casi seguro que está mal escrito. Los que empiezan
+   por _ son notas. */
+const FIELDS = new Set(['title', 'short', 'synopsis', 'credits', 'color', 'portada', 'mapa', 'fotos', 'grupos']);
+
 export function loadProjects(root, site, read) {
   const errors = [];
   const warnings = [];
@@ -48,15 +55,32 @@ export function loadProjects(root, site, read) {
       if (!existsSync(join(dir, slug, 'proyecto.json'))) { errors.push(`la lista «${category}» de content/web.json nombra «${slug}», y no hay projects/${slug}/proyecto.json`); continue; }
 
       const data = read(`projects/${slug}/proyecto.json`);
+      const at = `projects/${slug}/proyecto.json`;
+      for (const key of Object.keys(data)) {
+        if (!key.startsWith('_') && !FIELDS.has(key)) warnings.push(`${at}: «${key}» no es un campo que use la web (¿mal escrito?)`);
+      }
+      /* Lo que tiene que ser una lista, que lo sea: si no, un mensaje
+         claro y no un error de JavaScript. */
+      const list = (value, field) => {
+        if (value == null) return [];
+        if (Array.isArray(value)) return value;
+        errors.push(`${at}: «${field}» tiene que ser una lista, entre corchetes: ["1", "2"]`);
+        return [];
+      };
+      if (data.title && typeof data.title !== 'object') errors.push(`${at}: «title» va por idioma: { "es": "…", "en": "…" }`);
+      list(data.credits, 'credits');
+
       const image = (name) => {
         const file = `${String(name).replace(/\.webp$/, '')}.webp`;
         const src = `projects/${slug}/img/${file}`;
-        if (!existsSync(join(root, src))) { errors.push(`projects/${slug}: no encuentro ${file}`); return null; }
-        return { name: file.replace(/\.webp$/, ''), file, src, ...webpSize(join(root, src)) };
+        if (!existsSync(join(root, src))) { errors.push(`projects/${slug}: no encuentro img/${file}`); return null; }
+        const size = webpSize(join(root, src));
+        if (!size) { errors.push(`projects/${slug}: img/${file} no es un WebP de verdad (pásala por imgToWeb)`); return null; }
+        return { name: file.replace(/\.webp$/, ''), file, src, ...size };
       };
       /* Las fotos van en «fotos», o por grupos en «grupos» (Roma). */
-      const groups = (data.grupos || [{ nombre: null, fotos: data.fotos || [] }])
-        .map((g) => ({ name: g.nombre, images: (g.fotos || []).map(image).filter(Boolean) }));
+      const groups = list(data.grupos, 'grupos').concat(data.grupos ? [] : [{ nombre: null, fotos: data.fotos }])
+        .map((g) => ({ name: g.nombre, images: list(g.fotos, 'fotos').map(image).filter(Boolean) }));
       const images = groups.flatMap((g) => g.images);
       if (!images.length) errors.push(`projects/${slug}: no tiene fotos`);
 
