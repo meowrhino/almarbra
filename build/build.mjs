@@ -259,8 +259,8 @@ const MINI = 600;
 let cwebp = true;
 
 function mini(image) {
-  const rel = image.src.replace(/^projects\//, '');
-  const out = join(ROOT, '.cache', 'mapa', rel);
+  const slug = image.src.split('/')[1];
+  const out = join(ROOT, '.cache', 'mapa', slug, image.file);
   const src = join(ROOT, image.src);
   if (!existsSync(out) || statSync(out).mtimeMs < statSync(src).mtimeMs) {
     if (!cwebp) return image;
@@ -273,7 +273,7 @@ function mini(image) {
       return image;
     }
   }
-  return { ...image, src: `projects/${dirname(rel)}/mapa/${image.file}` };
+  return { ...image, src: `projects/${slug}/mapa/${image.file}` };
 }
 
 /* Al mapa van las fotos de «mapa» (su proyecto.json). Un proyecto sin

@@ -90,7 +90,7 @@ sobre las fotos.
 ## Lo que se cambia sin tocar código
 
 Cada proyecto en su carpeta, con todo lo suyo: `projects/<slug>/proyecto.json`
-y sus fotos al lado (`1.webp`, `2.webp`…). Lo general, en `content/`. Cada
+y sus fotos en `img/` (`1.webp`, `2.webp`…). Lo general, en `content/`. Cada
 JSON general lleva arriba una nota (`"_"`) que dice qué se puede poner. Se edita,
 se hace push y en un par de minutos está publicado.
 
@@ -121,8 +121,9 @@ tarea, `npm run watch` en una terminal hace lo mismo.
 ```
 projects/<slug>/        un proyecto, todo junto
   proyecto.json                    título, sinopsis, créditos, fotos, portada, mapa
-  1.webp 2.webp …                  sus fotos, tal cual salen de imgToWeb
-  og.jpg                           la imagen para compartir (npm run og)
+  img/1.webp img/2.webp …          sus fotos, tal cual salen de imgToWeb
+  og.jpg                           la imagen para compartir: su portada en
+                                   1200×630 JPG (npm run og)
 
 content/web.json        título, url, idiomas, listas, colores, contacto y mezcla
 content/about.json      el texto del about
@@ -181,7 +182,7 @@ su caché larga sin dársela al HTML.
 ```
 
 - Las fotos se nombran por **su número**, sin `.webp` (todas lo son): `"3"` es
-  `3.webp`, al lado. El orden de `fotos` es el de la galería: para reordenar,
+  `img/3.webp`. El orden de `fotos` es el de la galería: para reordenar,
   se mueven en la lista; para quitar una, se borra de la lista.
 - El ancho y el alto **no se escriben**: el build los lee del propio `.webp`.
 - `portada` y `mapa` tienen que estar entre las fotos; si no, el build para y
@@ -221,14 +222,14 @@ se reordenan y se renumeran. Una sola versión de cada foto: nada más que hacer
 
 1. una carpeta en `projects/` con su nombre en minúsculas y con guiones
    (`projects/nuevo-proyecto/`): es su dirección, `/projects/nuevo-proyecto/`;
-2. dentro, las fotos que saca imgToWeb, y un `proyecto.json` (lo más fácil:
-   copiar el de otro y cambiarlo);
+2. dentro, las fotos que saca imgToWeb en `img/`, y un `proyecto.json` (lo más
+   fácil: copiar el de otro y cambiarlo);
 3. su nombre en una lista de `content/web.json` (`listas`), donde tenga que
    salir;
 4. `npm run og` si se quiere su imagen para compartir (si no, se comparte la
    portada tal cual).
 
-**Fotos en un proyecto que ya está**: se dejan en su carpeta con el número
+**Fotos en un proyecto que ya está**: se dejan en su `img/` con el número
 siguiente y se añaden a `fotos`. Para rehacer el orden entero, imgToWeb con
 todas otra vez.
 

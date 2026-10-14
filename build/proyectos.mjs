@@ -1,7 +1,7 @@
 /* Los proyectos, como los usan build.mjs y og.mjs.
 
      projects/<slug>/proyecto.json      título, sinopsis, créditos, fotos…
-     projects/<slug>/1.webp 2.webp …    sus fotos, como las saca imgToWeb
+     projects/<slug>/img/1.webp …       sus fotos, como las saca imgToWeb
 
    Salen en el orden de las listas de content/web.json («listas»): la
    lista en la que está un proyecto es su categoría. Uno que no está en
@@ -50,7 +50,7 @@ export function loadProjects(root, site, read) {
       const data = read(`projects/${slug}/proyecto.json`);
       const image = (name) => {
         const file = `${String(name).replace(/\.webp$/, '')}.webp`;
-        const src = `projects/${slug}/${file}`;
+        const src = `projects/${slug}/img/${file}`;
         if (!existsSync(join(root, src))) { errors.push(`projects/${slug}: no encuentro ${file}`); return null; }
         return { name: file.replace(/\.webp$/, ''), file, src, ...webpSize(join(root, src)) };
       };
