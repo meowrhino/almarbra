@@ -1,4 +1,4 @@
-/* La portada: el mapa, las listas y el paso de una vista a otra.
+/* La portada: el mapa.
 
    El mapa son las fotos de todos los proyectos, por zonas, en un plano
    más grande que la pantalla, que se arrastra con el ratón y se recorre
@@ -8,11 +8,7 @@
    sitio distinto en cada carga. Los botones + y − acercan y alejan.
    (El telar del about, en js/telar.js.)
 
-   La vista la dice el hash: #mapa, una lista (#textil, #foto) o #about.
-   El menú son enlaces a esos hashes, así que atrás y adelante funcionan
-   solos. Al cambiar, la transición de js/transicion.js, de lado.
-
-   Sin este archivo la portada son las listas (ver css/style.css). */
+   Sin este archivo, las fotos salen seguidas (ver css/style.css). */
 
 (() => {
   const root = document.documentElement;
@@ -22,7 +18,6 @@
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const colorOf = (el) => el.style.getPropertyValue('--c');
-  const palette = [...new Set(pins.map(colorOf))];
 
   const DENSITY = 0.12;  // cuánto del plano tapan las fotos
   const REACH = 230;     // hasta dónde se apartan las fotos de un proyecto de la primera
@@ -371,33 +366,8 @@
     if (z !== zoom) setZoom(z);
   });
 
-  /* ── la vista ──────────────────────────────────────────────────── */
-
-  const views = [...document.querySelectorAll('.top nav [data-to]')].map((a) => a.dataset.to);
-  const wanted = () => (views.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'mapa');
-
-  /* La vista se apunta para el «back» de los proyectos (build/build.mjs). */
-  function show(view) {
-    root.dataset.vista = view;
-    for (const a of document.querySelectorAll('.idiomas a')) a.hash = view;   // otro idioma, en la misma vista
-    if (view !== 'about') try { sessionStorage.setItem('almarbra-vista', view); } catch { /* sin él, back va a la lista del proyecto */ }
-    scrollTo(0, 0);
-    if (view === 'mapa') build();
-  }
-
-  show(wanted());
-
-  addEventListener('resize', () => { if (root.dataset.vista === 'mapa') build(); });
-
-  /* Cambiar de vista: la transición (js/transicion.js), de lado, en el
-     orden del menú. */
-  addEventListener('hashchange', async () => {
-    const view = wanted();
-    const from = root.dataset.vista;
-    if (view === from) return;
-    const dir = transicion.way(from, view);
-    await transicion.cover(palette, dir);
-    show(view);
-    await transicion.uncover(palette, dir);
-  });
+  /* Se monta al cargar; si aún no hay tamaño (pestaña de fondo), al
+     tenerlo. */
+  build();
+  addEventListener('resize', build);
 })();

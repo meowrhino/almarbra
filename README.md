@@ -3,7 +3,7 @@
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
 JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
-[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cuatro archivos pequeños: el mapa, la transición, los hilos y el hilo de los proyectos.
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son seis archivos pequeños: el mapa, la transición, los hilos, el hilo de los proyectos, el de las listas y el telar del about.
 
 **Para actualizar la web (la clienta): [GUIA.md](GUIA.md).**
 
@@ -16,8 +16,9 @@ con lo que está puesto marcado; el idioma (**es · en · ca**) abajo a la
 derecha, salvo en el mapa. Todo sin fondo y en `difference`, para que se lea
 sobre las fotos.
 
-- **portada** (`/`): el **mapa** (`#mapa`), una de las dos **listas**
-  (`#textil`, `#foto`) o el **about** (`#about`). En el mapa salen los
+- **portada** (`/`): el **mapa**. Las dos **listas** y el **about** son páginas
+  propias: `/textil/`, `/foto/`, `/about/` (y en `/en/`, `/ca/`); las
+  direcciones viejas con `#` (`/#about`) redirigen. En el mapa salen los
   proyectos de las dos.
 
   El mapa es la idea de anaelleblin.com: las fotos de todos los proyectos,
@@ -34,7 +35,10 @@ sobre las fotos.
   vista en el menú, en ese orden. Sin JavaScript salen las dos
   seguidas, con su nombre encima. Dentro, en zigzag: un proyecto a la
   izquierda con su nombre debajo, el siguiente a la derecha y más abajo, y
-  así, solapándose a media altura. Sin hilos. En el móvil, una columna,
+  así, solapándose a media altura. Las portadas, cosidas en su orden por un
+  hilo (`js/lista.js`): un tramo de una a la siguiente, del color de la que
+  sale, que se va cosiendo al bajar y pasa por debajo de las fotos (por
+  encima, apagado), como el de un proyecto. En el móvil, una columna,
   alternando también de lado.
 
   Los hilos del mapa van a media luz; al pasar por una foto, los de su
@@ -132,11 +136,12 @@ build/serve.mjs         servidor local de dist/
 build/watch.mjs         rehace dist/ al guardar (para Live Server)
 
 css/style.css           todo el estilo
-js/mapa.js              el mapa (con su halo y su pelusa), las listas y el cambio de vista
+js/mapa.js              el mapa (con su halo y su pelusa)
 js/telar.js             el telar de detrás del about
 js/transicion.js        la transición al cambiar de página o de vista, y la entrada de las fotos
 js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
 js/hilo.js              el hilo de la página de un proyecto
+js/lista.js             el hilo que cose las portadas de una lista
 favicon.svg             dos hilos de píxeles
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
@@ -367,11 +372,10 @@ arrastra. El zoom va a saltos, cinco escalones (`ZOOMS`), con la propiedad CSS
 centro y en `difference` como el menú, para que se vean sobre las fotos; lo
 que mide cada uno en cada escalón, en `SIZES`.
 
-La vista la dice el hash, así que atrás y adelante funcionan y se puede enlazar
-`/#textil`. Un `<script>` en el `<head>` la pone antes de pintar, con un
-`<style>` que esconde las otras listas y marca la vista en el menú (dependen de
-las listas que haya, así que los escribe el build); otro, en
-todas las páginas, pone lo demás que no puede esperar: `.js` y si
+Cada vista es una página (el build pone `data-vista` en su `<html>` y
+`aria-current` en su enlace del menú); la ola las une como al entrar en un
+proyecto, de lado y en el orden del menú. Otro `<script>` en el `<head>`, en
+todas las páginas, pone lo que no puede esperar: `.js` y si
 la página nace tapada (`HEAD_SCRIPT`, en `build/build.mjs`).
 
 **Sin JavaScript la portada son las listas**, seguidas, que es también lo que leen el teclado

@@ -85,30 +85,24 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .idiomas a { color: var(--dim); }
 
-/* lo que está puesto: el idioma (la vista, en el <style> que pone
-   build/build.mjs en la portada, porque depende de las listas que haya) */
-.idiomas [aria-current] { color: var(--ink); }
+/* lo que está puesto: el idioma y la página */
+.idiomas [aria-current],
+.top [aria-current="page"] { color: var(--ink); }
 
 @media (hover: hover) {
   .top a:hover,
   .idiomas a:hover { color: var(--ink); }
 }
 
-/* ── portada: mapa, lista o about ────────────────────────────────────
+/* ── el mapa, las listas y el about: cada uno, su página ─────────────
 
-   Se ve la vista que diga el hash (data-vista, en <html>). Sin
-   JavaScript no hay data-vista y se ve la lista; el about, con #about en
-   la dirección (:target). Con JavaScript, :target no: el about saldría
-   antes de que lo tape la transición. */
+   Sin JavaScript, el mapa no se monta: sus fotos salen seguidas. */
 
-#mapa,
-#about { display: none; }
-[data-vista="mapa"] #mapa { display: grid; }
-[data-vista="about"] #about,
-:root:not(.js) #about:target { display: block; }
-[data-vista="mapa"] #lista,
-[data-vista="about"] #lista,
-html:not(.js):has(#about:target) #lista { display: none; }
+#mapa { display: grid; }
+
+:root:not(.js) #mapa { position: static; overflow: visible; cursor: auto; }
+:root:not(.js) .world { display: flex; flex-wrap: wrap; gap: 1rem; padding: var(--bar) var(--pad); }
+:root:not(.js) .pin { position: static; }
 
 /* ── el about: el texto arriba a la izquierda, bajo el nombre ───────
 
@@ -126,6 +120,10 @@ html:not(.js):has(#about:target) #lista { display: none; }
   max-width: 32rem;
   font-size: clamp(1.1rem, 2vw, 1.5rem);
   line-height: 1.35;
+  /* los hilos del telar pasan por debajo del texto, nunca por encima de
+     una letra: el bloque es opaco, con 1rem de aire alrededor */
+  background: var(--bg);
+  box-shadow: 0 0 0 1rem var(--bg);
 }
 
 #about p { margin: 0 0 1em; }
@@ -142,6 +140,10 @@ html:not(.js):has(#about:target) #lista { display: none; }
   height: 100%;
   overflow: visible;
   pointer-events: none;
+  /* ni por el nombre y el menú, ni por los idiomas: fuera de las franjas */
+  --band: linear-gradient(transparent var(--bar), #000 var(--bar), #000 calc(100% - var(--bar)), transparent calc(100% - var(--bar)));
+  -webkit-mask-image: var(--band);
+  mask-image: var(--band);
 }
 
 /* ── el mapa ─────────────────────────────────────────────────────────
@@ -292,21 +294,33 @@ html:not(.js):has(#about:target) #lista { display: none; }
 
 /* ── las listas ──────────────────────────────────────────────────────
 
-   Una por lista de content/web.json, cada una su vista; qué lista se ve
-   lo dice el <style> de build/build.mjs. Sin JavaScript, todas seguidas
-   con su nombre encima; con él, el nombre ya está en el menú. Dentro, en zigzag: dos
+   Una página por lista de data/site.json, con su nombre encima (sin
+   JavaScript; con él, ya está marcado en el menú). Dentro, en zigzag: dos
    columnas, cada proyecto en dos filas de la rejilla y el siguiente
    empezando en la segunda (grid-row, de build/build.mjs), así que bajan
    alternando lado y se solapan a media altura. La foto, y debajo su
-   nombre. En el móvil, una columna, alternando también de lado. */
+   nombre. En el móvil, una columna, alternando también de lado. Las
+   portadas, cosidas por un hilo (js/lista.js), que pasa por debajo. */
 
-#lista { padding: clamp(1rem, 4vh, 3rem) var(--pad) 0; }
+#lista {
+  position: relative;
+  z-index: 1;
+  padding: clamp(1rem, 4vh, 3rem) var(--pad) 0;
+}
+
+/* El hilo de la lista: se dibuja hasta donde diga js/lista.js, con un
+   poco de retraso, así que al bajar se va cosiendo. */
+.hilo.cose path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset .8s ease-out;
+}
 
 .cat + .cat { margin-top: clamp(4rem, 14vh, 9rem); }
 
-.js .cat h2 { display: none; }
+.js .cat h1 { display: none; }   /* con JavaScript, ya lo dice el menú */
 
-.cat h2 {
+.cat h1 {
   margin: 0 0 clamp(1.5rem, 5vh, 3rem);
   font-size: 1em;
   font-weight: 400;

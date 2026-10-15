@@ -2,8 +2,9 @@
 
    Dos plantillas y ya:
 
-     dist/index.html                    portada: el mapa, las listas
-                                        (textil, foto) y el about
+     dist/index.html                    portada: el mapa
+     dist/<lista>/index.html            cada lista (textil/, foto/)
+     dist/about/index.html              el about
      dist/projects/<slug>/index.html    ficha técnica y galería en scroll
                                         vertical
 
@@ -19,8 +20,8 @@
    una foto de `portada` o `mapa` que no está paran el build con un mensaje, y
    la web publicada se queda como estaba.
 
-   El sitio funciona entero sin JavaScript: sin él la portada son las
-   listas. Con él: js/mapa.js monta el mapa y cambia de vista,
+   El sitio funciona entero sin JavaScript: sin él el mapa son las fotos
+   seguidas, y las listas y el about son páginas. Con él: js/mapa.js monta el mapa,
    js/transicion.js tapa y destapa al cambiar de página, js/hilos.js da
    la forma a los hilos, js/telar.js teje el fondo del about y
    js/hilo.js dibuja el de los proyectos.
@@ -150,7 +151,7 @@ try {
 window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListener('pagereveal', (e) => {
   const vt = e.viewTransition;
   if (vt && back && html.classList.contains('tapada')) { html.classList.add('tapando'); done(vt); }
-  else { vt?.skipTransition(); done(null); }
+  else { vt?.ready.catch(() => {}); vt?.skipTransition(); done(null); }   // saltarla rechaza ready: sin error en la consola
 }, { once: true })) : Promise.resolve(null);
 }</script>
 `;
@@ -199,10 +200,12 @@ function ogImage(out, srcs, filter) {
 
 const projectOg = (project) => ogImage(`media/${project.slug}/og.jpg`, [project.cover.src], ['-vf', FIT]);
 
-function homeOg(projects) {
+/** Las portadas de los primeros `projects`, en fila: la de la portada
+    (og.jpg) y la de cada lista (og-<lista>.jpg). */
+function mosaicOg(out, projects) {
   const picks = projects.slice(0, MOSAIC).map((p) => p.cover.src);
   const row = picks.map((_, i) => `[${i}:v]scale=-2:440,pad=iw+24:ih:12:0:white[p${i}]`).join(';');
-  return ogImage('og.jpg', picks, ['-filter_complex', `${row};${picks.map((_, i) => `[p${i}]`).join('')}hstack=inputs=${picks.length},${FIT}`]);
+  return ogImage(out, picks, ['-filter_complex', `${row};${picks.map((_, i) => `[p${i}]`).join('')}hstack=inputs=${picks.length},${FIT}`]);
 }
 
 /* `og`, la de 1200×630 si la hay; si no, `image` tal cual. */
@@ -258,7 +261,7 @@ function contact() {
    canonical, hreflang ni og, que es lo que pasa en la 404. `root` va de
    la página a la raíz del sitio, donde están css/, js/ y media/. `image` (y `og`, su versión de 1200×630, ya en dist/) es la que sale al
    compartir el enlace. */
-function page({ title, body, root = '', bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, og = null, head = '' }) {
+function page({ title, body, root = '', vista = null, bodyClass = null, bodyStyle = null, scripts = [], path = null, description = null, image = null, og = null, head = '' }) {
   const full = title ? `${title} — ${site.title}` : site.title;
   const desc = description || t(site.description) || '';
   const alternates = LANGS.length > 1
@@ -274,7 +277,7 @@ ${image ? shareImage(image, og) : ''}<meta property="og:locale" content="${LOCAL
 <meta name="twitter:card" content="summary_large_image">
 `;
   return `<!DOCTYPE html>
-<html lang="${attr(cur)}">
+<html lang="${attr(cur)}"${vista ? ` data-vista="${attr(vista)}"` : ''}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -333,53 +336,54 @@ function mapImages(project) {
   return [cover, ...Array.from({ length: n }, (_, k) => rest[Math.floor((k * rest.length) / n)])];
 }
 
-/* Las listas: una por cada una de data/site.json (textil, foto), cada
-   una su vista en el menú; sin JavaScript, todas seguidas con su nombre
-   encima. Dentro, en zigzag: un proyecto a la izquierda con su nombre
+/* Una lista (textil, foto): una página por cada una de data/site.json,
+   con su nombre encima (solo sin JavaScript: con él, ya está marcado en
+   el menú). Dentro, en zigzag: un proyecto a la izquierda con su nombre
    debajo, el siguiente a la derecha y más abajo, y así. Cada uno ocupa
    dos filas de la rejilla y el siguiente empieza en la segunda: por eso
    se solapan a media altura (css/style.css). Las verticales, más
    estrechas que las apaisadas, para que no se coman la pantalla. */
-function listItem(root, project, i) {
+function listItem(root, home, project, i) {
   const { cover } = project;
   const width = cover.h > cover.w ? 70 : 100;
-  return `<li style="grid-row:${i + 1} / span 2"><a class="row" href="projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+  return `<li style="grid-row:${i + 1} / span 2"><a class="row" href="${attr(home)}projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
 <div class="pic" style="width:${width}%">${img(cover, { base: root })}</div>
 <h3>${tr(project.title) || esc(project.slug)}</h3>
 </a></li>`;
 }
 
-function list(root, projects) {
+function list(root, home, projects) {
   const cats = Map.groupBy(projects, (p) => p.category);
   return [...cats].map(([category, items]) => `<section class="cat" id="${attr(category)}">
-<h2>${label(category)}</h2>
+<h1>${label(category)}</h1>
 <ol>
-${items.map((p, i) => listItem(root, p, i)).join('\n')}
+${items.map((p, i) => listItem(root, home, p, i)).join('\n')}
 </ol>
 </section>`).join('\n\n');
 }
 
-/* Las vistas de la portada, en el orden del menú: el mapa, una por lista
-   y el about. */
+/* Las vistas, en el orden del menú: el mapa (la portada), una página
+   por lista y el about. Cada una, su dirección: '' , 'textil/', 'about/'. */
 const LISTS = Object.keys(site.lists || {});
 const VIEWS = ['mapa', ...LISTS, 'about'];
+const viewPath = (view) => (view === 'mapa' ? '' : `${view}/`);
 /* El nombre de una vista en el menú: el de su lista, o el de «menu»
    (las vistas mapa y about, y el back de los proyectos). */
 const MENU = { mapa: 'map', about: 'about', volver: 'back' };
 const label = (view) => tr(site.lists?.[view]?.name || site.menu?.[MENU[view]]) || esc(view.replace(/-/g, ' '));
 
 /** El menú de arriba, igual en todas las páginas. El nombre lleva
-    siempre a la portada. A la derecha, mapa, las listas y about, con lo que
-    está puesto marcado (css/style.css). Abajo, la misma página en los
+    siempre a la portada. A la derecha, mapa, las listas y about, con la
+    que está puesta marcada (aria-current). Abajo, la misma página en los
     otros idiomas. `home` va de la página a la portada de su idioma;
     `root`, a la raíz del sitio. */
-function topBar({ home = '', root = '', path = null }) {
-  const link = (to) => `<a href="${attr(home)}#${attr(to)}" data-to="${attr(to)}">${label(to)}</a>`;
+function topBar({ home = '', root = '', path = null, view = null }) {
+  const link = (to) => `<a href="${attr(home + viewPath(to))}" data-to="${attr(to)}"${to === view ? ' aria-current="page"' : ''}>${label(to)}</a>`;
   const langs = path !== null && LANGS.length > 1
     ? `<div class="idiomas">${LANGS.map((l) => `<a href="${attr(root + prefix(l) + path)}" hreflang="${l}" lang="${l}"${l === cur ? ' aria-current="true"' : ''}>${l}</a>`).join('')}</div>`
     : '';
   return `<header class="top">
-<a href="${attr(home)}#mapa" class="name">${esc(site.title)}</a>
+<a href="${attr(home)}" class="name">${esc(site.title)}</a>
 ${langs}
 <nav>
 ${VIEWS.map(link).join('\n')}
@@ -387,24 +391,28 @@ ${VIEWS.map(link).join('\n')}
 </header>`;
 }
 
-/* La vista sale del hash (#mapa, #textil, #foto o #about) y se pone en
-   <html> antes de pintar, para que no asome otra. Sin JavaScript no se
-   pone nada y el CSS enseña las listas. Qué lista se ve, y qué se marca
-   en el menú, depende de las listas que haya: por eso va aquí y no en
-   css/style.css. */
-const VIEW_SCRIPT = `<script>{ const v = location.hash.slice(1); document.documentElement.dataset.vista = ${JSON.stringify(VIEWS)}.includes(v) ? v : 'mapa' }</script>
-<style>
-${LISTS.map((l) => `[data-vista="${l}"] .cat:not(#${l})`).join(',\n')} { display: none; }
-${VIEWS.map((v) => `[data-vista="${v}"] .top [data-to="${v}"]`).join(',\n')} { color: var(--ink); }
-</style>
-`;
+/* El «back» de un proyecto vuelve a la vista de la que se venía (el mapa
+   o una lista): cada una se apunta al abrirse. */
+const remember = (view) => `<script>try { sessionStorage.setItem('almarbra-vista', '${viewPath(view)}') } catch {}</script>\n`;
 
-function homePage(projects) {
-  const root = cur === lang ? '' : '../';
+/* Las direcciones de antes eran vistas con # (/#textil, /#about): llevan
+   a su página. */
+const OLD_HASH = `<script>{ const v = location.hash.slice(1); if (${JSON.stringify(VIEWS)}.includes(v) && v !== 'mapa') location.replace(v + '/') }</script>\n`;
+
+/* De la página de una vista: '' en el idioma del sitio, '../' en los demás,
+   y un '../' más si no es la portada. */
+const viewRoot = (view) => (view === 'mapa' ? '' : '../') + (cur === lang ? '' : '../');
+
+/* Los colores de los proyectos, para el telar del about y la ola de la
+   transición en las páginas que no tienen ninguno a la vista. */
+const palette = (projects) => JSON.stringify([...new Set(projects.map((p) => p.color))]);
+
+function mapPage(projects) {
+  const root = viewRoot('mapa');
   /* El mapa: las fotos de cada proyecto, sin posición. js/mapa.js las
      reparte en cada carga y las une con hilos del color del proyecto.
      Es solo para la vista: quien navega con teclado o lector de
-     pantalla tiene la lista. */
+     pantalla tiene las listas. */
   const pins = projects.flatMap((project, p) => mapImages(project).map((image, i) => {
     const long = [170, 120, 145][i % 3];   // de tres tamaños, para que no parezca una rejilla
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
@@ -413,18 +421,18 @@ function homePage(projects) {
       + `<span>${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
 
-
   return page({
     title: null,
     path: '',
     root,
+    vista: 'mapa',
     image: projects[0].cover,
-    og: homeOg(projects),
+    og: mosaicOg('og.jpg', projects),
     bodyClass: 'home',
-    head: VIEW_SCRIPT + ld(person()),
-    scripts: ['js/mapa.js', 'js/telar.js'],
+    head: OLD_HASH + remember('mapa') + ld(person()),
+    scripts: ['js/mapa.js'],
     body: `<h1 class="sr-only">${esc(site.title)}</h1>
-${topBar({ root, path: '' })}
+${topBar({ root, path: '', view: 'mapa' })}
 
 <main>
 <section id="mapa" aria-hidden="true" data-mezcla="${site.mix ?? 50}">
@@ -437,13 +445,49 @@ ${pins.join('\n')}
 <button type="button" data-step="-1" tabindex="-1">−</button>
 <button type="button" data-step="1" tabindex="-1">+</button>
 </div>
+</main>`,
+  });
+}
 
-<section id="about">
-<div>${tr(about, prose)}${contact()}</div>
-</section>
+function listPage(category, projects) {
+  const root = viewRoot(category);
+  const items = projects.filter((p) => p.category === category);
+  return page({
+    title: t(site.lists[category].name) || category,
+    path: viewPath(category),
+    root,
+    vista: category,
+    image: items[0].cover,
+    og: mosaicOg(`og-${category}.jpg`, items),
+    head: remember(category),
+    scripts: ['js/lista.js'],
+    body: `${topBar({ home: '../', root, path: viewPath(category), view: category })}
 
+<main>
 <section id="lista">
-${list(root, projects)}
+${list(root, '../', items)}
+</section>
+</main>`,
+  });
+}
+
+function aboutPage(projects) {
+  const root = viewRoot('about');
+  return page({
+    title: t(site.menu?.about) || 'about',
+    path: viewPath('about'),
+    root,
+    vista: 'about',
+    description: paras(t(about))[0],
+    image: projects[0].cover,
+    og: mosaicOg('og.jpg', projects),
+    head: ld(person()),
+    scripts: ['js/telar.js'],
+    body: `${topBar({ home: '../', root, path: viewPath('about'), view: 'about' })}
+
+<main>
+<section id="about" data-colores="${attr(palette(projects))}">
+<div>${tr(about, prose)}${contact()}</div>
 </section>
 </main>`,
   });
@@ -534,9 +578,9 @@ ${gallery.join('\n\n')}
 </main>
 
 <footer class="bar">
-<a href="${attr(home)}#${attr(project.category)}" class="back">${label('volver')}</a>
+<a href="${attr(home + viewPath(project.category))}" class="back">${label('volver')}</a>
 </footer>
-<script>try { const v = sessionStorage.getItem('almarbra-vista'); if (v) document.querySelector('.back').hash = v; } catch {}</script>`,
+<script>try { const v = sessionStorage.getItem('almarbra-vista'); if (v != null) document.querySelector('.back').href = '${home}' + v; } catch {}</script>`,
   });
 }
 
@@ -556,7 +600,7 @@ function notFoundPage() {
 <article>
 <div class="ficha">
 <h1>esta página no existe</h1>
-<p><a href="${attr(base)}#${attr(LISTS[0])}">ver los proyectos</a></p>
+<p><a href="${attr(base + viewPath(LISTS[0]))}">ver los proyectos</a></p>
 </div>
 </article>
 </main>`,
@@ -603,18 +647,22 @@ for (const p of projects) {
   cpSync(join(ROOT, 'projects', p.slug), join(OUT, 'media', p.slug), { recursive: true, filter: (f) => !f.endsWith('.json') });
 }
 
-const paths = ['', ...projects.map((p) => `projects/${p.slug}/`)];
+const paths = [...VIEWS.map(viewPath), ...projects.map((p) => `projects/${p.slug}/`)];
 
 for (const l of LANGS) {
   cur = l;
   const at = join(OUT, prefix(l));
   mkdirSync(at, { recursive: true });
-  writeFileSync(join(at, 'index.html'), homePage(projects));
+  writeFileSync(join(at, 'index.html'), mapPage(projects));
+  for (const view of [...LISTS, 'about']) {
+    mkdirSync(join(at, view), { recursive: true });
+    writeFileSync(join(at, view, 'index.html'), view === 'about' ? aboutPage(projects) : listPage(view, projects));
+  }
   for (const project of projects) {
     mkdirSync(join(at, 'projects', project.slug), { recursive: true });
     writeFileSync(join(at, 'projects', project.slug, 'index.html'), projectPage(project));
   }
-  console.log(`${prefix(l) || '/'}`.padEnd(8) + `portada y ${projects.length} proyectos`);
+  console.log(`${prefix(l) || '/'}`.padEnd(8) + `mapa, ${LISTS.join(', ')}, about y ${projects.length} proyectos`);
 }
 
 /* Las fotos pequeñas del mapa, que `mini` ha dejado en .cache/mapa/. */

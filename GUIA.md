@@ -2,7 +2,8 @@
 
 Hola, Almudena. Esta guía es para que puedas cambiar tu web tú misma: añadir un
 proyecto, cambiar fotos o textos, cambiar qué sale en el mapa… Todo se hace
-desde el navegador, en GitHub, sin instalar nada.
+desde **Visual Studio Code** (VS Code), un programa gratuito: abres el archivo,
+lo cambias, y con dos clics sale en la web.
 
 > **La regla de oro**: solo tocas **dos carpetas**: `projects/` (tus proyectos)
 > y `data/` (lo general de la web). Lo demás es el código: mejor no tocarlo.
@@ -18,11 +19,18 @@ arregles (abajo, en *Si algo va mal*).
 1. Hazte una cuenta en [github.com](https://github.com) y pásanos tu nombre de
    usuario.
 2. Te pasamos **una copia de la web a tu cuenta**: desde ese momento es tuya y
-   vive en `https://github.com/TU-USUARIO/almarbra`. Ahí es donde haces los
-   cambios de esta guía.
+   vive en `https://github.com/TU-USUARIO/almarbra`.
+3. Instala **Visual Studio Code**: https://code.visualstudio.com
+4. Ábrelo y trae la web a tu ordenador: a la izquierda, el icono de las ramas
+   (**Source Control**) → **Clone Repository** → **Clone from GitHub** → entra
+   con tu cuenta → elige `TU-USUARIO/almarbra` → elige una carpeta de tu
+   ordenador → **Open**. Si te pide instalar Git, acepta.
 
-Y para preparar las fotos, **imgToWeb**: https://meowrhino.github.io/imgToWeb/
-(la convierte al formato de la web, `.webp`, del tamaño justo, y las numera).
+A partir de aquí, la web es esa carpeta: cada vez que abras VS Code, se abre
+ahí.
+
+Para preparar las fotos, **imgToWeb**: https://meowrhino.github.io/imgToWeb/
+(las convierte al formato de la web, `.webp`, del tamaño justo, y las numera).
 **Ábrelo en Chrome o Firefox**, no en Safari: Safari no sabe hacer `.webp` y
 imgToWeb se salta las fotos.
 
@@ -50,18 +58,23 @@ espacios (con guiones: `nuevo-proyecto`).
 
 ---
 
-## 2. Cómo se edita un archivo en GitHub
+## 2. Cómo se hace un cambio con VS Code
 
-1. Entra en el archivo (por ejemplo `projects/helen/project.json`).
-2. Pulsa el **lápiz** ✏️ (arriba a la derecha del archivo).
-3. Cambia lo que quieras.
-4. Pulsa **Commit changes…** (botón verde), escribe en una línea qué has
-   cambiado ("texto de helen") y otra vez **Commit changes**.
+1. **Antes de nada, baja la última versión**: en la barra de abajo del todo,
+   pulsa las flechas ⟳ (**Sync**). Así tienes lo que hay publicado.
+2. En la columna de la izquierda, abre el archivo (por ejemplo
+   `projects/helen/project.json`) y cambia lo que quieras. Guarda con **Cmd+S**.
+   Si algo sale **subrayado en rojo**, hay una coma o unas comillas mal:
+   arréglalo antes de seguir (punto 6).
+3. A la izquierda, el icono de las ramas (**Source Control**): escribe en una
+   línea qué has cambiado ("texto de helen") y pulsa **Commit**.
+4. Pulsa **Sync Changes** (el mismo botón azul).
 
 Ya está: en 2-3 minutos sale en la web.
 
-**Para subir fotos**: entra en la carpeta (`projects/helen/img/`), pulsa
-**Add file → Upload files**, arrastra las fotos y **Commit changes**.
+**Para añadir fotos**: arrastra los archivos a su carpeta `img/` (por ejemplo
+`projects/helen/img/`) en la columna de la izquierda de VS Code, y luego los
+pasos 3 y 4.
 
 ---
 
@@ -154,18 +167,14 @@ nombre en el menú (`name`) y los nombres de las carpetas de sus proyectos
 
 1. **Las fotos**: pásalas por imgToWeb en el orden en que quieras que salgan
    (puedes arrastrarlas para ordenarlas) y descarga el zip.
-2. **La carpeta y sus textos**: en GitHub, entra en `projects/`, pulsa
-   **Add file → Create new file** y en el nombre escribe
-   `nuevo-proyecto/project.json` (al escribir la barra `/`, se crea la
-   carpeta). Pega dentro el contenido de otro `project.json` (por ejemplo el
-   de `helen`) o el de abajo, y cámbialo. **Commit changes**.
-3. **Las fotos**: en tu ordenador, mete las fotos del zip en una carpeta que
-   se llame `img`. En GitHub, entra en `projects/nuevo-proyecto/`, pulsa
-   **Add file → Upload files** y arrastra **la carpeta `img`** entera (en
-   Chrome se puede arrastrar una carpeta y GitHub la respeta). **Commit
-   changes**.
-4. **Que salga**: en `data/site.json`, añade `"nuevo-proyecto"` a los
+2. **La carpeta**: en VS Code, **copia la carpeta de otro proyecto** (por
+   ejemplo `projects/helen/`: clic derecho → Copy, y Paste sobre `projects/`) y
+   cámbiale el nombre a `nuevo-proyecto`.
+3. **Las fotos**: borra las de su `img/` y arrastra ahí las del zip.
+4. **Los textos**: abre su `project.json` y cámbialo (abajo, uno mínimo).
+5. **Que salga**: en `data/site.json`, añade `"nuevo-proyecto"` a los
    `projects` de la lista `textil` o `foto`, donde quieras que salga.
+6. **Commit** y **Sync Changes** (punto 2).
 
 Un `project.json` mínimo:
 
@@ -222,8 +231,9 @@ en la web.
 - entre dos cosas de una lista va una coma: `["1", "2", "3"]`;
 - **después de la última, no**: `["1", "2", "3",]` ✗.
 
-**Cómo saber si ha ido bien**: en GitHub, pestaña **Actions**. Lo último que
-has guardado sale con un círculo:
+**Cómo saber si ha ido bien**: en github.com, en tu web
+(`github.com/TU-USUARIO/almarbra`), pestaña **Actions**. Lo último que has
+subido sale con un círculo:
 
 - 🟢 verde: publicado.
 - 🟡 amarillo: publicándose (2-3 minutos).
@@ -236,6 +246,7 @@ has guardado sale con un círculo:
   ✗ la lista «foto» de data/site.json nombra «helenn», y no hay projects/helenn/project.json
   ```
 
-  Arréglalo (el número de línea te dice dónde mirar), guarda otra vez, y listo.
+  Arréglalo en VS Code (el número de línea te dice dónde mirar), y otra vez
+  **Commit** y **Sync Changes**.
 
 Si no ves qué es, escríbeme con el mensaje en rojo y lo miramos.

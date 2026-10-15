@@ -12,8 +12,8 @@
   if (!about) return;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Los colores de los proyectos, de la lista. */
-  const palette = [...new Set([...document.querySelectorAll('#lista [style*="--c"]')].map((el) => el.style.getPropertyValue('--c')))];
+  /* Los colores de los proyectos (data-colores, del build). */
+  const palette = JSON.parse(about.dataset.colores || '[]');
 
   const STRANDS = 5;   // hilos a la vez
   const GROW = 40;     // s en tejerse, y otros tantos en destejerse

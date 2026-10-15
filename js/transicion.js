@@ -28,7 +28,6 @@
    donde avanza —lo inclinada que va y cómo se curva— sale distinta cada
    vez, y se mueve mientras avanza.
 
-   La usa js/mapa.js para mapa, listas y about (window.transicion).
 
    Aquí también entran las fotos: cada una aparece cuando ha llegado. */
 
@@ -49,17 +48,23 @@
   const ctx = veil.getContext('2d');
 
   const colorOf = (el) => el.style.getPropertyValue('--c').trim();
-  const allColors = () => [...new Set([...document.querySelectorAll('[style*="--c"]')].map(colorOf).filter(Boolean))];
+  /* Los de lo que hay a la vista; en el about, que no tiene, los de todos
+     los proyectos (data-colores). */
+  const allColors = () => [...new Set([...document.querySelectorAll('[style*="--c"]')].map(colorOf)
+    .concat(JSON.parse(document.querySelector('[data-colores]')?.dataset.colores || '[]')).filter(Boolean))];
   const pick = (colors) => colors[Math.floor(Math.random() * colors.length)];
 
   const bg = () => getComputedStyle(root).getPropertyValue('--bg');
 
-  /* Dónde está una dirección: los proyectos, al fondo; en la portada, por
-     el hash, en el orden del menú. */
+  /* Dónde está una dirección: los proyectos, al fondo; las vistas (el
+     mapa, las listas, el about), en el orden del menú, por la carpeta
+     (/textil/, /en/about/…); la portada, el mapa. */
   const ORDER = [...document.querySelectorAll('.top nav [data-to]')].map((a) => a.dataset.to);
-  const place = (url) => (url.pathname.includes('/projects/')
-    ? 'proyecto'
-    : ORDER.includes(url.hash.slice(1)) ? url.hash.slice(1) : 'mapa');
+  const place = (url) => {
+    if (url.pathname.includes('/projects/')) return 'proyecto';
+    const parts = url.pathname.split('/');
+    return ORDER.find((view) => parts.includes(view)) || 'mapa';
+  };
 
   /* De un sitio a otro: eje (para el barrido) y sentido. Al mismo sitio
      (otro idioma), de lado. */
@@ -225,6 +230,7 @@
     if (vt) {
       await cover(colors, dir);
       root.classList.remove('tapando');
+      vt.ready.catch(() => {});   // saltarla rechaza ready: sin error en la consola
       vt.skipTransition();
     }
     uncover(colors, dir);
@@ -241,8 +247,7 @@
   }
 
   /* Los enlaces a otra página de la web: se tapa, se apunta lo que falta
-     y se va. Los de la misma página (solo cambia el hash) los lleva
-     js/mapa.js. */
+     y se va. */
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]');
     if (!a || still || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
@@ -285,5 +290,4 @@
     else for (const type of ['load', 'error']) img.addEventListener(type, () => img.classList.add('ok'), { once: true });
   }
 
-  window.transicion = { cover, uncover, way };
 })();
