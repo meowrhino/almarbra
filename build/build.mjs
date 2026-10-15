@@ -146,6 +146,8 @@ html.classList.add('js');
 let back = false;
 try {
   back = !sessionStorage.getItem('almarbra-transicion') && performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
+  const ola = JSON.parse(sessionStorage.getItem('almarbra-transicion'));
+  if (ola?.colors?.[0]) html.style.setProperty('--carga', ola.colors[0]);   // el loader, del color de la ola
   if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (back || sessionStorage.getItem('almarbra-transicion'))) html.classList.add('tapada');
 } catch {}
 window.revelada = 'onpagereveal' in window ? new Promise((done) => addEventListener('pagereveal', (e) => {

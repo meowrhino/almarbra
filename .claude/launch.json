@@ -4,9 +4,23 @@
     {
       "name": "almarbra",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 8000,
       "autoPort": true
+    },
+    {
+      "name": "almarbra lento",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "LENTO=2000",
+        "PORT=8001",
+        "node",
+        "build/serve.mjs"
+      ],
+      "port": 8001
     }
   ]
 }

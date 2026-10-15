@@ -260,6 +260,10 @@
     const colors = own ? [own] : allColors();
     const dir = way(place(new URL(location.href)), place(to));
     cover(colors, dir).then(() => {
+      /* tapada, a esperar la página nueva: si tarda, sale el loader
+         (css/style.css), del color de la ola */
+      root.style.setProperty('--carga', colors[0]);
+      root.classList.add('cargando');
       try {
         sessionStorage.setItem(KEY, JSON.stringify({ colors, dir }));
       } catch { /* sin él, se destapa igual, con todos los colores y hacia atrás */ }
@@ -270,6 +274,7 @@
   /* Volver con atrás o adelante a una página que el navegador guardó tal
      cual: igual, pero el <head> no vuelve a correr. */
   addEventListener('pageshow', (e) => {
+    root.classList.remove('cargando');   // se volvió a esta antes de irse del todo
     if (!e.persisted || still) return;
     ctx.clearRect(0, 0, veil.width, veil.height);
     root.classList.add('tapada', 'tapando');
