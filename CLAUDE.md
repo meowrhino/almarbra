@@ -28,7 +28,7 @@ Cuando falla, la web se queda como estaba. Para arreglarlo:
      está en `img/`. Pregunta si falta subirla; si no, quítala de `photos` (y
      de `cover` y `map`) y dilo.
    - "no es un WebP de verdad": la foto no ha pasado por imgToWeb
-     (`tools/imgToWeb/`); hay que pasarla, no renombrarla.
+     (https://meowrhino.github.io/imgToWeb/); hay que pasarla, no renombrarla.
    - "en «map», 9 no está entre sus fotos": `cover` y `map` solo pueden nombrar
      fotos que estén en `photos` o `groups`.
    - "la lista … nombra …, y no hay projects/…/project.json": el slug de

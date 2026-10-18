@@ -37,9 +37,7 @@ ahí.
 Para preparar las fotos, **imgToWeb**: https://meowrhino.github.io/imgToWeb/
 (las convierte al formato de la web, `.webp`, del tamaño justo, y las numera).
 **Ábrelo en Chrome o Firefox**, no en Safari: Safari no sabe hacer `.webp` y
-imgToWeb se salta las fotos. Hay una copia dentro de tu web, por si un día no
-está la nuestra: `tools/imgToWeb/index.html` (ábrela con doble clic, sin
-internet).
+imgToWeb se salta las fotos.
 
 ---
 

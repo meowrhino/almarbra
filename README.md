@@ -149,7 +149,6 @@ build/preview.mjs       la vista previa en el navegador (index.html, Live Server
 build/serve.mjs         servidor local de dist/
 index.html              la vista previa (no se publica)
 schema/                 lo que puede llevar cada JSON (VS Code, build y vista previa)
-tools/imgToWeb/         copia de imgToWeb, con sus librerías dentro (abre sin internet)
 
 css/transicion.css      la transición de la casa: igual en todas las webs (JAMstack)
 css/style.css           todo el estilo (y el dibujo de la transición: el loader)
