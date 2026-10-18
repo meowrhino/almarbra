@@ -1,6 +1,7 @@
-# Cada push a main genera dist/ y lo publica en GitHub Pages. Las fotos
-# llegan hechas en projects/ (imgToWeb); aquí se hacen las pequeñas del
-# mapa (cwebp) y las imágenes para compartir (ffmpeg).
+# Cada push a main genera dist/ y lo publica en meowrhino.github.io/almarbra/
+# (sin indexar). Solo en nuestra copia: en la de Almudena publica Cloudflare
+# (wrangler.jsonc) y esto no corre. Las fotos llegan hechas en projects/
+# (imgToWeb); las pequeñas del mapa y las de compartir las hace el build (sharp).
 name: build & deploy
 on:
   push:
@@ -9,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  issues: write     # el aviso de un build que falla (abajo)
   pages: write
   id-token: write
 
@@ -18,16 +20,49 @@ concurrency:
 
 jobs:
   build:
+    if: github.repository_owner == 'meowrhino'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with: { node-version: '22' }
-      - run: sudo apt-get update -qq && sudo apt-get install -y -qq webp ffmpeg   # cwebp: las fotos del mapa; ffmpeg: las og:image
-      - run: node build/build.mjs
+      - run: npm ci   # sharp: las fotos pequeñas del mapa y las de compartir
+      # lo que dice el build va también a build.log: si falla, sale en un issue
+      - run: node build/build.mjs 2>&1 | tee build.log
+        shell: bash
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with: { path: dist }
+
+      # Si el build falla, un issue con el error, para verlo al entrar al repo
+      # (uno abierto a la vez; los siguientes fallos, como comentarios). Se
+      # cierra solo cuando vuelve a publicarse. Cómo arreglarlo: CLAUDE.md.
+      - name: avisar del error en un issue
+        if: failure()
+        continue-on-error: true   # el aviso nunca impide publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REGISTRO: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          GUIA: ${{ github.server_url }}/${{ github.repository }}/blob/main/CLAUDE.md
+        run: |
+          errores=$(grep -E '^(✗|⚠)' build.log 2>/dev/null || tail -n 20 build.log 2>/dev/null || echo 'fallo antes del build: mira el registro')
+          cuerpo=$(printf 'El push %s no se ha publicado: la web sigue como estaba.\n\n```\n%s\n```\n\n[El registro entero](%s) · [cómo arreglarlo](%s) ("Si el build falla")' "${GITHUB_SHA::7}" "$errores" "$REGISTRO" "$GUIA")
+          n=$(gh issue list --state open --label build --json number -q '.[0].number')
+          if [ -n "$n" ]; then gh issue comment "$n" --body "$cuerpo"
+          else
+            gh label create build --color B60205 --description 'la web no se ha publicado' --force
+            gh issue create --title 'La web no se ha publicado' --label build --body "$cuerpo"
+          fi
+      - name: cerrar el aviso, si lo hay
+        if: success()
+        continue-on-error: true   # el aviso nunca impide publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for n in $(gh issue list --state open --label build --json number -q '.[].number'); do
+            gh issue close "$n" --comment "Arreglado: ${GITHUB_SHA::7} ya está publicado."
+          done
+
 
   deploy:
     needs: build

@@ -57,7 +57,7 @@ sobre las fotos.
   **Siempre que se cambia de página o de vista**, una ola de píxeles de
   colores barre la pantalla en diagonal y la deja en blanco; se cambia, y en
   la página nueva otra ola sigue en el mismo sentido y la destapa
-  (`js/transicion.js`). Cada ola con su frente, distinto cada vez, que se
+  (el dibujo, `js/ola.js`; el mecanismo, `js/transicion.js`). Cada ola con su frente, distinto cada vez, que se
   va doblando y se mueve mientras avanza. Al entrar
   en un proyecto baja, al volver sube; entre mapa, lista y about va de lado,
   en el orden del menú. Al entrar o salir de un proyecto, de su color.
@@ -103,22 +103,34 @@ se hace push y en un par de minutos está publicado.
 | archivo | qué |
 |---|---|
 | `projects/<slug>/project.json` | el proyecto: título, texto, créditos, fotos, portada y mapa (abajo) |
-| `data/site.json` | título, dirección, descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, colores, email, redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
+| `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, colores, email, redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
 | `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
 
 ```bash
+npm ci            # una vez: sharp, para las fotos del mapa y las og
 npm run build     # data/ + projects/ -> dist/
 npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
-npm run watch     # rehace dist/ cada vez que se guarda algo
+LENTO=2000 npm run serve   # cada página tarda 2 s: para ver el loader
 ```
 
-**Con Live Server de VS Code**: la web no está en la raíz, la escribe el
-build en `dist/`. `.vscode/settings.json` le dice a Live Server que sirva
-`dist/`, y `.vscode/tasks.json` arranca `npm run watch` al abrir la carpeta
-(la primera vez VS Code pregunta si se permiten tareas automáticas: sí). Así,
-al guardar se rehace `dist/` y Live Server recarga solo. Si no se permite la
-tarea, `npm run watch` en una terminal hace lo mismo.
+**La vista previa, con Live Server** (la de la clienta, sin Node): Go Live en
+la raíz abre `index.html`, que carga `build/preview.mjs` y pinta la página de
+`?p=/ruta/` con las mismas plantillas que el build (`build/paginas.mjs`),
+leyendo los JSON y la cabecera de cada foto (Range: no las baja enteras). Lo
+que no puede hacer sin disco: las fotos pequeñas del mapa (usa las grandes) y
+las og. Si algo está mal, sale el mismo error que daría el build.
+
+**Cada JSON lleva arriba su `"$schema"`** (`schema/site.json`, `about.json`,
+`project.json`): VS Code explica cada campo al pasar el ratón, los propone al
+escribir y subraya en rojo uno mal escrito o del tipo que no es. El build y la
+vista previa validan con los mismos ficheros (`validar`, en
+`build/proyectos.mjs`, el de oriol). Si se añade un campo, va también en el
+esquema.
+
+**Un proyecto oculto**: en `lists`, `{ "project": "roma", "visible": false }`.
+Tiene su página (con `noindex`), pero no sale en el mapa, las listas, el about
+ni el sitemap.
 
 ## Estructura
 
@@ -130,23 +142,32 @@ projects/<slug>/        un proyecto, todo junto
 data/site.json          título, url, idiomas, listas, menú, colores, contacto y mezcla
 data/about.json         el texto del about
 
-build/proyectos.mjs     lee projects/ en el orden de las listas (build y og)
+build/proyectos.mjs     lee los proyectos en el orden de las listas y valida (build y vista previa)
+build/paginas.mjs       las plantillas: datos -> HTML, sin tocar el disco
 build/build.mjs         data/ + projects/ -> dist/, validando antes
+build/preview.mjs       la vista previa en el navegador (index.html, Live Server)
 build/serve.mjs         servidor local de dist/
-build/watch.mjs         rehace dist/ al guardar (para Live Server)
+index.html              la vista previa (no se publica)
+schema/                 lo que puede llevar cada JSON (VS Code, build y vista previa)
+tools/imgToWeb/         copia de imgToWeb, con sus librerías dentro (abre sin internet)
 
-css/style.css           todo el estilo
+css/transicion.css      la transición de la casa: igual en todas las webs (JAMstack)
+css/style.css           todo el estilo (y el dibujo de la transición: el loader)
 js/mapa.js              el mapa (con su halo y su pelusa)
 js/telar.js             el telar de detrás del about
-js/transicion.js        la transición al cambiar de página o de vista, y la entrada de las fotos
+js/transicion.js        la transición de la casa (igual en todas las webs) y la entrada de las fotos
+js/ola.js               el dibujo de la transición: la ola de píxeles
 js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
 js/hilo.js              el hilo de la página de un proyecto
 js/lista.js             el hilo que cose las portadas de una lista
 favicon.svg             dos hilos de píxeles
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)
-wrangler.jsonc          para cuando pase a Cloudflare Workers
-.github/workflows/      build y publicación en cada push a main
+wrangler.jsonc          la copia de Almudena, en su Cloudflare (Workers Builds)
+.github/workflows/      nuestra copia: build y publicación en cada push a main; si falla, un issue
+GUIA.md                 para Almudena
+TRASPASO.md             la lista para pasarle su copia
+CLAUDE.md               para Claude: qué hacer si el build falla
 
 dist/                   GENERADO por el build — FUERA DE GIT
   index.html
@@ -156,8 +177,8 @@ dist/                   GENERADO por el build — FUERA DE GIT
   og.jpg                           la imagen para compartir de la portada
   css/  js/                        copia tal cual
   media/<slug>/img/                las fotos de cada proyecto
-  media/<slug>/mapa/               las del mapa, a 600 px (cwebp, desde .cache/)
-  media/<slug>/og.jpg              la imagen para compartir (ffmpeg, desde .cache/)
+  media/<slug>/mapa/               las del mapa, a 600 px (sharp, desde .cache/)
+  media/<slug>/og.jpg              la imagen para compartir (sharp, desde .cache/)
 ```
 
 En git va **solo el fuente**: `data/`, `projects/` y el código. Las páginas no
@@ -243,12 +264,12 @@ todas otra vez.
 
 **El mapa** no usa las grandes: enseña las fotos a 170 px como mucho (340 con
 el zoom), y bajarse 94 de 2000 px eran 30 MB. El build hace de cada foto del mapa
-una de 600 px con `cwebp` (en `.cache/mapa/`, fuera de git, y solo las que no
+una de 600 px con sharp (en `.cache/mapa/`, fuera de git, y solo las que no
 estén o hayan cambiado; desde cero, unos 4 s) y las publica en
 `media/<slug>/mapa/`: 5 MB. Desde cero, con las imágenes para compartir, el build
-tarda unos 6 s; con la caché, menos de uno. La clienta no ve nada de esto. En la Action, `cwebp`
-lo instala el workflow; en local, `brew install webp`. Sin él, el build avisa y el
-mapa usa las grandes.
+tarda unos 5 s; con la caché, menos de uno. La clienta no ve nada de esto. sharp
+lo instala `npm ci` (en la Action, en Workers Builds y en local). Sin él, el
+build avisa y el mapa usa las grandes.
 
 El resto —las listas y las galerías— usa las grandes, con `loading="lazy"`; en
 las galerías cada foto lleva un `max-width` con su ancho real (las verticales
@@ -288,19 +309,27 @@ lista que nombra un proyecto que no existe paran el build con el archivo y lo qu
 pasa:
 
 ```
-✗ projects/helen/project.json no es un JSON válido: … (line 3 column 3)
-✗ projects/helen: no encuentro 99.webp
-✗ projects/helen: en «mapa», 07.webp no está entre sus fotos
+✗ projects/helen/project.json no es un JSON válido (línea 8, columna 3). …
+✗ projects/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
+✗ projects/helen: no encuentro img/99.webp
+✗ projects/helen: en «map», 7 no está entre sus fotos
 ```
 
-En la Action eso sale en rojo y la web publicada se queda como estaba.
+En la Action eso sale en rojo, la web publicada se queda como estaba y se abre
+un issue con esas líneas (etiqueta `build`), que se cierra solo al volver a
+publicar. Cómo arreglarlo: `CLAUDE.md`.
 
 ### Publicar
 
-Cada push a `main` lanza `.github/workflows/deploy.yml`: `node build/build.mjs` y
-sube `dist/` a GitHub Pages, con `cwebp` instalado antes para las fotos del mapa.
-Tarda un par de minutos;
-en la pestaña **Actions** de GitHub, verde es publicado.
+**Dos copias, un repo** (JAMstack, receta regla 8). La nuestra: cada push a
+`main` lanza `.github/workflows/deploy.yml` (`npm ci`, `node build/build.mjs`) y
+sube `dist/` a GitHub Pages, en `meowrhino.github.io/almarbra/`; solo corre en
+`meowrhino` (`if: github.repository_owner`). La de Almudena: Workers Builds en
+su Cloudflare, con `wrangler.jsonc` (`TRASPASO.md`). El build sabe dónde está:
+con `GITHUB_ACTIONS`, la dirección de github.io y `noindex`; si no, la raíz con
+el `url` de `data/site.json` (`null` hasta que haya dominio: entonces
+`noindex`, y los canonical desde la raíz). Tarda un par de minutos; verde es
+publicado.
 
 En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
 
@@ -336,7 +365,11 @@ del plano, con el grueso fijo a cualquier zoom, y se dibujan solos al cargar,
 cada uno con su retraso. Los mandos, arriba de `js/mapa.js`: `DENSITY` (lo juntas que
 van las fotos) y `REACH` (lo ancha que es la zona de un proyecto).
 
-La transición vive en `js/transicion.js`: un lienzo a toda la pantalla,
+La transición: el mecanismo es el de la casa, igual en todas las webs
+(`js/transicion.js`, `css/transicion.css` y el `<script>` del `<head>`;
+JAMstack, patrones.md §6c), y el dibujo es de almarbra: `js/ola.js` (que
+le da a la casa `window.dibujo`) y el loader en `css/style.css`. La ola, un
+lienzo a toda la pantalla,
 `TIME` segundos para tapar y otros tantos para destapar, a tiempo (dura lo
 mismo en una pantalla de 60 Hz que en una de 120; si el navegador se
 atasca, la ola se para y sigue, no salta). Hace de pantalla de carga: entre
@@ -351,8 +384,7 @@ la ola lleva `BAND` píxeles de color delante. Los enlaces a otra página de la
 web se interceptan: se tapa, se apunta en `sessionStorage` el sentido y los
 colores, y se va; la página nueva nace tapada (un `<script>` en el `<head>`
 le pone `.tapada`) y se destapa en ese sentido. Si el script no llegara, el
-CSS la destapa sola a los 5 s. Mapa, lista y about son la misma página: ahí
-la llama `js/mapa.js` al cambiar el hash. Con atrás y adelante del navegador
+CSS la destapa sola a los 5 s. Con atrás y adelante del navegador
 no hay clic que interceptar (y el evento `navigate` no se deja cancelar
 entre páginas): con `@view-transition` el navegador deja una foto quieta de
 la página de antes, la nueva se pone transparente salvo el lienzo
@@ -376,7 +408,7 @@ Cada vista es una página (el build pone `data-vista` en su `<html>` y
 `aria-current` en su enlace del menú); la ola las une como al entrar en un
 proyecto, de lado y en el orden del menú. Otro `<script>` en el `<head>`, en
 todas las páginas, pone lo que no puede esperar: `.js` y si
-la página nace tapada (`HEAD_SCRIPT`, en `build/build.mjs`).
+la página nace tapada (`headScript`, en `build/paginas.mjs`).
 
 **Sin JavaScript la portada son las listas**, seguidas, que es también lo que leen el teclado
 y los lectores de pantalla: el mapa va con `aria-hidden`.
@@ -384,8 +416,8 @@ y los lectores de pantalla: el mapa va con `aria-hidden`.
 El CSS y los scripts se enlazan con `?v=<hash>` de su contenido: un deploy nunca deja a nadie con
 estilos viejos en caché.
 
-Todas las páginas llevan `noindex` y `robots.txt` bloquea el sitio, hasta que haya
-web de verdad.
+Todas las páginas llevan `noindex` y `robots.txt` bloquea el sitio mientras no
+haya dominio (y siempre en github.io).
 
 ## Lanzar
 
@@ -396,22 +428,15 @@ El Instagram y el email ya están. Lo que falta es el dominio.
 - `"social": ["https://www.instagram.com/usuario/"]`: sale al pie del about como
   `@usuario`, y en el JSON-LD como `sameAs` (Google une la web con la cuenta).
 - `"email": "…"`: al pie del about, delante de las redes. Vacío, no sale.
-- `"url": "https://eldominio.com/"`: la dirección definitiva, con la `/` del
-  final. De ahí salen los canonical, los `hreflang`, las `og:image`, el sitemap
-  y los enlaces de la 404. Los demás enlaces son relativos: no hay que tocar nada más.
-- `"noindex": false`: quita el meta y abre `robots.txt` con su `Sitemap:`.
+- `"url": "https://eldominio.com"`: el dominio. De ahí salen los canonical, los
+  `hreflang`, las `og:image`, el sitemap y los enlaces de la 404; con él, fuera
+  el `noindex` y `robots.txt` abre con su `Sitemap:`. Los demás enlaces son
+  relativos: no hay que tocar nada más. Solo en **su** copia: en github.io
+  manda la Action.
 
-**2. El dominio**, una de dos:
-
-- **GitHub Pages** (como ahora): en el repo, *Settings → Pages → Custom domain*,
-  el dominio. En el DNS del dominio, cuatro registros `A` a `185.199.108.153`,
-  `185.199.109.153`, `185.199.110.153` y `185.199.111.153`, y un `CNAME` de `www`
-  a `meowrhino.github.io`. Cuando GitHub dé el certificado, *Enforce HTTPS*.
-- **Cloudflare Workers** (lo que pide la receta: `_headers` con la caché,
-  sin el límite de 10 min de GitHub): Workers Builds conectado al repo;
-  `wrangler.jsonc` ya está y el comando es `node build/build.mjs`. Luego, el
-  dominio en *Custom domains*. Si se hace así, borrar
-  `.github/workflows/deploy.yml` para no publicar dos veces.
+**2. El dominio**, en su copia: Workers Builds en su Cloudflare y el dominio en
+*Custom domains*, paso a paso en `TRASPASO.md`. Nuestra copia sigue en
+github.io, sin indexar.
 
 **3. Comprobar**, ya publicada:
 
@@ -425,10 +450,10 @@ El Instagram y el email ya están. Lo que falta es el dominio.
 **Las imágenes para compartir** (og:image) las hace el build: 1200×630 en JPG,
 que es lo que esperan WhatsApp, Instagram y LinkedIn. La de cada proyecto es su
 portada entera sobre blanco; la de la portada de la web, las portadas de los seis
-primeros proyectos en fila. Con ffmpeg (en la Action lo instala el workflow; en
-local, `brew install ffmpeg`), en `.cache/og/` con nombre según las fotos de las
-que sale: solo se rehacen si cambia una portada. Sin ffmpeg, el build avisa y se
-comparte la portada tal cual.
+primeros proyectos en fila (y la de cada lista, las suyas). Con sharp, en
+`.cache/og/` con nombre según las fotos de las que sale: solo se rehacen si
+cambia una portada. Sin sharp, el build avisa y se comparte la portada tal
+cual.
 
 ## Los 16 proyectos
 

@@ -29,10 +29,17 @@ arregles (abajo, en *Si algo va mal*).
 A partir de aquí, la web es esa carpeta: cada vez que abras VS Code, se abre
 ahí.
 
+5. Instala **Live Server**, para ver los cambios antes de subirlos: a la
+   izquierda, el icono de los cuadraditos (**Extensions**) → busca
+   `Live Server` (el de Ritwick Dey) → **Install**. Abajo a la derecha sale
+   un botón **Go Live**.
+
 Para preparar las fotos, **imgToWeb**: https://meowrhino.github.io/imgToWeb/
 (las convierte al formato de la web, `.webp`, del tamaño justo, y las numera).
 **Ábrelo en Chrome o Firefox**, no en Safari: Safari no sabe hacer `.webp` y
-imgToWeb se salta las fotos.
+imgToWeb se salta las fotos. Hay una copia dentro de tu web, por si un día no
+está la nuestra: `tools/imgToWeb/index.html` (ábrela con doble clic, sin
+internet).
 
 ---
 
@@ -66,15 +73,22 @@ espacios (con guiones: `nuevo-proyecto`).
    `projects/helen/project.json`) y cambia lo que quieras. Guarda con **Cmd+S**.
    Si algo sale **subrayado en rojo**, hay una coma o unas comillas mal:
    arréglalo antes de seguir (punto 6).
-3. A la izquierda, el icono de las ramas (**Source Control**): escribe en una
+3. **Míralo**: pulsa **Go Live** (abajo a la derecha). Se abre tu web en el
+   navegador, tal como quedará, y cada vez que guardas se recarga sola. Si
+   algo está mal, en vez de la web sale un aviso en rojo que dice qué y dónde
+   (punto 6). Esta vista es solo para ti: no se publica nada hasta el paso 5.
+4. A la izquierda, el icono de las ramas (**Source Control**): escribe en una
    línea qué has cambiado ("texto de helen") y pulsa **Commit**.
-4. Pulsa **Sync Changes** (el mismo botón azul).
+5. Pulsa **Sync Changes** (el mismo botón azul).
 
 Ya está: en 2-3 minutos sale en la web.
 
 **Para añadir fotos**: arrastra los archivos a su carpeta `img/` (por ejemplo
 `projects/helen/img/`) en la columna de la izquierda de VS Code, y luego los
-pasos 3 y 4.
+pasos 3 a 5.
+
+En la vista previa el mapa tarda un poco más en cargar que en la web de
+verdad: usa las fotos grandes (las pequeñas se hacen al publicar). Es normal.
 
 ---
 
@@ -151,8 +165,11 @@ nombre en el menú (`name`) y los nombres de las carpetas de sus proyectos
 ```
 
 - Para **cambiar el orden**, mueve los nombres.
-- Para **esconder** un proyecto sin borrarlo, quítalo de la lista. Para que
-  vuelva, lo pones otra vez.
+- Para **esconder** un proyecto sin borrarlo, cambia su nombre por
+  `{ "project": "roma", "visible": false }`. Sigue teniendo su página (puedes
+  mandar el enlace a quien quieras), pero no sale en el mapa, en las listas ni
+  en Google, y no pierde su sitio: para que vuelva, pones otra vez `"roma"`.
+- Para **quitarlo del todo**, bórralo de la lista (la carpeta se puede quedar).
 - Para **pasarlo de lista**, lo mueves de una a la otra.
 
 ### Cambiar el about, tu email o tu Instagram
@@ -180,6 +197,7 @@ Un `project.json` mínimo:
 
 ```json
 {
+  "$schema": "../../schema/project.json",
   "title": { "es": "NUEVO PROYECTO", "en": "NEW PROJECT", "ca": "NOU PROJECTE" },
   "text": {
     "es": ["Texto."],
@@ -214,6 +232,7 @@ pequeñas del mapa **se hacen solas**: no tienes que hacer nada.
 | `photos` | la galería, en orden | `["1", "2", "3"]` |
 | `groups` | *(en vez de `photos`)* la galería por partes, cada una con su nombre, como en Roma | `[{ "name": "Virgen", "photos": ["10", "11"] }]` |
 | `color` | *(opcional)* su color, si no le toca uno solo | `"#982F0C"` |
+| `description` | *(opcional)* la frase que sale en Google y al compartir | `{ "es": "…", "en": "…", "ca": "…" }` |
 
 En `credits`, el rol (`role`) va por idioma; si es igual en los tres, basta con
 escribirlo una vez: `"role": "Make up & hair"`. El enlace (`url`) es opcional.
@@ -221,32 +240,52 @@ escribirlo una vez: `"role": "Make up & hair"`. El enlace (`url`) es opcional.
 Las líneas que empiezan por `"_` son notas (por ejemplo `"_borrador"`): no salen
 en la web.
 
+**VS Code te ayuda**: al pasar el ratón por un campo te dice qué es, al empezar
+a escribir uno nuevo te propone los que hay, y uno mal escrito (`"covr"`) o del
+tipo que no es sale **subrayado en rojo**. Lo sabe por la primera línea de cada
+`.json` (`"$schema": …`): no la borres.
+
+### Qué sale en Google y al compartir
+
+| dónde | de qué campo |
+|---|---|
+| el título | la portada: `title` de `data/site.json`; un proyecto: su `title` |
+| la frase de debajo | la portada y las listas: `description` de `data/site.json`; el about: su primer párrafo; un proyecto: su `description` o, si no hay, el primer párrafo de `text` |
+| la imagen al compartir | un proyecto: su `cover`, entera sobre blanco (la hace la web al publicar); la portada y cada lista: las portadas de sus primeros proyectos, en fila |
+
+Un proyecto escondido (`"visible": false`) no sale en Google.
+
 ---
 
 ## 6. Si algo va mal
 
-**Casi siempre es una coma o unas comillas.** En un `.json`:
+**Casi siempre es una coma o unas comillas.** Lo ves antes de subirlo: con
+**Go Live**, en vez de la web sale el aviso en rojo. En un `.json`:
 
 - cada texto va entre comillas dobles: `"así"`;
 - entre dos cosas de una lista va una coma: `["1", "2", "3"]`;
 - **después de la última, no**: `["1", "2", "3",]` ✗.
 
 **Cómo saber si ha ido bien**: en github.com, en tu web
-(`github.com/TU-USUARIO/almarbra`), pestaña **Actions**. Lo último que has
-subido sale con un círculo:
+(`github.com/TU-USUARIO/almarbra`), al lado del último cambio (encima de la
+lista de archivos) sale un círculo:
 
 - 🟢 verde: publicado.
 - 🟡 amarillo: publicándose (2-3 minutos).
-- 🔴 rojo: no se ha publicado, y **la web sigue como estaba**. Entra, pulsa en
-  **build** y verás una línea con ✗ que dice qué pasa y dónde. Por ejemplo:
+- 🔴 rojo: no se ha publicado, y **la web sigue como estaba**. Pulsa en él →
+  **Details**, y al final verás una línea con ✗ que dice qué pasa y dónde. Por
+  ejemplo:
 
   ```
-  ✗ projects/helen/project.json no es un JSON válido: … (line 12 column 5)
+  ✗ projects/helen/project.json no es un JSON válido (línea 12, columna 5). …
+  ✗ projects/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
+  ✗ projects/helen: no encuentro img/9.webp
   ✗ projects/helen: en «map», 9 no está entre sus fotos
   ✗ la lista «foto» de data/site.json nombra «helenn», y no hay projects/helenn/project.json
   ```
 
-  Arréglalo en VS Code (el número de línea te dice dónde mirar), y otra vez
-  **Commit** y **Sync Changes**.
+  Arréglalo en VS Code (el número de línea te dice dónde mirar; con **Go
+  Live** verás que vuelve a salir la web), y otra vez **Commit** y **Sync
+  Changes**.
 
 Si no ves qué es, escríbeme con el mensaje en rojo y lo miramos.

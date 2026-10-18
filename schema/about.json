@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "data/about.json: el texto del about",
+  "description": "data/about.json: el texto del about, una lista de párrafos por idioma. Este fichero lo lee VS Code (por el \"$schema\" de arriba del JSON) para autocompletar, explicar cada campo y subrayar lo que está mal; el build y la vista previa validan con él mismo.",
+  "type": "object",
+  "required": [
+    "es"
+  ],
+  "additionalProperties": false,
+  "patternProperties": {
+    "^_": {
+      "type": "string",
+      "description": "Una nota para quien edita. No sale en la web."
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "es": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Los párrafos: [\"primero\", \"segundo\"]. El primero sale también en Google."
+    },
+    "en": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Los párrafos: [\"primero\", \"segundo\"]. El primero sale también en Google."
+    },
+    "ca": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Los párrafos: [\"primero\", \"segundo\"]. El primero sale también en Google."
+    }
+  }
+}

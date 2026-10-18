@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/project.json",
   "_nota": "En la ficha, el último párrafo en catalán está en castellano; traducido aquí (provisional, que lo revise Almudena).",
   "title": {
     "es": "CORPÓREA",

@@ -1,4 +1,5 @@
 {
+  "$schema": "../schema/about.json",
   "_": "El texto del about, que sale al pulsar «about». Uno por idioma, como una lista de párrafos: [\"primero\", \"segundo\"]. Si uno se deja vacío, sale el español.",
   "es": [
     "Almudena González, artista visual e investigadora cuya práctica se sitúa en la intersección entre la fotografía, la investigación de materiales y el tejido Jacquard digital. Mi trabajo se centra en la construcción de territorios ficticios y materiales en los que poder existir como identidades disidentes al margen de las definiciones normativas del cuerpo y el espacio."

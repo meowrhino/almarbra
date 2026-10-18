@@ -388,62 +388,23 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* los del about se tejen y destejen solos, despacio (js/mapa.js) */
 .fondo path { animation: none; }
 
-/* ── la transición ───────────────────────────────────────────────────
+/* ── el dibujo de la transición ───────────────────────────────────────
 
-   Un lienzo a toda la pantalla donde se tapa y se destapa
-   (js/transicion.js). Una página a la que se llega desde otra nace
-   tapada (.tapada, del <head>) hasta que el script la destapa; si no
-   llegara, a los 5 s se destapa sola. */
+   El mecanismo es el de la casa (css/transicion.css, js/transicion.js).
+   Lo de almarbra: la ola de píxeles (js/ola.js) y, si la espera en
+   blanco pasa de medio segundo, un hilo de píxeles en el centro que se
+   teje y se desteje, del color de la ola (--carga). */
 
-.veil {
-  position: fixed;
-  inset: 0;
-  z-index: 10;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
+:root { --carga-anim: tejer 1.8s steps(20) .5s infinite; }
 
-.tapada body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 9;
-  background: var(--bg);
-  animation: destapar 0s 5s forwards;
-}
-
-@keyframes destapar { to { visibility: hidden; } }
-
-/* Mientras se espera en blanco —la página vieja ya tapada (.cargando)
-   esperando a la nueva, o la nueva (.tapada) esperando sus fotos—, si
-   pasa de medio segundo: un hilo de píxeles en el centro que se teje y
-   se desteje, del color de la ola (--carga, de js/transicion.js y del
-   <head>). Con buena conexión no llega a salir. */
 .tapada body::after,
 .cargando body::after {
-  content: "";
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 11;
   width: 84px;
   height: 18px;
-  margin: -9px 0 0 -42px;
   background: var(--carga, var(--ink));
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 84 18'%3E%3Cpath d='M2 10H6V12H12V14H22V12H26V10H30V8H34V6H38V4H48V6H52V8H56V10H60V12H64V14H76V12H80V10H82' fill='none' stroke='%23000' stroke-width='2' shape-rendering='crispEdges'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 84 18'%3E%3Cpath d='M2 10H6V12H12V14H22V12H26V10H30V8H34V6H38V4H48V6H52V8H56V10H60V12H64V14H76V12H80V10H82' fill='none' stroke='%23000' stroke-width='2' shape-rendering='crispEdges'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
-  animation: aparecer 0s .5s both, tejer 1.8s steps(20) .5s infinite;
 }
-
-/* si el script no llega, se va con el blanco, a los 5 s */
-.tapada:not(.cargando) body::after {
-  animation: aparecer 0s .5s both, tejer 1.8s steps(20) .5s infinite, destapar 0s 5s forwards;
-}
-
-.tapando body::after { content: none; }
-
-@keyframes aparecer { from { visibility: hidden; } }
 
 /* se teje de izquierda a derecha, se queda un momento y se desteje
    detrás de la punta, como los del about */
@@ -452,23 +413,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   45%, 60% { clip-path: inset(0); }
   100% { clip-path: inset(0 0 0 100%); }
 }
-
-/* Con atrás y adelante no se puede tapar antes de irse. El navegador
-   guarda una foto de la página de antes y la deja quieta debajo; la
-   página nueva, transparente salvo el lienzo (.tapando), la tapa con la
-   ola; luego la foto se quita (js/transicion.js). */
-@view-transition { navigation: auto; }
-::view-transition-old(root) { animation: quieta 10s; }
-::view-transition-new(root) { animation: none; }
-@keyframes quieta { to { opacity: 1; } }
-
-/* (si el script no llegara, a los 10 s se ve igual) */
-.tapando,
-.tapando body { background: transparent; }
-.tapando body > :not(.veil) { visibility: hidden; animation: asomar 0s 10s forwards; }
-.tapando body::before { visibility: hidden; }
-
-@keyframes asomar { to { visibility: visible; } }
 
 @media (prefers-reduced-motion: reduce) {
   .threads path,

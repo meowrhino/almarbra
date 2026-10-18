@@ -1,5 +1,6 @@
-// Para cuando la web pase a Cloudflare Workers (Workers Builds conectado al
-// repo). Allí va con dominio propio: cambia "url" en content/web.json (y quita "noindex").
+// La copia de Almudena, en Cloudflare: Workers Builds conectado a su repo
+// (TRASPASO.md). Se publica en la raíz; con el dominio en data/site.json →
+// "url", se indexa. Workers Builds hace el npm install solo (sharp).
 {
   "name": "almarbra",
   "compatibility_date": "2026-10-01",

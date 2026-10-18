@@ -7,7 +7,12 @@
   "scripts": {
     "build": "node build/build.mjs",
     "serve": "node build/serve.mjs",
-    "dev": "npm run build && npm run serve",
-    "watch": "node build/watch.mjs"
+    "dev": "npm run build && npm run serve"
+  },
+  "dependencies": {
+    "sharp": "^0.35.5"
+  },
+  "engines": {
+    "node": "22"
   }
 }

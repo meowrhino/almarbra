@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/project.json",
   "_nota": "En la ficha original los títulos ES e EN están intercambiados.",
   "_borrador": "El título y la sinopsis en catalán: traducción provisional, pendiente de que la revise Almudena.",
   "title": {

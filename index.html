@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<!--
+  LA VISTA PREVIA
+  Este archivo no se publica: la web de verdad la escribe build/build.mjs
+  al publicar, en dist/. Este sirve para ver los cambios antes de subirlos,
+  con Live Server de VS Code ("Go Live", abajo a la derecha): lee data/ y
+  projects/ y pinta la página con las mismas plantillas que el build.
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>vista previa</title>
+</head>
+<body style="margin:0;padding:clamp(24px,6vw,80px);font:18px/1.5 system-ui,sans-serif">
+<p id="aviso">cargando la vista previa…</p>
+<script>
+  if (location.protocol === 'file:') document.getElementById('aviso').innerHTML =
+    'Esta página se abre con <b>Live Server</b>: en VS Code, el botón <b>Go Live</b>, abajo a la derecha.';
+</script>
+<script type="module" src="build/preview.mjs"></script>
+</body>
+</html>

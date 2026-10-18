@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "projects/<slug>/project.json: un proyecto",
+  "description": "projects/<slug>/project.json: un proyecto. El nombre de la carpeta es su dirección (/projects/<slug>/). Sus fotos (1.webp, 2.webp… de imgToWeb), en img/ de la misma carpeta. Este fichero lo lee VS Code (por el \"$schema\" de arriba del JSON) para autocompletar, explicar cada campo y subrayar lo que está mal; el build y la vista previa validan con él mismo.",
+  "type": "object",
+  "required": [
+    "title"
+  ],
+  "additionalProperties": false,
+  "patternProperties": {
+    "^_": {
+      "type": "string",
+      "description": "Una nota para quien edita. No sale en la web."
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "title": {
+      "$ref": "#/$defs/texto",
+      "description": "El título, por idioma. Sale en su página, en las listas, en Google y al compartir."
+    },
+    "short": {
+      "$ref": "#/$defs/texto",
+      "description": "Opcional: un nombre corto para el mapa, si el título es largo."
+    },
+    "text": {
+      "$ref": "#/$defs/parrafos",
+      "description": "El texto, por idioma, como lista de párrafos. El primero sale también en Google (si no hay «description»)."
+    },
+    "description": {
+      "$ref": "#/$defs/texto",
+      "description": "Opcional: la frase que sale en Google y al compartir. Si no está, sale el primer párrafo de «text»."
+    },
+    "credits": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/credito"
+      },
+      "description": "Los créditos, una persona por línea: { \"role\": { \"es\": \"Fotografía\", \"en\": \"Photography\", \"ca\": \"Fotografia\" }, \"name\": \"…\", \"url\": \"https://…\" }."
+    },
+    "color": {
+      "type": "string",
+      "description": "Opcional: su color (#hex o nombre CSS). Si no, el que le toque de «colors» en data/site.json."
+    },
+    "cover": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]+$",
+        "description": "El número de la foto, sin .webp y entre comillas: \"3\" es img/3.webp."
+      },
+      "description": "La portada: la foto de las listas y al compartir. [\"8\"]. Si no está, la primera."
+    },
+    "map": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]+$",
+        "description": "El número de la foto, sin .webp y entre comillas: \"3\" es img/3.webp."
+      },
+      "description": "Las fotos que salen en el mapa: [\"2\", \"5\"]. Si no está, unas cuantas, repartidas."
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[0-9]+$",
+        "description": "El número de la foto, sin .webp y entre comillas: \"3\" es img/3.webp."
+      },
+      "description": "Las fotos de su página, en orden, por su número: [\"1\", \"2\", \"3\"]."
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/grupo"
+      },
+      "description": "En vez de «photos», las fotos por grupos, cada uno con su nombre encima (como en roma)."
+    }
+  },
+  "$defs": {
+    "texto": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "es": {
+          "type": "string"
+        },
+        "en": {
+          "type": "string"
+        },
+        "ca": {
+          "type": "string"
+        }
+      },
+      "description": "Un texto en los tres idiomas: { \"es\": \"…\", \"en\": \"…\", \"ca\": \"…\" }. Si falta uno, sale el español."
+    },
+    "parrafos": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "es": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "en": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ca": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Un texto largo en los tres idiomas, cada uno una lista de párrafos: { \"es\": [\"primero\", \"segundo\"], \"en\": […], \"ca\": […] }. Dentro de un párrafo, \\n es un salto de línea. Si falta uno, sale el español."
+    },
+    "foto": {
+      "type": "string",
+      "pattern": "^[0-9]+$",
+      "description": "El número de la foto, sin .webp y entre comillas: \"3\" es img/3.webp."
+    },
+    "credito": {
+      "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "es": {
+                  "type": "string"
+                },
+                "en": {
+                  "type": "string"
+                },
+                "ca": {
+                  "type": "string"
+                }
+              },
+              "description": "Un texto en los tres idiomas: { \"es\": \"…\", \"en\": \"…\", \"ca\": \"…\" }. Si falta uno, sale el español."
+            }
+          ],
+          "description": "Qué hizo: igual en todos los idiomas (\"Make up & hair\") o por idioma ({ \"es\": \"Fotografía\", \"en\": \"Photography\" })."
+        },
+        "name": {
+          "type": "string",
+          "description": "Su nombre."
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https?://",
+          "description": "Opcional: su web o su Instagram, la dirección entera."
+        }
+      }
+    },
+    "grupo": {
+      "type": "object",
+      "required": [
+        "photos"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "El nombre del grupo, encima de sus fotos."
+        },
+        "photos": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]+$",
+            "description": "El número de la foto, sin .webp y entre comillas: \"3\" es img/3.webp."
+          },
+          "description": "Sus fotos, en orden: [\"1\", \"2\"]."
+        }
+      }
+    }
+  }
+}

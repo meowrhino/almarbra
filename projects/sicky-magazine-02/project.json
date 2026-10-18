@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/project.json",
   "_nota": "La ficha repite el título de la primera; se distingue aquí.",
   "title": {
     "es": "SICKY MAGAZINE (II)",

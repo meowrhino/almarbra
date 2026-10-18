@@ -1,11 +1,11 @@
 {
-  "_": "Lo general de la web. «description», por idioma, es la que sale en Google y al compartir. «email» y «social» (direcciones enteras, p. ej. https://www.instagram.com/usuario/) salen al pie del about; vacíos, no sale nada. «lists»: las listas del menú, cada una con su nombre por idioma y sus proyectos («projects», el nombre de su carpeta en projects/) en el orden en que salen; un proyecto que no está en ninguna no sale en la web. «menu»: las demás palabras del menú, por idioma. «colors»: los colores de los proyectos, que se reparten en el orden de las listas y vuelven a empezar si hay más proyectos que colores (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en su project.json. «mix», de 0 a 100: en el mapa, con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto.",
+  "$schema": "../schema/site.json",
+  "_": "Lo general de la web. «description», por idioma, es la que sale en Google y al compartir. «email» y «social» (direcciones enteras, p. ej. https://www.instagram.com/usuario/) salen al pie del about; vacíos, no sale nada. «lists»: las listas del menú, cada una con su nombre por idioma y sus proyectos («projects», el nombre de su carpeta en projects/) en el orden en que salen; un proyecto que no está en ninguna no sale en la web; para esconder uno sin quitarlo, { \"project\": \"roma\", \"visible\": false }: tiene su página, pero no sale en el mapa, en las listas ni en Google. «menu»: las demás palabras del menú, por idioma. «colors»: los colores de los proyectos, que se reparten en el orden de las listas y vuelven a empezar si hay más proyectos que colores (nombres de color CSS o #hex); un proyecto puede llevar el suyo con «color» en su project.json. «mix», de 0 a 100: en el mapa, con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto.",
   "title": "almudena gonzalez",
-  "url": "https://meowrhino.github.io/almarbra/",
+  "url": null,
   "lang": "es",
   "langs": ["es", "en", "ca"],
   "description": { "es": "Portfolio de Almudena González — arte textil y fotografía de moda.", "en": "Portfolio of Almudena González — textile art and fashion photography.", "ca": "Portfoli d'Almudena González — art tèxtil i fotografia de moda." },
-  "noindex": true,
   "email": "algonzalezmarbra@gmail.com",
   "social": [
     "https://www.instagram.com/almarbra/"

@@ -2,8 +2,9 @@
 
 # La web generada: la escribe `npm run build` y la publica la Action
 dist/
+node_modules/
 .wrangler/
 
-# Las fotos pequeñas del mapa (cwebp) y las imágenes para compartir (ffmpeg): las hace el build
+# Las fotos pequeñas del mapa y las imágenes para compartir: las hace el build (sharp)
 .cache/
 

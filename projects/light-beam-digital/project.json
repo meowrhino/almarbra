@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/project.json",
   "title": {
     "es": "LIGHT BEAM DIGITAL",
     "en": "LIGHT BEAM DIGITAL"

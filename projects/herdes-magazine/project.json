@@ -1,4 +1,5 @@
 {
+  "$schema": "../../schema/project.json",
   "title": {
     "es": "HERDES MAGAZINE",
     "en": "HERDES MAGAZINE",

@@ -16,6 +16,8 @@
   const world = map.querySelector('.world');
   const pins = [...world.querySelectorAll('.pin')];
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // bajo el blanco de la transición (js/transicion.js), sin entrada: ya está entero al destaparse
+  if (root.classList.contains('tapada')) map.classList.add('listo');
 
   const colorOf = (el) => el.style.getPropertyValue('--c');
 
