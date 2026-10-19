@@ -14,8 +14,9 @@
    y el último trozo, hasta el borde, más despacio (SLOW). Al abrir la
    página, la primera pantalla va mucho más deprisa (OPEN).
 
-   Va por debajo de las fotos y el texto: se ve en el blanco, nunca
-   encima de una foto. */
+   Va por debajo de las fotos y el texto, que es opaco y con aire
+   (css/style.css): se ve en el blanco, nunca encima de una foto ni de
+   una letra. */
 
 (() => {
   const root = document.documentElement;

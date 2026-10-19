@@ -115,16 +115,27 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 #about div {
-  position: relative;
-  z-index: 1;
   max-width: 32rem;
   font-size: clamp(1.1rem, 2vw, 1.5rem);
   line-height: 1.35;
-  /* los hilos del telar pasan por debajo del texto, nunca por encima de
-     una letra: el bloque es opaco, con 1rem de aire alrededor */
+}
+
+/* El texto, como una foto: opaco y con 1rem de aire alrededor, así que
+   un hilo (el del telar, el de un proyecto) pasa por debajo y se corta
+   antes de llegar a una letra. En un proyecto, cada bloque ceñido a lo
+   que ocupa, para no cortar el hilo en el blanco de al lado. */
+#about div,
+.ficha > *,
+.group h2,
+.project .back {
+  position: relative;
+  z-index: 1;
   background: var(--bg);
   box-shadow: 0 0 0 1rem var(--bg);
 }
+
+.ficha > *,
+.group h2 { width: fit-content; }
 
 #about p { margin: 0 0 1em; }
 
@@ -435,7 +446,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 /* El hilo: baja ondulando de lado a lado y se va tejiendo (js/hilo.js).
-   Va por debajo de las fotos y el texto: se ve en el blanco. */
+   Va por debajo de las fotos y el texto (con su aire, arriba): se ve en
+   el blanco y nunca toca una letra. */
 .hilo {
   position: absolute;
   top: 0;

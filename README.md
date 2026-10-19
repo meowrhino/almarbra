@@ -88,7 +88,8 @@ sobre las fotos.
   Solo hay hilo en la pantalla: se teje al ritmo del scroll hasta el 85 % y
   más despacio hasta el borde, al abrir la página mucho más deprisa, y lo que
   se sale se borra; al volver, se teje otro. Va por debajo de las fotos y el
-  texto: se ve en el blanco, nunca encima de una foto.
+  texto (opaco, con 1rem de aire, como el del about): se ve en el blanco,
+  nunca encima de una foto ni de una letra.
 
 ## Lo que se cambia sin tocar código
 
