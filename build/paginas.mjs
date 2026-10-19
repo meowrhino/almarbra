@@ -156,9 +156,8 @@ const person = () => ({
   ...(site.social?.length ? { sameAs: site.social } : {}),
 });
 
-/* Al pie del about: el email y las redes de data/site.json (de
-   Instagram sale @usuario; de lo demás, el nombre del sitio), y quién
-   hizo la web. */
+/* Al pie del texto del about: el email y las redes de data/site.json (de
+   Instagram sale @usuario; de lo demás, el nombre del sitio). */
 function contact() {
   const handle = (url) => {
     const u = new URL(url);
@@ -170,8 +169,7 @@ function contact() {
     ...(site.email ? [`<a href="mailto:${attr(site.email)}">${esc(site.email)}</a>`] : []),
     ...(site.social || []).map((url) => `<a href="${attr(url)}" target="_blank" rel="noopener me">${esc(handle(url))}</a>`),
   ];
-  return (links.length ? `\n<p class="contacto">${links.join('\n')}</p>` : '')
-    + '\n<p class="credito">web: <a href="https://meowrhino.studio" target="_blank" rel="noopener">meowrhino</a></p>';
+  return links.length ? `\n<p class="contacto">${links.join('\n')}</p>` : '';
 }
 
 /* `path` es la dirección de la página dentro del sitio, sin el idioma
@@ -380,6 +378,7 @@ function aboutPage(projects) {
 <main>
 <section id="about" data-colores="${attr(palette(projects))}">
 <div>${tr(about, prose)}${contact()}</div>
+<p class="credito">web: <a href="https://meowrhino.studio" target="_blank" rel="noopener">meowrhino</a></p>
 </section>
 </main>`,
   });

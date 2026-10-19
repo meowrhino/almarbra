@@ -107,11 +107,13 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* ── el about: el texto arriba a la izquierda, bajo el nombre ───────
 
    Detrás, el telar: hilos de borde a borde que se tejen y destejen
-   despacio (js/telar.js). Al pie, el email y las redes. */
+   despacio (js/telar.js). Al pie, el email y las redes. Abajo del todo, a
+   la izquierda, quién hizo la web, frente a los idiomas. */
 
 #about {
+  position: relative;
   min-height: calc(100vh - var(--bar));
-  padding: .5rem var(--pad) var(--pad);
+  padding: .5rem var(--pad) calc(var(--bar) + var(--pad));
 }
 
 #about div {
@@ -142,7 +144,19 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* el email y las redes, al pie (content/web.json) */
 .contacto { display: flex; flex-wrap: wrap; gap: 0 1.25em; }
 .contacto a { border-bottom: 1px solid var(--dim); }
-.credito { margin-top: 2em; color: var(--dim); }
+/* en la franja de abajo, como los idiomas: el telar no entra en ella */
+#about .credito {   /* #about: que no le llegue el margen de #about p */
+  position: absolute;
+  left: var(--pad);
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: .3em;
+  height: var(--bar);
+  margin: 0;
+  font-size: .75rem;
+  color: var(--dim);
+}
 
 .fondo {
   position: fixed;
