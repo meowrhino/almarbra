@@ -14,8 +14,8 @@
    y el último trozo, hasta el borde, más despacio (SLOW). Al abrir la
    página, la primera pantalla va mucho más deprisa (OPEN).
 
-   Va dos veces: una debajo de las fotos y el texto, entera, y otra
-   encima, apagada (css/style.css). */
+   Va por debajo de las fotos y el texto: se ve en el blanco, nunca
+   encima de una foto. */
 
 (() => {
   const root = document.documentElement;
@@ -40,7 +40,7 @@
     document.body.prepend(svg);
     return svg;
   };
-  const layers = [layer('debajo'), layer('encima')];
+  const layers = [layer('debajo')];
 
   let W = root.clientWidth;
   const ph = Math.random() * 7;   // el temblor, el mismo en las dos puntas

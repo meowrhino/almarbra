@@ -1,10 +1,9 @@
 {
   "$schema": "../../schema/project.json",
-  "_nota": "La ficha repite el título de la primera; se distingue aquí.",
   "title": {
-    "es": "SICKY MAGAZINE (II)",
-    "en": "SICKY MAGAZINE (II)",
-    "ca": "SICKY MAGAZINE (II)"
+    "es": "SICKY MAGAZINE",
+    "en": "SICKY MAGAZINE",
+    "ca": "SICKY MAGAZINE"
   },
   "text": {},
   "credits": [

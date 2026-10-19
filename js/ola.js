@@ -28,8 +28,8 @@
   const root = document.documentElement;
 
   const TIME = 1.9;    // segundos en tapar, y otros tantos en destapar
-  const BAND = 5;      // píxeles de color en el frente de la ola
-  const C = 12;        // lado de un píxel de la ola, en px
+  const BAND = 2;      // píxeles de color en el frente de la ola
+  const C = 6;         // lado de un píxel de la ola, en px
 
   const veil = document.createElement('canvas');
   veil.className = 'veil';

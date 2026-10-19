@@ -232,14 +232,13 @@ function mapImages(project) {
 /* Una lista (textil, foto): una página por cada una de data/site.json,
    con su nombre encima (solo sin JavaScript: con él, ya está marcado en
    el menú). Dentro, en zigzag: un proyecto a la izquierda con su nombre
-   debajo, el siguiente a la derecha y más abajo, y así. Cada uno ocupa
-   dos filas de la rejilla y el siguiente empieza en la segunda: por eso
-   se solapan a media altura (css/style.css). Las verticales, más
+   debajo, el siguiente a la derecha y más abajo, y así: cada uno en su
+   fila de la rejilla, sin solaparse (css/style.css). Las verticales, más
    estrechas que las apaisadas, para que no se coman la pantalla. */
 function listItem(root, home, project, i) {
   const { cover } = project;
   const width = cover.h > cover.w ? 70 : 100;
-  return `<li style="grid-row:${i + 1} / span 2"><a class="row" href="${attr(home)}projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+  return `<li style="grid-row:${i + 1}"><a class="row" href="${attr(home)}projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
 <div class="pic" style="width:${width}%">${img(cover, { base: root })}</div>
 <h3>${tr(project.title) || esc(project.slug)}</h3>
 </a></li>`;
@@ -354,7 +353,6 @@ function listPage(category, projects) {
     image: items[0].cover,
     og: mosaicOg(`og-${category}.jpg`, items),
     head: remember(category),
-    scripts: ['js/lista.js'],
     body: `${topBar({ home: homeOf('../'), root, path: viewPath(category), view: category })}
 
 <main>

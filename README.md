@@ -3,7 +3,7 @@
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
 JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
-[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son seis archivos pequeños: el mapa, la transición, los hilos, el hilo de los proyectos, el de las listas y el telar del about.
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cinco archivos pequeños: el mapa, la transición, los hilos, el hilo de los proyectos y el telar del about.
 
 **Para actualizar la web (la clienta): [GUIA.md](GUIA.md).**
 
@@ -35,11 +35,8 @@ sobre las fotos.
   vista en el menú, en ese orden. Sin JavaScript salen las dos
   seguidas, con su nombre encima. Dentro, en zigzag: un proyecto a la
   izquierda con su nombre debajo, el siguiente a la derecha y más abajo, y
-  así, solapándose a media altura. Las portadas, cosidas en su orden por un
-  hilo (`js/lista.js`): un tramo de una a la siguiente, del color de la que
-  sale, que se va cosiendo al bajar y pasa por debajo de las fotos (por
-  encima, apagado), como el de un proyecto. En el móvil, una columna,
-  alternando también de lado.
+  así, sin solaparse y con aire entre una y otra, como en anaelleblin.com.
+  En el móvil, una columna, alternando también de lado.
 
   Los hilos del mapa van a media luz; al pasar por una foto, los de su
   proyecto se encienden del todo. Sin desenfoque bajo las franjas: el
@@ -90,8 +87,8 @@ sobre las fotos.
   más abajo, y al llegar elige otro, así que no sale una onda igual a otra.
   Solo hay hilo en la pantalla: se teje al ritmo del scroll hasta el 85 % y
   más despacio hasta el borde, al abrir la página mucho más deprisa, y lo que
-  se sale se borra; al volver, se teje otro. Va entero sobre el blanco y al
-  20 % sobre las fotos y el texto.
+  se sale se borra; al volver, se teje otro. Va por debajo de las fotos y el
+  texto: se ve en el blanco, nunca encima de una foto.
 
 ## Lo que se cambia sin tocar código
 
@@ -156,9 +153,8 @@ js/mapa.js              el mapa (con su halo y su pelusa)
 js/telar.js             el telar de detrás del about
 js/transicion.js        la transición de la casa (igual en todas las webs) y la entrada de las fotos
 js/ola.js               el dibujo de la transición: la ola de píxeles
-js/hilos.js             la curva y la forma de todos los hilos (también la usa el build)
+js/hilos.js             la curva y la forma de todos los hilos
 js/hilo.js              el hilo de la página de un proyecto
-js/lista.js             el hilo que cose las portadas de una lista
 favicon.svg             dos hilos de píxeles
 
 _headers                caché por carpeta (Cloudflare; GitHub Pages lo ignora)

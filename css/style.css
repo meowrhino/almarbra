@@ -183,20 +183,17 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .pin img { width: 100%; }
 
-/* el nombre del proyecto, bajo la foto por la que pasas */
+/* el nombre del proyecto no se ve: solo lo leen los lectores de pantalla */
 .pin span {
   position: absolute;
-  top: 100%;
-  left: 0;
-  padding-top: .4rem;
-  font-size: 12px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
   white-space: nowrap;
-  color: var(--c);
-  opacity: 0;
 }
 
-.pin,
-.pin span { transition: opacity .2s; }
+.pin { transition: opacity .2s; }
 
 /* Los hilos, a media luz. Al pasar por una foto se enciende su proyecto
    (js/mapa.js): sus hilos, a tope; las fotos de los demás se apagan y
@@ -204,10 +201,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .threads path { opacity: .35; }
 .threads path.on { opacity: 1; }
 .dim .pin:not(.on) { opacity: .15; }
-
-@media (hover: hover) {
-  .pin:hover span { opacity: 1; }
-}
 
 /* La entrada. Primero salen los huecos —una trama de píxeles del color
    del proyecto—, del centro hacia fuera: --d es el retraso de cada uno
@@ -296,24 +289,15 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
    Una página por lista de data/site.json, con su nombre encima (sin
    JavaScript; con él, ya está marcado en el menú). Dentro, en zigzag: dos
-   columnas, cada proyecto en dos filas de la rejilla y el siguiente
-   empezando en la segunda (grid-row, de build/build.mjs), así que bajan
-   alternando lado y se solapan a media altura. La foto, y debajo su
-   nombre. En el móvil, una columna, alternando también de lado. Las
-   portadas, cosidas por un hilo (js/lista.js), que pasa por debajo. */
+   columnas, cada proyecto en su fila de la rejilla (grid-row, de
+   build/paginas.mjs), así que bajan alternando lado sin solaparse, con
+   aire entre una y otra. La foto, y debajo su nombre. En el móvil, una
+   columna, alternando también de lado. */
 
 #lista {
   position: relative;
   z-index: 1;
   padding: clamp(1rem, 4vh, 3rem) var(--pad) 0;
-}
-
-/* El hilo de la lista: se dibuja hasta donde diga js/lista.js, con un
-   poco de retraso, así que al bajar se va cosiendo. */
-.hilo.cose path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke-dashoffset .8s ease-out;
 }
 
 .cat + .cat { margin-top: clamp(4rem, 14vh, 9rem); }
@@ -336,7 +320,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   list-style: none;
 }
 
-.cat li { padding-bottom: clamp(1.5rem, 5vh, 3rem); }
+.cat li { padding-bottom: clamp(3rem, 12vh, 8rem); }
 .cat li:nth-child(odd) { grid-column: 1; }
 .cat li:nth-child(even) { grid-column: 2; }
 
@@ -451,8 +435,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 /* El hilo: baja ondulando de lado a lado y se va tejiendo (js/hilo.js).
-   Va dos veces: entero por debajo de las fotos y el texto —se ve en el
-   blanco— y apagado por encima, que se adivina sobre ellos. */
+   Va por debajo de las fotos y el texto: se ve en el blanco. */
 .hilo {
   position: absolute;
   top: 0;
@@ -461,8 +444,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   overflow: hidden;
   pointer-events: none;
 }
-
-.hilo.encima { z-index: 2; opacity: .2; }
 
 .hilo path {
   fill: none;

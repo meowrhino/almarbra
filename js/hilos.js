@@ -1,12 +1,9 @@
-/* Los hilos, los mismos en toda la web: los del mapa, los de la lista,
-   el del about y el de la página de un proyecto.
+/* Los hilos, los mismos en toda la web: los del mapa, el del about y el de la página de un proyecto.
 
      hilos.wander(a, b)   la curva de a a b, en puntos
      hilos.path(puntos)   el `d` de un <path> con esa curva, ya con su forma
 
-   Lo usa también el build (build/build.mjs), que lo importa para dibujar
-   los hilos de la lista sin JavaScript: por eso se cuelga de globalThis y
-   no toca el documento si no lo hay.
+   Se cuelga de globalThis y no toca el documento si no lo hay.
 
    La forma: a escalones de GRID px, en horizontal y luego en vertical;
    el escalón casi no se ve, pero se nota que está hecho de píxeles. Para
