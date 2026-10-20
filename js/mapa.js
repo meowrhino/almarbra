@@ -5,7 +5,7 @@
    con el dedo o la rueda (es un scroll normal). Las fotos de un mismo
    proyecto van unidas por un hilo fino de su color, que serpentea como
    las líneas de anaelleblin.com y se dibuja al cargar. Todo cae en un
-   sitio distinto en cada carga. Los botones + y − acercan y alejan.
+   sitio distinto en cada carga. Los botones + y − (y pellizcar en el trackpad) acercan y alejan.
    (El telar del about, en js/telar.js.)
 
    Sin este archivo, las fotos salen seguidas (ver css/style.css). */
@@ -331,42 +331,89 @@
 
   /* ── el zoom ───────────────────────────────────────────────────── */
 
-  /* A saltos, sin animación: cinco escalones con un − y un + abajo en
-     el centro, como una balanza. En el del medio pesan igual; cuanto más
-     cerca, más grande el + y más pequeño el −, y al revés. A tope, el
-     otro queda en nada, pero se ve (SIZES, el trazo en px).
-     Acerca o aleja sobre el centro de la pantalla. */
+  /* Abajo en el centro, como el menú: − 100% +. El + y el − van al
+     escalón de al lado (ZOOMS), y el número cuenta mientras tanto; en
+     el número se puede escribir otro (de 50 a 200) y Enter. Con
+     el trackpad (pellizcar, o ctrl + rueda) el zoom es continuo y va
+     hacia donde está el puntero; los botones, sobre el centro de la
+     pantalla. */
   const ZOOMS = [0.5, 0.7, 1, 1.4, 2];
-  const SIZES = [4, 6, 10, 17, 26];
+  const MIN = ZOOMS[0];
+  const MAX = ZOOMS[ZOOMS.length - 1];
   const zoomBox = document.querySelector('.zoom');
-  const [minus, plus] = zoomBox.querySelectorAll('button');
+  const level = zoomBox.querySelector('.nivel');
   let zoom = 1;
 
-  const weigh = (b, s) => {
-    b.style.setProperty('--s', `${s}px`);
-    b.style.setProperty('--t', `${Math.max(2, Math.round(s / 6))}px`);
-  };
-
-  function setZoom(z) {
-    const cx = (map.scrollLeft + map.clientWidth / 2) / zoom;
-    const cy = (map.scrollTop + map.clientHeight / 2) / zoom;
-    const firstTime = !world.style.zoom;
+  /* `at`, el evento del trackpad: su punto se queda quieto. Sin él, el
+     centro de la pantalla (y la primera vez, el centro del plano). */
+  function setZoom(z, at = null) {
+    z = Math.min(MAX, Math.max(MIN, z));
+    const fx = at ? at.clientX : map.clientWidth / 2;
+    const fy = at ? at.clientY : map.clientHeight / 2;
+    const cx = (map.scrollLeft + fx) / zoom;
+    const cy = (map.scrollTop + fy) / zoom;
+    const firstTime = !at && !world.style.zoom;
     zoom = z;
     world.style.zoom = z;
     if (firstTime) map.scrollTo((world.offsetWidth * z - map.clientWidth) / 2, (world.offsetHeight * z - map.clientHeight) / 2);
-    else map.scrollTo(cx * z - map.clientWidth / 2, cy * z - map.clientHeight / 2);
-    const i = ZOOMS.indexOf(z);
-    weigh(plus, SIZES[i]);
-    weigh(minus, SIZES[SIZES.length - 1 - i]);
+    else map.scrollTo(cx * z - fx, cy * z - fy);
+    if (document.activeElement !== level) level.value = `${Math.round(z * 100)}%`;
+  }
+
+  /* Con los botones, de un escalón a otro en ZOOM_MS, frenando al
+     final; con prefers-reduced-motion, de golpe. */
+  const ZOOM_MS = 400;
+  let flight = 0;
+  let aim = 1;   // a dónde va: con varios clics seguidos, cada uno sigue desde ahí
+  function glide(to) {
+    cancelAnimationFrame(flight);
+    aim = to;
+    if (still) { setZoom(to); return; }
+    const from = zoom;
+    const t0 = performance.now();
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / ZOOM_MS);
+      setZoom(from + (to - from) * (1 - (1 - k) ** 3));
+      if (k < 1) flight = requestAnimationFrame(step);
+    };
+    flight = requestAnimationFrame(step);
   }
 
   zoomBox.addEventListener('click', (e) => {
     const b = e.target.closest('button');
     if (!b) return;
-    const i = ZOOMS.indexOf(zoom);
-    const z = ZOOMS[Math.max(0, Math.min(ZOOMS.length - 1, i + Number(b.dataset.step)))];
-    if (z !== zoom) setZoom(z);
+    const up = b.dataset.step === '1';
+    const z = up ? ZOOMS.find((l) => l > aim + 1e-3) : ZOOMS.findLast((l) => l < aim - 1e-3);
+    if (z) glide(z);
   });
+
+  /* Escribir el número: al entrar se selecciona; Enter (o salir) lo
+     aplica, Escape lo deja como estaba. Lo que no es un número, igual. */
+  const show = () => { level.value = `${Math.round(zoom * 100)}%`; };
+  level.addEventListener('focus', () => level.select());
+  level.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') level.blur();
+    if (e.key === 'Escape') { show(); level.blur(); }
+  });
+  level.addEventListener('change', () => {
+    const n = parseFloat(level.value);
+    if (n > 0) glide(Math.min(MAX, Math.max(MIN, n / 100)));
+  });
+  level.addEventListener('blur', () => { if (aim === zoom) show(); });
+
+  /* Pellizcar en el trackpad llega como rueda con ctrl (Chrome, Firefox)
+     o como gesture* (Safari). Sin preventDefault, el navegador
+     ampliaría la página entera. */
+  map.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey) return;
+    e.preventDefault();
+    cancelAnimationFrame(flight);
+    setZoom(zoom * Math.exp(-e.deltaY * 0.01), e);
+    aim = zoom;
+  }, { passive: false });
+  let pinch = 1;
+  map.addEventListener('gesturestart', (e) => { e.preventDefault(); pinch = zoom; });
+  map.addEventListener('gesturechange', (e) => { e.preventDefault(); setZoom(pinch * e.scale, e); aim = zoom; });
 
   /* Se monta al cargar; si aún no hay tamaño (pestaña de fondo), al
      tenerlo. */

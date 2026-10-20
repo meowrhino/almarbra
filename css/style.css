@@ -266,48 +266,55 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .pelusa.on { opacity: .8; }
 .halo { opacity: .45; }
 
-/* Los mandos del zoom, abajo en el centro: un − y un +, dibujados
-   como píxeles, que pesan como una balanza: --s (lo largo del trazo) y
-   --t (lo grueso) los pone js/mapa.js según el zoom. En difference,
-   como el menú. */
+/* Los mandos del zoom, abajo en el centro, como el menú: el − y el +
+   en gris y el zoom en negro (js/mapa.js lo cuenta al cambiar; se
+   puede escribir en él). En
+   difference, como el menú. */
 .zoom { display: none; }
 [data-vista="mapa"] .zoom {
+  --ink: #fff;
+  --dim: rgba(255, 255, 255, .55);
   position: fixed;
-  bottom: .5rem;
+  bottom: 0;
   left: 50%;
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: .25rem;
-  color: #fff;
+  height: var(--bar);
+  color: var(--ink);
   mix-blend-mode: difference;
   transform: translateX(-50%);
 }
 
 .zoom button {
-  --s: 10px;
-  --t: 2px;
-  display: block;
-  width: calc(var(--s) + 18px);
-  height: calc(var(--s) + 18px);
+  padding: 0 .6rem;
+  height: 100%;
+  border: 0;
+  font: inherit;
+  color: var(--dim);
+  background: none;
+  cursor: pointer;
+}
+
+/* el número: un campo, para escribir otro, que parece texto */
+.nivel {
+  width: 3.2em;   /* que no baile al contar */
   padding: 0;
   border: 0;
-  font-size: 0;   /* el − y el + se dibujan */
+  border-radius: 0;
+  font: inherit;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
   color: inherit;
-  background: linear-gradient(currentColor, currentColor) center / var(--s) var(--t) no-repeat;
-  cursor: pointer;
-  opacity: .7;
-  transition: width .15s steps(3), height .15s steps(3), background-size .15s steps(3);
+  background: none;
+  outline: none;
+  cursor: text;
 }
 
-.zoom button[data-step="1"] {
-  background:
-    linear-gradient(currentColor, currentColor) center / var(--s) var(--t) no-repeat,
-    linear-gradient(currentColor, currentColor) center / var(--t) var(--s) no-repeat;
-}
+.nivel:focus { border-bottom: 1px solid currentColor; }
 
 @media (hover: hover) {
-  .zoom button:hover { opacity: 1; }
+  .zoom button:hover { color: var(--ink); }
 }
 
 /* ── las listas ──────────────────────────────────────────────────────

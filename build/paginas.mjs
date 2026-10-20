@@ -334,6 +334,7 @@ ${pins.join('\n')}
 
 <div class="zoom" aria-hidden="true">
 <button type="button" data-step="-1" tabindex="-1">−</button>
+<input class="nivel" value="100%" inputmode="numeric" maxlength="4" tabindex="-1" aria-label="zoom">
 <button type="button" data-step="1" tabindex="-1">+</button>
 </div>
 </main>`,
