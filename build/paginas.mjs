@@ -145,18 +145,20 @@ function shareImage(image, og) {
    cierre el <script> antes de tiempo. */
 const ld = (data) => `<script type="application/ld+json">${JSON.stringify({ '@context': 'https://schema.org', ...data }).replace(/</g, '\\u003c')}</script>\n`;
 
-/* Quién es: va en la portada, y como autora en cada proyecto. «social»
-   en data/site.json, si las hay, van en sameAs. */
+/* Quién es: va en la portada, y como autora en cada proyecto. El
+   Instagram y las redes de data/site.json, si las hay, van en sameAs. */
+const ig = () => site.instagram?.replace(/^@/, '');
+const socials = () => [...(ig() ? [`https://www.instagram.com/${ig()}/`] : []), ...(site.social || [])];
 const person = () => ({
   '@type': 'Person',
   name: site.title,
   ...(site.url ? { url: site.url } : {}),
   description: paras(t(about))[0] || t(site.description),
   ...(site.email ? { email: site.email } : {}),
-  ...(site.social?.length ? { sameAs: site.social } : {}),
+  ...(socials().length ? { sameAs: socials() } : {}),
 });
 
-/* Al pie del texto del about: el email y las redes de data/site.json (de
+/* Al pie del texto del about: el email, el Instagram y las redes de data/site.json (de
    Instagram sale @usuario; de lo demás, el nombre del sitio). */
 function contact() {
   const handle = (url) => {
@@ -167,7 +169,7 @@ function contact() {
   };
   const links = [
     ...(site.email ? [`<a href="mailto:${attr(site.email)}">${esc(site.email)}</a>`] : []),
-    ...(site.social || []).map((url) => `<a href="${attr(url)}" target="_blank" rel="noopener me">${esc(handle(url))}</a>`),
+    ...socials().map((url) => `<a href="${attr(url)}" target="_blank" rel="noopener me">${esc(handle(url))}</a>`),
   ];
   return links.length ? `\n<p class="contacto">${links.join('\n')}</p>` : '';
 }

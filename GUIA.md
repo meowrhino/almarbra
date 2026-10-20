@@ -174,7 +174,8 @@ nombre en el menú (`name`) y los nombres de las carpetas de sus proyectos
 
 - El texto, en `data/about.json` (igual que el de un proyecto: lista de párrafos
   en `es`, `en` y `ca`).
-- El email y el Instagram, en `data/site.json`: `"email"` y `"social"`.
+- El email y el Instagram, en `data/site.json`: `"email"` y `"instagram"`. En
+  el Instagram, solo tu usuario, sin la @: `"instagram": "almarbra_"`.
 
 ---
 

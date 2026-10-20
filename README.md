@@ -101,7 +101,7 @@ se hace push y en un par de minutos está publicado.
 | archivo | qué |
 |---|---|
 | `projects/<slug>/project.json` | el proyecto: título, texto, créditos, fotos, portada y mapa (abajo) |
-| `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, colores, email, redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
+| `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, colores, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
 | `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
 
 ```bash
@@ -421,8 +421,9 @@ El Instagram y el email ya están. Lo que falta es el dominio.
 
 **1. En `data/site.json`:**
 
-- `"social": ["https://www.instagram.com/usuario/"]`: sale al pie del about como
-  `@usuario`, y en el JSON-LD como `sameAs` (Google une la web con la cuenta).
+- `"instagram": "usuario"` (solo el usuario, con o sin @): sale al pie del about
+  como `@usuario`, y en el JSON-LD como `sameAs` (Google une la web con la
+  cuenta). Otras redes, en `"social"`, con la dirección entera.
 - `"email": "…"`: al pie del about, delante de las redes. Vacío, no sale.
 - `"url": "https://eldominio.com"`: el dominio. De ahí salen los canonical, los
   `hreflang`, las `og:image`, el sitemap y los enlaces de la 404; con él, fuera

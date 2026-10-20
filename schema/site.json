@@ -62,13 +62,18 @@
       "type": "string",
       "description": "Sale al pie del about. Vacío, no sale."
     },
+    "instagram": {
+      "type": "string",
+      "pattern": "^@?[A-Za-z0-9._]*$",
+      "description": "El usuario de Instagram, solo el nombre: \"almarbra_\" (con o sin @). Sale al pie del about como @almarbra_. Vacío, no sale."
+    },
     "social": {
       "type": "array",
       "items": {
         "type": "string",
         "pattern": "^https?://"
       },
-      "description": "Las redes, la dirección entera: [\"https://www.instagram.com/usuario/\"]. Salen al pie del about."
+      "description": "Otras redes, la dirección entera: [\"https://vimeo.com/usuario\"]. Salen al pie del about, detrás del Instagram."
     },
     "lists": {
       "type": "object",
