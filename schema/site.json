@@ -89,6 +89,9 @@
         "map": {
           "$ref": "#/$defs/texto"
         },
+        "diaris": {
+          "$ref": "#/$defs/texto"
+        },
         "about": {
           "$ref": "#/$defs/texto"
         },
@@ -96,7 +99,7 @@
           "$ref": "#/$defs/texto"
         }
       },
-      "description": "Las demás palabras del menú, por idioma: map (el mapa), about y back (volver)."
+      "description": "Las demás palabras del menú, por idioma: map (el mapa), diaris, about y back (volver)."
     },
     "colors": {
       "type": "array",

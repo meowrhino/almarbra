@@ -13,6 +13,8 @@
     { "role": "Make up & hair", "name": "Lu Romero", "url": "https://www.instagram.com/luromeromakeup/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Esther Murphy", "url": "https://www.instagram.com/estheermurphy/" }
   ],
+  "color": "#9CC9A0",
+  "_color": "Color inventado por manu (26-10), pendiente de que Almudena diga el suyo.",
   "cover": ["8"],
   "map": ["1", "2", "4", "6", "8", "9", "11", "15"],
   "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]

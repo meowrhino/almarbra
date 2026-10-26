@@ -16,10 +16,16 @@ con lo que está puesto marcado; el idioma (**es · en · ca**) abajo a la
 derecha, salvo en el mapa. Todo sin fondo y en `difference`, para que se lea
 sobre las fotos.
 
-- **portada** (`/`): el **mapa**. Las dos **listas** y el **about** son páginas
-  propias: `/textil/`, `/foto/`, `/about/` (y en `/en/`, `/ca/`); las
+- **portada** (`/`): el **mapa**. Las dos **listas**, **diaris** y el **about** son páginas
+  propias: `/textil/`, `/foto/`, `/diaris/`, `/about/` (y en `/en/`, `/ca/`); las
   direcciones viejas con `#` (`/#about`) redirigen. En el mapa salen los
   proyectos de las dos.
+
+  Diaris: las fotos de `diaris/` (`1.webp`, `2.webp`…, sin JSON), en tres
+  columnas como un tumblr (dos en el móvil), barajadas en cada visita por un
+  script al pintar; sin JavaScript, en su orden. El build las publica a
+  1000 px (sharp, `.cache/diaris/`). Cada hueco, con la trama de un color de
+  los proyectos mientras llega su foto.
 
   El mapa es la idea de anaelleblin.com: las fotos de todos los proyectos,
   más o menos por zonas (la mezcla, `mix`), en un plano que se arrastra, y las de
@@ -28,8 +34,8 @@ sobre las fotos.
   si se deshilachara. Al pasar por una foto se enciende su proyecto, le brota
   alrededor un halo de píxeles de su color, y sus hilos se descosen y se
   vuelven a coser por otro camino (con su pelusa nueva). Abajo en el centro, el
-  zoom: un − y un + que pesan como una balanza (en el zoom de partida son
-  iguales; cuanto más cerca, más grande el + y más pequeño el −).
+  zoom: «− 70% +», como el menú (se abre al 70 %; el número se puede
+  escribir).
 
   Las listas: una por cada una de `lists` en `data/site.json`, cada una su
   vista en el menú, en ese orden. Sin JavaScript salen las dos
@@ -100,7 +106,8 @@ se hace push y en un par de minutos está publicado.
 
 | archivo | qué |
 |---|---|
-| `projects/<slug>/project.json` | el proyecto: título, texto, créditos, fotos, portada y mapa (abajo) |
+| `projects/<slug>/project.json` | el proyecto: título, texto, créditos, su color, fotos, portada y mapa (una foto de `img/` que está en `map` y no en `photos` sale solo en el mapa) |
+| `diaris/` | las fotos de diaris, `1.webp`, `2.webp`…: salen todas, barajadas |
 | `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, colores, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
 | `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
 

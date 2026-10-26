@@ -11,6 +11,8 @@
     { "role": "Make up & hair", "name": "Melissa Morena", "url": "https://www.instagram.com/bissamorena/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Helen Mariana Vanín", "url": "https://www.instagram.com/helenmarianavanin/" }
   ],
+  "color": "#6B4A3A",
+  "_color": "Color inventado por manu (26-10), pendiente de que Almudena diga el suyo.",
   "cover": ["1"],
   "map": ["1", "2", "4", "5"],
   "photos": ["1", "2", "3", "4", "5", "6"]

@@ -102,6 +102,21 @@ export function validar(dato, esquema, fichero) {
   return mirar(dato, esquema, []).map(m => `${fichero}: ${m}`);
 }
 
+/** Las fotos de diaris/ (1.webp, 2.webp…, de imgToWeb), por su número
+    (`numbers`, los que hay). Sin JSON: salen todas, barajadas en cada
+    visita. */
+export function loadDiaris(numbers, size) {
+  const errors = [];
+  const images = numbers.map((n) => {
+    const file = `${n}.webp`;
+    const src = `diaris/${file}`;
+    const wh = size(src);
+    if (!wh) { errors.push(`diaris/${file} no es un WebP de verdad (pásala por imgToWeb)`); return null; }
+    return { name: String(n), file, src, ...wh };
+  }).filter(Boolean);
+  return { images, errors };
+}
+
 /** El slug de una entrada de una lista: "roma" o { "project": "roma", "visible": false }. */
 export const slugOf = (entry) => (typeof entry === 'string' ? entry : entry?.project);
 
@@ -109,9 +124,9 @@ const fileOf = (name) => `${String(name).replace(/\.webp$/, '')}.webp`;
 
 /** Las fotos que nombra un project.json, con su ruta (la vista previa
     las pide antes de leer los proyectos). */
-export const photoSrcs = (slug, data) => [data.photos, ...[].concat(data.groups || []).map((g) => g?.photos)]
+export const photoSrcs = (slug, data) => [...new Set([data.photos, data.map, ...[].concat(data.groups || []).map((g) => g?.photos)]
   .flatMap((list) => (Array.isArray(list) ? list : []))
-  .map((name) => `projects/${slug}/img/${fileOf(name)}`);
+  .map((name) => `projects/${slug}/img/${fileOf(name)}`))];
 
 /**
  * Lee los proyectos en el orden de site.lists, y mira lo general de
@@ -165,9 +180,11 @@ export function loadProjects(site, { json, size, folders = null }) {
       const images = groups.flatMap((g) => g.images);
       if (!images.length) errors.push(`projects/${slug}: no tiene fotos`);
 
-      /* Las de «cover» y «map» tienen que estar entre sus fotos. */
+      /* La de «cover» tiene que estar entre sus fotos; las de «map», no:
+         una de img/ que no está en «photos» sale solo en el mapa. */
       const pick = (field) => [].concat(data[field] || []).map((name) => {
         const found = images.find((i) => i.name === String(name).replace(/\.webp$/, ''));
+        if (!found && field === 'map') return image(name);
         if (!found) errors.push(`projects/${slug}: en «${field}», ${name} no está entre sus fotos`);
         return found;
       }).filter(Boolean);

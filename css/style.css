@@ -70,6 +70,18 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .top nav { display: flex; gap: 1.25rem; }
 .top nav a { color: var(--dim); }
 
+/* En el móvil, en el mapa, el menú en columna: en fila no cabe, y ahí
+   no tapa nada que no se pueda apartar arrastrando. El nombre, a la
+   altura de la primera. */
+@media (max-width: 700px) {
+  [data-vista="mapa"] .top {
+    align-items: flex-start;
+    height: auto;
+    padding-block: calc((var(--bar) - 1.4em) / 2);
+  }
+  [data-vista="mapa"] .top nav { flex-direction: column; align-items: flex-end; gap: .2rem; }
+}
+
 /* el idioma, abajo a la derecha: la misma página en los otros */
 .idiomas {
   position: fixed;
@@ -234,7 +246,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    tarde entran sin esperar. Lo mismo, sin orden, en la lista, el about
    y las galerías. */
 .pin,
-.row .pic {
+.row .pic,
+#diaris li {
   background: repeating-conic-gradient(color-mix(in srgb, var(--c) 35%, transparent) 0 25%, transparent 0 50%) 0 0 / 6px 6px;
 }
 
@@ -242,9 +255,9 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 @keyframes hueco { from { opacity: 0; } }
 
 /* (si js/transicion.js no llegara, a los 8 s se ven igual) */
-.js :is(.pin, .row .pic, .group figure) img:not(.ok) { opacity: 0; animation: verse 0s 8s forwards; }
+.js :is(.pin, .row .pic, .group figure, #diaris li) img:not(.ok) { opacity: 0; animation: verse 0s 8s forwards; }
 @keyframes verse { to { opacity: 1; } }
-.js :is(.pin, .row .pic, .group figure) img { transition: opacity .8s ease-out; }
+.js :is(.pin, .row .pic, .group figure, #diaris li) img { transition: opacity .8s ease-out; }
 .js .pin img { transition-delay: calc(var(--d, 0s) + .3s); }
 .listo .pin { --d: 0s; }
 
@@ -379,6 +392,37 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .cat li:nth-child(even) .row { margin-left: auto; }
 }
 
+/* ── diaris ──────────────────────────────────────────────────────────
+
+   Las fotos de diaris/ en columnas, como un tumblr: cada una entera, a
+   lo ancho de su columna, con poco aire entre ellas. Tres columnas; en
+   el móvil, dos. El orden lo baraja un script al pintar
+   (build/paginas.mjs). */
+
+#diaris {
+  --gap: clamp(.5rem, 1.5vw, 1.25rem);
+  padding: clamp(1rem, 4vh, 3rem) var(--pad) var(--bar);
+}
+
+#diaris ul {
+  columns: 3;
+  column-gap: var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+#diaris li {
+  break-inside: avoid;
+  margin-bottom: var(--gap);
+}
+
+#diaris img { width: 100%; }
+
+@media (max-width: 700px) {
+  #diaris ul { columns: 2; }
+}
+
 /* ── los hilos ───────────────────────────────────────────────────────
 
    Los del mapa y los del about: finos, del mismo grueso a cualquier
@@ -510,9 +554,13 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .ficha { margin: 0 0 clamp(2.5rem, 9vh, 5.5rem); }
 
 /* El texto, más estrecho que la columna: una línea de 800 px se lee
-   mal. Las fotos sí la ocupan entera. */
-.ficha h1,
+   mal. Las fotos sí la ocupan entera, y el título también (que «roma:
+   ciudad en ruinas, / identidad en construcción» quepa en dos). */
 .ficha p { max-width: 34rem; }
+
+/* En el título, lo que va entre comas no se parte si cabe en una línea
+   (build/paginas.mjs). */
+.ficha h1 span { display: inline-block; }
 
 .ficha h1 {
   margin: 0 0 1.5rem;

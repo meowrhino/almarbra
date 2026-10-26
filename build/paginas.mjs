@@ -14,6 +14,7 @@
 
      index.html                    portada: el mapa
      <lista>/index.html            cada lista (textil/, foto/)
+     diaris/index.html             las fotos de diaris/, barajadas
      about/index.html              el about
      projects/<slug>/index.html    ficha técnica y galería en scroll
                                    vertical
@@ -33,6 +34,7 @@ let lang;
 let LANGS;
 let LISTS;
 let VIEWS;
+let diaris;
 
 /* Las páginas se enlazan entre sí con rutas relativas; solo lo que se lee
    desde fuera —canonical, og:image, sitemap— y la 404 necesitan la
@@ -67,7 +69,7 @@ const tr = (field, render = esc) => {
    web se sirven desde media/<slug>/ (ahí las copia el build), aparte de
    las páginas: así _headers les da su caché larga sin tocar el HTML. En
    la vista previa, donde están. */
-const pub = (src) => (preview ? src : src.replace(/^projects\//, 'media/'));
+const pub = (src) => (preview ? src : src.replace(/^projects\//, 'media/').replace(/^diaris\//, 'media/diaris/'));
 
 /* De cada foto hay una sola, la de imgToWeb (2000 px de lado largo).
    El mapa, que las enseña pequeñas y a docenas, usa las suyas: las hace
@@ -259,7 +261,7 @@ ${items.map((p, i) => listItem(root, home, p, i)).join('\n')}
 const viewPath = (view) => (view === 'mapa' ? '' : `${view}/`);
 /* El nombre de una vista en el menú: el de su lista, o el de «menu»
    (las vistas mapa y about, y el back de los proyectos). */
-const MENU = { mapa: 'map', about: 'about', volver: 'back' };
+const MENU = { mapa: 'map', diaris: 'diaris', about: 'about', volver: 'back' };
 const label = (view) => tr(site.lists?.[view]?.name || site.menu?.[MENU[view]]) || esc(view.replace(/-/g, ' '));
 
 /** El menú de arriba, igual en todas las páginas. El nombre lleva
@@ -336,7 +338,7 @@ ${pins.join('\n')}
 
 <div class="zoom" aria-hidden="true">
 <button type="button" data-step="-1" tabindex="-1">−</button>
-<input class="nivel" value="100%" inputmode="numeric" maxlength="4" tabindex="-1" aria-label="zoom">
+<input class="nivel" value="70%" inputmode="numeric" maxlength="4" tabindex="-1" aria-label="zoom">
 <button type="button" data-step="1" tabindex="-1">+</button>
 </div>
 </main>`,
@@ -382,6 +384,34 @@ function aboutPage(projects) {
 <section id="about" data-colores="${attr(palette(projects))}">
 <div>${tr(about, prose)}${contact()}</div>
 <p class="credito">web: <a href="https://meowrhino.studio" target="_blank" rel="noopener">meowrhino</a></p>
+</section>
+</main>`,
+  });
+}
+
+/* Diaris: las fotos de diaris/ en columnas, como un tumblr, barajadas
+   en cada visita (sin JavaScript, en su orden). Cada hueco, con la trama
+   de un color de los proyectos mientras llega su foto. */
+function diarisPage(projects) {
+  const root = viewRoot('diaris');
+  const colors = [...new Set(projects.map((p) => p.color))];
+  const name = t(site.menu?.diaris) || 'diaris';
+  return page({
+    title: name,
+    path: viewPath('diaris'),
+    root,
+    vista: 'diaris',
+    image: diaris[0],
+    og: mosaicOg('og-diaris.jpg', diaris.map((image) => ({ cover: image }))),
+    body: `${topBar({ home: homeOf('../'), root, path: viewPath('diaris'), view: 'diaris' })}
+
+<main>
+<section id="diaris">
+<h1 class="sr-only">${esc(name)}</h1>
+<ul>
+${diaris.map((image, i) => `<li style="--c:${attr(colors[i % colors.length])}">${img({ ...image, alt: name }, { base: root })}</li>`).join('\n')}
+</ul>
+<script>{ const ul = document.currentScript.previousElementSibling; for (let i = ul.children.length; i > 1; i--) ul.append(ul.children[Math.floor(Math.random() * i)]); }</script>
 </section>
 </main>`,
   });
@@ -463,7 +493,7 @@ function projectPage(project) {
 <main>
 <article>
 <div class="ficha">
-<h1>${esc(title)}</h1>
+<h1>${esc(title).split(/(?<=,) /).map((part) => `<span>${part}</span>`).join(' ')}</h1>
 ${tr(project.text, prose)}
 ${credits(project.credits)}
 </div>
@@ -509,6 +539,7 @@ function notFoundPage() {
  *
  *   site, about           data/site.json y data/about.json
  *   projects              los proyectos, ya leídos (build/proyectos.mjs)
+ *   diaris                las fotos de diaris/ (loadDiaris)
  *   preview               true en la vista previa: las fotos, donde
  *                         están, y los enlaces, a index.html?p=/ruta/
  *   version(file)         el ?v=<hash> de un archivo de css/ o js/
@@ -530,7 +561,8 @@ export function sitio(opts) {
   lang = site.lang || 'es';
   LANGS = site.langs || [lang];
   LISTS = Object.keys(site.lists || {});
-  VIEWS = ['mapa', ...LISTS, 'about'];
+  diaris = opts.diaris || [];
+  VIEWS = ['mapa', ...LISTS, ...(diaris.length ? ['diaris'] : []), 'about'];
   cur = lang;
 
   /* Los ocultos («visible»: false en la lista) tienen su página, pero no
@@ -544,6 +576,7 @@ export function sitio(opts) {
     cur = l;
     if (path === '') return mapPage(shown);
     if (path === 'about/') return aboutPage(shown);
+    if (path === 'diaris/' && diaris.length) return diarisPage(shown);
     const list = LISTS.find((view) => path === viewPath(view));
     if (list) return listPage(list, shown);
     const project = projects.find((p) => path === `projects/${p.slug}/`);

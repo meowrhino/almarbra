@@ -13,6 +13,8 @@
     { "role": "Make up & hair", "name": "Melissa Morena", "url": "https://www.instagram.com/bissamorena/" },
     { "role": "Set design", "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" }
   ],
+  "color": "#2F5D8A",
+  "_color": "Color inventado por manu (26-10), pendiente de que Almudena diga el suyo.",
   "cover": ["6"],
   "map": ["1", "4", "5", "7", "9", "10", "11", "13"],
   "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]

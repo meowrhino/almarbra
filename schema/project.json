@@ -61,7 +61,7 @@
         "pattern": "^[0-9]+$",
         "description": "El número de la foto, sin .webp y entre comillas: \"3\" es img/3.webp."
       },
-      "description": "Las fotos que salen en el mapa: [\"2\", \"5\"]. Si no está, unas cuantas, repartidas."
+      "description": "Las fotos que salen en el mapa: [\"2\", \"5\"]. Si no está, unas cuantas, repartidas. Una que está en img/ pero no en «photos» sale solo en el mapa."
     },
     "photos": {
       "type": "array",

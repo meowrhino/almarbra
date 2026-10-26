@@ -150,7 +150,7 @@
       fluff(path);
     }
 
-    setZoom(1);
+    setZoom(START);
   }
 
   /* ── los píxeles ───────────────────────────────────────────────── */
@@ -331,13 +331,14 @@
 
   /* ── el zoom ───────────────────────────────────────────────────── */
 
-  /* Abajo en el centro, como el menú: − 100% +. El + y el − van al
+  /* Abajo en el centro, como el menú: − 70% +. El + y el − van al
      escalón de al lado (ZOOMS), y el número cuenta mientras tanto; en
      el número se puede escribir otro (de 50 a 200) y Enter. Con
      el trackpad (pellizcar, o ctrl + rueda) el zoom es continuo y va
      hacia donde está el puntero; los botones, sobre el centro de la
      pantalla. */
   const ZOOMS = [0.5, 0.7, 1, 1.4, 2];
+  const START = 0.7;   // se abre de lejos, viendo más mapa
   const MIN = ZOOMS[0];
   const MAX = ZOOMS[ZOOMS.length - 1];
   const zoomBox = document.querySelector('.zoom');
@@ -364,7 +365,7 @@
      final; con prefers-reduced-motion, de golpe. */
   const ZOOM_MS = 400;
   let flight = 0;
-  let aim = 1;   // a dónde va: con varios clics seguidos, cada uno sigue desde ahí
+  let aim = START;   // a dónde va: con varios clics seguidos, cada uno sigue desde ahí
   function glide(to) {
     cancelAnimationFrame(flight);
     aim = to;

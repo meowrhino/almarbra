@@ -7,6 +7,7 @@
 
      dist/index.html                    portada: el mapa
      dist/<lista>/index.html            cada lista (textil/, foto/)
+     dist/diaris/index.html             las fotos de diaris/, barajadas
      dist/about/index.html              el about
      dist/projects/<slug>/index.html    ficha técnica y galería en scroll
                                         vertical
@@ -50,7 +51,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { OG_H, OG_W, abs, esc, prefix, sitio } from './paginas.mjs';
-import { leerJSON, loadProjects, slugOf, validar, webpSize } from './proyectos.mjs';
+import { leerJSON, loadDiaris, loadProjects, slugOf, validar, webpSize } from './proyectos.mjs';
 
 const ROOT = resolve(fileURLToPath(import.meta.url), '../..');
 const OUT = join(ROOT, 'dist');
@@ -95,19 +96,32 @@ site.noindex = github || !site.url;
 
 /* ── validar ─────────────────────────────────────────────────────── */
 
+function sizeOf(src) {
+  const file = join(ROOT, src);
+  if (!existsSync(file)) return undefined;
+  const b = Buffer.alloc(30);
+  const fd = openSync(file, 'r');
+  readSync(fd, b, 0, 30, 0);
+  closeSync(fd);
+  return webpSize(b);
+}
+
 const { projects, errors, warnings } = loadProjects(site, {
   json: (at) => files.get(at),
-  size(src) {
-    const file = join(ROOT, src);
-    if (!existsSync(file)) return undefined;
-    const b = Buffer.alloc(30);
-    const fd = openSync(file, 'r');
-    readSync(fd, b, 0, 30, 0);
-    closeSync(fd);
-    return webpSize(b);
-  },
+  size: sizeOf,
   folders: readdirSync(join(ROOT, 'projects'), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name),
 });
+
+/* diaris/: las que se llaman 1.webp, 2.webp…; lo demás no sale. La
+   vista previa las busca por orden y se para en el primer hueco. */
+const DIARIS = join(ROOT, 'diaris');
+const diarisFiles = existsSync(DIARIS) ? readdirSync(DIARIS).filter((f) => !f.startsWith('.')) : [];
+const numbers = diarisFiles.map((f) => /^([1-9][0-9]*)\.webp$/.exec(f)?.[1]).filter(Boolean).map(Number).sort((a, b) => a - b);
+for (const f of diarisFiles) if (!/^[1-9][0-9]*\.webp$/.test(f)) warnings.push(`diaris/${f} no sale: las fotos de diaris se llaman 1.webp, 2.webp… (como las saca imgToWeb)`);
+const gap = numbers.findIndex((n, i) => n !== i + 1);
+if (gap >= 0) warnings.push(`diaris: falta ${gap + 1}.webp (en la web salen todas, pero la vista previa se para ahí)`);
+const { images: diaris, errors: diarisErrors } = loadDiaris(numbers, sizeOf);
+errors.push(...diarisErrors);
 
 for (const w of warnings) console.warn(`⚠ ${w}`);
 if (errors.length) fail(errors);
@@ -148,6 +162,7 @@ function version(file) {
 const AIR = 48;      // margen blanco alrededor de la og, en px
 const MOSAIC = 6;    // portadas en la og de la portada y de cada lista
 const MINI = 600;
+const DIARI = 1000;   // las de diaris, en columnas de unos 450 px
 const WHITE = { r: 255, g: 255, b: 255 };
 
 let sharp;
@@ -185,6 +200,15 @@ async function makeMini(image) {
   await sharp(join(ROOT, image.src)).resize({ width: Math.min(MINI, image.w) }).webp({ quality: 85 }).toFile(out);
 }
 
+/** La de diaris/ a DIARI px de ancho, en .cache/diaris/: es la que se publica. */
+async function makeDiari(image) {
+  const out = join(ROOT, '.cache', 'diaris', image.file);
+  if (fresh(out, [image.src])) return out;
+  mkdirSync(dirname(out), { recursive: true });
+  await sharp(join(ROOT, image.src)).resize({ width: Math.min(DIARI, image.w) }).webp({ quality: 85 }).toFile(out);
+  return out;
+}
+
 const ogWanted = new Map();     // su ruta en dist/ → las fotos de las que sale
 const miniWanted = new Map();   // la foto → la foto
 const ogDone = new Map();       // su ruta en dist/ → la foto hecha, en .cache/og/
@@ -201,7 +225,7 @@ const images = {
 };
 
 /* La primera pasada, sin escribir nada: qué imágenes piden las plantillas. */
-const dry = sitio({ site, about, projects, version, ...images });
+const dry = sitio({ site, about, projects, diaris, version, ...images });
 for (const l of dry.LANGS) for (const path of dry.paths) dry.render(l, path);
 if (sharp) {
   for (const image of miniWanted.values()) {
@@ -222,8 +246,17 @@ for (const f of ['_headers', 'favicon.svg']) cpSync(join(ROOT, f), join(OUT, f))
 for (const p of projects) {
   cpSync(join(ROOT, 'projects', p.slug), join(OUT, 'media', p.slug), { recursive: true, filter: (f) => !f.endsWith('.json') });
 }
+/* Las de diaris, a DIARI px (sin sharp, tal cual). */
+for (const image of diaris) {
+  let from = join(ROOT, image.src);
+  if (sharp) {
+    try { from = await makeDiari(image); } catch (e) { console.warn(`⚠ ${image.src}: no se ha podido hacer pequeña (${e.message}); sale la grande`); }
+  }
+  mkdirSync(join(OUT, 'media', 'diaris'), { recursive: true });
+  cpSync(from, join(OUT, 'media', 'diaris', image.file));
+}
 
-const web = sitio({ site, about, projects, version, ...images });
+const web = sitio({ site, about, projects, diaris, version, ...images });
 const { LANGS, LISTS, paths, listed } = web;
 
 for (const l of LANGS) {
@@ -231,7 +264,7 @@ for (const l of LANGS) {
     mkdirSync(join(OUT, prefix(l), path), { recursive: true });
     writeFileSync(join(OUT, prefix(l), path, 'index.html'), web.render(l, path));
   }
-  console.log(`${prefix(l) || '/'}`.padEnd(8) + `mapa, ${LISTS.join(', ')}, about y ${projects.length} proyectos`);
+  console.log(`${prefix(l) || '/'}`.padEnd(8) + `mapa, ${LISTS.join(', ')}, ${diaris.length ? `diaris (${diaris.length} fotos), ` : ''}about y ${projects.length} proyectos`);
 }
 
 /* Las imágenes que ha hecho sharp, de .cache/ a dist/. */

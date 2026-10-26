@@ -29,8 +29,8 @@ Cuando falla, la web se queda como estaba. Para arreglarlo:
      de `cover` y `map`) y dilo.
    - "no es un WebP de verdad": la foto no ha pasado por imgToWeb
      (https://meowrhino.github.io/imgToWeb/); hay que pasarla, no renombrarla.
-   - "en «map», 9 no está entre sus fotos": `cover` y `map` solo pueden nombrar
-     fotos que estén en `photos` o `groups`.
+   - "en «cover», 9 no está entre sus fotos": `cover` solo puede nombrar una
+     foto que esté en `photos` o `groups` (`map`, cualquiera de `img/`).
    - "la lista … nombra …, y no hay projects/…/project.json": el slug de
      `data/site.json` → `lists` y el nombre de la carpeta no son iguales.
 4. **Comprueba**: `node build/build.mjs` sin ✗ (los ⚠ no paran nada).

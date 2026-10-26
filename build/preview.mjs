@@ -15,7 +15,7 @@
    navegador no puede ver qué carpetas hay. */
 
 import { esc, sitio } from './paginas.mjs';
-import { leerJSON, loadProjects, photoSrcs, slugOf, validar, webpSize } from './proyectos.mjs';
+import { leerJSON, loadDiaris, loadProjects, photoSrcs, slugOf, validar, webpSize } from './proyectos.mjs';
 
 const write = (html) => { document.open(); document.write(html); document.close(); };
 
@@ -77,7 +77,18 @@ async function start() {
   const { projects, errors } = loadProjects(site, { json: (at) => files.get(at), size: (src) => sizes.get(src) });
   if (errors.length) return oops('Así no se publicaría', errors);
 
-  const web = sitio({ site: { ...site, noindex: true }, about, projects, preview: true });
+  /* diaris/: 1.webp, 2.webp…, hasta la primera que no esté. */
+  const numbers = [];
+  for (let n = 1; ; n++) {
+    const wh = await size(`diaris/${n}.webp`);
+    if (wh === undefined) break;
+    sizes.set(`diaris/${n}.webp`, wh);
+    numbers.push(n);
+  }
+  const { images: diaris, errors: diarisErrors } = loadDiaris(numbers, (src) => sizes.get(src));
+  if (diarisErrors.length) return oops('Así no se publicaría', diarisErrors);
+
+  const web = sitio({ site: { ...site, noindex: true }, about, projects, diaris, preview: true });
 
   /* ?p=/en/projects/roma/ → en, projects/roma/ */
   let path = (new URLSearchParams(location.search).get('p') || '/').replace(/^\/+/, '');

@@ -52,6 +52,7 @@ projects/                     ← tus proyectos, uno por carpeta
     project.json
     img/
   …
+diaris/                       ← las fotos de diaris: 1.webp, 2.webp, 3.webp…
 data/
   site.json                   ← qué proyectos salen y en qué orden, tu email, Instagram, el menú…
   about.json                  ← el texto del about
@@ -122,7 +123,8 @@ carpeta `img/`):
 
 - `cover` (portada): la foto que sale en la lista y cuando alguien comparte el
   enlace.
-- `map` (mapa): las que salen en el mapa de la portada.
+- `map` (mapa): las que salen en el mapa de la portada. Puede llevar una que
+  no esté en `photos`: sale solo en el mapa, y no en la página del proyecto.
 
 ### Cambiar el orden de las fotos, o quitar una
 
@@ -142,6 +144,17 @@ pasa nada):
    que quieras) y súbelas todas, sustituyendo las de antes.
 2. Súbelas a su carpeta `img/`.
 3. Añade sus números a `photos` en el `project.json`.
+
+### Diaris: añadir o quitar fotos
+
+En diaris salen **todas** las fotos de la carpeta `diaris/`, en otro orden cada
+vez que alguien entra. No hay JSON: solo las fotos.
+
+- **Añadir**: pásalas por imgToWeb y súbelas a `diaris/`. Como imgToWeb numera
+  desde el 1, si ya hay 66, cámbiales el nombre a 67, 68… antes de subirlas.
+- **Quitar**: borra la foto de `diaris/`, y cambia el nombre de la última al
+  número que ha quedado libre (si borras la 12 y hay 66, la 66 pasa a ser la
+  12). Si queda un hueco, la web sale bien, pero la vista previa se para ahí.
 
 ### Cambiar el orden de los proyectos, o esconder uno
 
@@ -279,7 +292,7 @@ lista de archivos) sale un círculo:
   ✗ projects/helen/project.json no es un JSON válido (línea 12, columna 5). …
   ✗ projects/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
   ✗ projects/helen: no encuentro img/9.webp
-  ✗ projects/helen: en «map», 9 no está entre sus fotos
+  ✗ projects/helen: en «cover», 9 no está entre sus fotos
   ✗ la lista «foto» de data/site.json nombra «helenn», y no hay projects/helenn/project.json
   ```
 
