@@ -141,6 +141,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    antes de llegar a una letra. En un proyecto, cada bloque ceñido a lo
    que ocupa, para no cortar el hilo en el blanco de al lado. */
 #about div,
+#contacto div,
 .ficha > *,
 .group h2,
 .project .back {
@@ -187,17 +188,25 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* ── contacto ───────────────────────────────────────────────────────
 
-   Como el about: arriba a la izquierda, bajo el nombre. La foto (si la
-   hay) y debajo el email y las redes, del tamaño del texto del about. */
+   Como el about (el telar detrás, el bloque opaco que corta los hilos),
+   pero en el centro de la pantalla y más pequeño: la foto (si la hay)
+   y debajo el email y las redes. */
 
 #contacto {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: calc(100vh - var(--bar));
   padding: .5rem var(--pad) calc(var(--bar) + var(--pad));
-  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  font-size: clamp(.95rem, 1.5vw, 1.15rem);
   line-height: 1.35;
+  text-align: center;
 }
 
-#contacto figure { max-width: 32rem; margin: 0 0 1.5rem; }
+#contacto div { width: min(18rem, 100%); }
+#contacto figure { margin: 0 0 1rem; }
 #contacto img { width: 100%; }
+#contacto .contacto { justify-content: center; }
 
 /* ── el mapa ─────────────────────────────────────────────────────────
 

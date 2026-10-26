@@ -394,8 +394,9 @@ function aboutPage(projects) {
 /* Diaris: las fotos de diaris/ en columnas, como un tumblr, barajadas
    en cada visita (sin JavaScript, en su orden). Cada hueco, con la trama
    de un color de los proyectos mientras llega su foto. */
-/* Contacto: como el about, arriba a la izquierda bajo el nombre: la
-   foto de contacto/ (1.webp, si está) y debajo el email y las redes. */
+/* Contacto: como el about pero en el centro y más pequeño: la foto de
+   contacto/ (1.webp, si está) y debajo el email y las redes. Detrás, el
+   mismo telar (js/telar.js). */
 function contactPage(projects) {
   const root = viewRoot('contacto');
   const name = t(site.menu?.contact) || 'contacto';
@@ -407,12 +408,13 @@ function contactPage(projects) {
     image: contactPhoto || projects[0].cover,
     og: contactPhoto ? null : mosaicOg('og.jpg', projects),
     head: ld(person()),
+    scripts: ['js/telar.js'],
     body: `${topBar({ home: homeOf('../'), root, path: viewPath('contacto'), view: 'contacto' })}
 
 <main>
-<section id="contacto">
+<section id="contacto" data-colores="${attr(palette(projects))}">
 <h1 class="sr-only">${esc(name)}</h1>
-${contactPhoto ? `<figure>${img({ ...contactPhoto, alt: site.title }, { base: root, eager: true })}</figure>\n` : ''}${contact()}
+<div>${contactPhoto ? `<figure>${img({ ...contactPhoto, alt: site.title }, { base: root, eager: true })}</figure>` : ''}${contact()}</div>
 </section>
 </main>`,
   });

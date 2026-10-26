@@ -18,7 +18,12 @@
      otro idioma               de lado, hacia delante
 
    Los colores: los del proyecto si se entra o se sale de uno; si no, los
-   de todos. El primero es también el del loader (`carga`).
+   de todos. El loader (`carga`) va del mismo color, o de todos a tramos.
+
+   Cada sitio tiene su grano (LOOK): la ola que tapa lleva el del sitio
+   del que se va, y la que destapa, el del que se llega. Y al entrar en
+   un proyecto desde su foto (el mapa, las listas), la ola que tapa no
+   barre: nace en la foto y se abre en redondo.
 
    Cada ola, la que tapa y la que destapa, con su frente: la línea por
    donde avanza —lo inclinada que va y cómo se curva— sale distinta cada
@@ -28,8 +33,19 @@
   const root = document.documentElement;
 
   const TIME = 1.9;    // segundos en tapar, y otros tantos en destapar
-  const BAND = 2;      // píxeles de color en el frente de la ola
-  const C = 6;         // lado de un píxel de la ola, en px
+
+  /* El grano de cada sitio: el lado del píxel de la ola (c, en px) y
+     cuántos píxeles de color lleva en el frente (band). Un proyecto,
+     fino y con una banda ancha de su color; el mapa, grueso; diaris
+     baja y sube como un feed; el about y contacto, de lado y fino. */
+  const LOOK = {
+    proyecto: { c: 4, band: 4 },
+    mapa: { c: 8, band: 2 },
+    diaris: { c: 6, band: 3, axis: 'y' },
+    about: { c: 6, band: 1 },
+    contacto: { c: 6, band: 1 },
+  };
+  const look = (at) => LOOK[at] || { c: 6, band: 2 };
 
   const veil = document.createElement('canvas');
   veil.className = 'veil';
@@ -37,6 +53,9 @@
   const ctx = veil.getContext('2d');
 
   const colorOf = (el) => el.style.getPropertyValue('--c').trim();
+  /* El loader: de un color, o de todos a tramos (un degradado duro). */
+  const carga = (colors) => (colors.length < 2 ? colors[0]
+    : `linear-gradient(90deg, ${colors.map((c, i) => `${c} ${(i / colors.length) * 100}% ${((i + 1) / colors.length) * 100}%`).join(', ')})`);
   /* Los de lo que hay a la vista; en el about, que no tiene, los de todos
      los proyectos (data-colores). */
   const allColors = () => [...new Set([...document.querySelectorAll('[style*="--c"]')].map(colorOf)
@@ -65,7 +84,8 @@
   function way(from, to) {
     if (from === to) return { axis: 'x', sign: 1 };
     if (from === 'proyecto' || to === 'proyecto') return { axis: 'y', sign: to === 'proyecto' ? 1 : -1 };
-    return { axis: 'x', sign: ORDER.indexOf(to) >= ORDER.indexOf(from) ? 1 : -1 };
+    const sign = ORDER.indexOf(to) >= ORDER.indexOf(from) ? 1 : -1;
+    return { axis: look(to).axis || look(from).axis || 'x', sign };
   }
 
   /* ── la ola ────────────────────────────────────────────────────────
@@ -80,11 +100,13 @@
      (las dos al azar, con algo de inclinación) y por encima le corre una
      onda corta, de un píxel, que lo hace moverse. */
 
-  function line(along, across, sign, tilt) {
+  function line(along, across, sign, tilt, round) {
     /* Entre 3 y 7 puntos de lado a lado, cada uno más adelantado o más
-       atrasado (de nada a un cuarto de la pantalla), unidos con curvas. */
+       atrasado (de nada a un cuarto de la pantalla), unidos con curvas.
+       En redondo, el último es el primero: sin costura al dar la vuelta. */
     const depth = along * (0.04 + Math.random() * 0.22);
     const knots = Array.from({ length: 3 + Math.floor(Math.random() * 5) }, () => (Math.random() * 2 - 1) * depth);
+    if (round) knots[knots.length - 1] = knots[0];
     const curve = (u) => {   // u de 0 a 1, de un lado al otro
       const f = u * (knots.length - 1);
       const k = Math.min(knots.length - 2, Math.floor(f));
@@ -96,13 +118,16 @@
 
   const RIPPLE = 1.2;   // lo que se mueve la onda corta, en píxeles de la ola
 
-  function wave({ colors, dir, W, H }) {
-    const along = Math.ceil((dir.axis === 'y' ? H : W) / C);
-    const across = Math.ceil((dir.axis === 'y' ? W : H) / C);
-    const tilt = Math.random() * 0.35;
-    const from = line(along, across, dir.sign, tilt);
-    const to = line(along, across, dir.sign, tilt);
-    const [k, phase] = [2 + Math.random() * 4, Math.random() * 7];
+  /* Desde un punto (`at`): el turno es la distancia al punto y la línea,
+     el ángulo (una vuelta entera, en `across` líneas). */
+  function wave({ colors, dir, W, H, C, BAND, at }) {
+    const reach = at && Math.hypot(Math.max(at.x, W - at.x), Math.max(at.y, H - at.y));
+    const along = Math.ceil((at ? reach : dir.axis === 'y' ? H : W) / C);
+    const across = at ? 72 : Math.ceil((dir.axis === 'y' ? W : H) / C);
+    const tilt = at ? 0 : Math.random() * 0.35;
+    const from = line(along, across, dir.sign, tilt, !!at);
+    const to = line(along, across, dir.sign, tilt, !!at);
+    const [k, phase] = [at ? 2 + Math.floor(Math.random() * 4) : 2 + Math.random() * 4, Math.random() * 7];   // en redondo, ondas enteras
     const low = Math.min(...from, ...to) - RIPPLE;   // que empiece en el turno 0
     /* El retraso de cada línea en el momento t (de 0 a 1). */
     const lag = (t) => from.map((a, i) => a + (to[i] - a) * t
@@ -110,9 +135,19 @@
     const cells = [];
     for (let y = 0; y < H; y += C) {
       for (let x = 0; x < W; x += C) {
-        const [a, b] = dir.axis === 'y' ? [y, x] : [x, y];
-        const step = Math.floor(a / C);
-        cells.push({ x, y, step: dir.sign > 0 ? step : along - 1 - step, line: Math.floor(b / C), tint: pick(colors) });
+        let step;
+        let ln;
+        if (at) {
+          const [dx, dy] = [x + C / 2 - at.x, y + C / 2 - at.y];
+          step = Math.floor(Math.hypot(dx, dy) / C);
+          ln = Math.floor(((Math.atan2(dy, dx) + Math.PI) / (2 * Math.PI)) * (across - 1));
+        } else {
+          const [a, b] = dir.axis === 'y' ? [y, x] : [x, y];
+          step = Math.floor(a / C);
+          if (dir.sign < 0) step = along - 1 - step;
+          ln = Math.floor(b / C);
+        }
+        cells.push({ x, y, step, line: ln, tint: pick(colors) });
       }
     }
     const end = along + Math.max(...from, ...to) + RIPPLE - low + BAND + 1;
@@ -120,7 +155,7 @@
   }
 
   /* Un fotograma: cada píxel, tapado (blanco), en la ola (color) o abierto. */
-  function paint({ cells, lag }, t, front, cover, white) {
+  function paint({ cells, lag, C, BAND }, t, front, cover, white) {
     const now = lag(t);
     const fills = new Map();
     const add = (color) => fills.get(color) || fills.set(color, new Path2D()).get(color);
@@ -135,7 +170,7 @@
 
   /* A tiempo, no a fotogramas: dura lo mismo en una pantalla de 60 Hz
      que en una de 120. */
-  function play({ colors, dir, cover }) {
+  function play({ colors, dir, cover, at, C, BAND }) {
     const dpr = devicePixelRatio || 1;
     const W = innerWidth;
     const H = innerHeight;
@@ -144,7 +179,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     veil.style.opacity = 1;
     const white = bg();
-    const ola = wave({ colors: colors?.length ? colors : allColors(), dir, W, H });
+    const ola = { ...wave({ colors: colors?.length ? colors : allColors(), dir, W, H, C, BAND, at: cover ? at : null }), C, BAND };
 
     /* Avanza a tramos de 1/30 s como mucho: si el navegador se atasca
        (montando el mapa, decodificando fotos), la ola se para y sigue, en
@@ -177,15 +212,31 @@
        uno o se entra; sin saber de dónde se viene, todos y hacia atrás. */
     datos(from, to, link) {
       let own = null;
-      if (link) own = colorOf(link) || colorOf(document.body);
-      else if (from) {
+      let at = null;
+      if (link) {
+        own = colorOf(link) || colorOf(document.body);
+        /* a un proyecto desde su foto: la ola nace en la foto */
+        const img = place(to) === 'proyecto' && link.querySelector('img');
+        if (img) {
+          const r = img.getBoundingClientRect();
+          at = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        }
+      } else if (from) {
         const back = [...document.querySelectorAll('a[href][style*="--c"]')].find((a) => where(new URL(a.href)) === where(from));
         own = place(to) === 'proyecto' ? colorOf(document.body) : back && colorOf(back);
       }
       const colors = own ? [own] : allColors();
-      return { colors, dir: from ? way(place(from), place(to)) : { axis: 'y', sign: -1 }, carga: colors[0] };
+      const [here, there] = [from ? place(from) : null, place(to)];
+      return {
+        colors,
+        dir: from ? way(here, there) : { axis: 'y', sign: -1 },
+        carga: carga(colors),
+        at,
+        de: look(here || there),   // el grano con que se tapa, y con que se destapa
+        a: look(there),
+      };
     },
-    tapar: ({ colors, dir }) => play({ colors, dir, cover: true }),
-    destapar: ({ colors, dir }) => play({ colors, dir, cover: false }),
+    tapar: ({ colors, dir, at, de }) => play({ colors, dir, at, cover: true, C: de.c, BAND: de.band }),
+    destapar: ({ colors, dir, a }) => play({ colors, dir, cover: false, C: a.c, BAND: a.band }),
   };
 })();

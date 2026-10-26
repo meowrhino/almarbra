@@ -1,4 +1,4 @@
-/* El about: detrás del texto, como en un telar: hilos de borde a borde, la
+/* El about (y contacto): detrás del texto, como en un telar: hilos de borde a borde, la
    trama en horizontal y la urdimbre en vertical, de los colores de los
    proyectos. Cada uno entra por un lado y se teje muy despacio (GROW
    s), se queda (HOLD), se desteje en el mismo sentido —la cola sigue a
@@ -8,8 +8,9 @@
 
 (() => {
   const root = document.documentElement;
-  const about = document.getElementById('about');
+  const about = document.getElementById('about') || document.getElementById('contacto');
   if (!about) return;
+  const VISTA = about.id;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* Los colores de los proyectos (data-colores, del build). */
@@ -25,8 +26,13 @@
   about.prepend(back);
   const text = about.querySelector('div');
 
-  /* Un sitio libre en [from, to], o cualquiera si no queda hueco. */
-  const lane = (from, to, all) => (to - from > 80 ? from + Math.random() * (to - from) : 40 + Math.random() * (all - 80));
+  /* Un sitio libre a un lado del texto (antes de `from` o después de
+     `to`), a suertes entre los dos; si no queda hueco, cualquiera. */
+  function lane(from, to, all) {
+    const gaps = [[40, from - 40], [to + 40, all - 40]].filter(([a, b]) => b - a > 80);
+    const [a, b] = gaps.length ? gaps[Math.floor(Math.random() * gaps.length)] : [40, all - 40];
+    return a + Math.random() * (b - a);
+  }
 
   /* Una vida nueva: dirección, sitio, sentido y color. */
   function born(s, t) {
@@ -37,10 +43,10 @@
     let a;
     let b;
     if (s.weft) {
-      const y = lane(box.bottom + 40, H - 40, H);
+      const y = lane(box.top, box.bottom, H);
       [a, b] = [{ x: -10, y }, { x: W + 10, y: y + (Math.random() - 0.5) * 120 }];
     } else {
-      const x = lane(box.right + 40, W - 40, W);
+      const x = lane(box.left, box.right, W);
       [a, b] = [{ x, y: -10 }, { x: x + (Math.random() - 0.5) * 120, y: H + 10 }];
     }
     s.el.setAttribute('d', hilos.path(ida ? hilos.wander(a, b) : hilos.wander(b, a)));
@@ -83,7 +89,7 @@
   let last = 0;
   let looming = false;
   function loom(now) {
-    if (root.dataset.vista !== 'about') { looming = false; return; }
+    if (root.dataset.vista !== VISTA) { looming = false; return; }
     requestAnimationFrame(loom);
     if (document.hidden || now - last < 1000 / FPS) return;
     last = now;
@@ -91,7 +97,7 @@
   }
 
   function wake() {
-    if (root.dataset.vista !== 'about' || looming) return;
+    if (root.dataset.vista !== VISTA || looming) return;
     looming = true;
     requestAnimationFrame(loom);
   }

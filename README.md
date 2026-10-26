@@ -49,8 +49,8 @@ sobre las fotos.
   `difference` ya las deja leer sobre las fotos.
 
   El about: el texto de `data/about.json` arriba a la izquierda, bajo el
-  nombre, y abajo quién hizo la web. Contacto, igual de alineado: la foto de
-  `contacto/1.webp` (si está) y debajo el email y el Instagram. Detrás, un telar: hilos de borde a borde, en horizontal y en
+  nombre, y abajo quién hizo la web. Contacto, en el centro y más pequeño: la foto de
+  `contacto/1.webp` (si está) y debajo el email y el Instagram. Detrás de los dos, un telar: hilos de borde a borde, en horizontal y en
   vertical, que se tejen muy despacio, se quedan y se destejen.
 
   **Al cargar**, primero salen los huecos de las fotos —una trama de píxeles
