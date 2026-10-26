@@ -19,7 +19,7 @@ Cuando falla, la web se queda como estaba. Para arreglarlo:
 2. **Reprodúcelo aquí**: `npm ci && node build/build.mjs`. Es el mismo build que
    en la nube y dice lo mismo: cada línea con ✗ trae el fichero y qué pasa.
 3. **Arréglalo donde dice**, casi siempre en `data/*.json` o en
-   `projects/<slug>/project.json`:
+   `<lista>/<slug>/project.json` (`textil/roma/`, `foto/helen/`):
    - "no es un JSON válido (línea 12…)": una coma de más o de menos, o unas
      comillas sin cerrar, cerca de esa línea.
    - "no es un campo de aquí", "falta…", "no tiene la forma que toca": lo dice
@@ -31,8 +31,11 @@ Cuando falla, la web se queda como estaba. Para arreglarlo:
      (https://meowrhino.github.io/imgToWeb/); hay que pasarla, no renombrarla.
    - "en «cover», 9 no está entre sus fotos": `cover` solo puede nombrar una
      foto que esté en `photos` o `groups` (`map`, cualquiera de `img/`).
-   - "la lista … nombra …, y no hay projects/…/project.json": el slug de
-     `data/site.json` → `lists` y el nombre de la carpeta no son iguales.
+   - "la lista … nombra …, y no hay foto/…/project.json": el slug de
+     `data/site.json` → `lists` y el nombre de la carpeta no son iguales, o
+     el proyecto está en la carpeta de la otra lista (el mensaje dice cuál).
+   - "falta «color»": cada proyecto lleva el suyo en su `project.json`;
+     pregunta cuál y no lo inventes sin decirlo.
 4. **Comprueba**: `node build/build.mjs` sin ✗ (los ⚠ no paran nada).
 
 No cambies el build, las plantillas ni el esquema para que pase: si el dato

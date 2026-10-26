@@ -69,7 +69,7 @@ sobre las fotos.
   (View Transitions; donde no las hay, nace en blanco).
 
   **Idiomas**: una página por idioma. El español en la raíz (`/`,
-  `/projects/roma/`) y los otros en su carpeta (`/en/…`, `/ca/…`), cada
+  `/textil/roma/`) y los otros en su carpeta (`/en/…`, `/ca/…`), cada
   una con sus `hreflang`, para que Google indexe cada idioma aparte. El
   selector de abajo lleva a la misma página en otro idioma (en la portada,
   a la misma vista), con su ola. Si falta una traducción, sale el español.
@@ -85,7 +85,7 @@ sobre las fotos.
   píxeles, líneas) y el panel de `?pruebas`, en el historial, antes de
   «Limpieza»; las hilachas (una nube de píxeles con la forma del tejido de
   cada proyecto) y su panel, antes de «Fuera las hilachas».
-- **proyecto** (`/projects/<slug>/`): una columna de 800 px centrada y con
+- **proyecto** (`/<lista>/<slug>/`: `/textil/roma/`): una columna de 800 px centrada y con
   aire alrededor —ficha técnica arriba, galería en scroll vertical debajo y,
   al final, un **back** centrado que vuelve a la vista de la que se venía (el
   mapa o una lista; si no, la lista del proyecto)—. Un hilo de su color baja ondulando de lado a lado y **se inventa
@@ -99,21 +99,23 @@ sobre las fotos.
 
 ## Lo que se cambia sin tocar código
 
-Cada proyecto en su carpeta, con todo lo suyo: `projects/<slug>/project.json`
-y sus fotos en `img/` (`1.webp`, `2.webp`…). Lo general, en `data/`. Cada
+Cada sección es una carpeta y sus proyectos van dentro (receta de JAMstack,
+2026-10-26): cada proyecto, con todo lo suyo, en la carpeta de su lista,
+`textil/<slug>/project.json` o `foto/<slug>/project.json`, y sus fotos en `img/`
+(`1.webp`, `2.webp`…); las de diaris, en `diaris/`. Lo general, en `data/`. Cada
 JSON general lleva arriba una nota (`"_"`) que dice qué se puede poner. Se edita,
 se hace push y en un par de minutos está publicado.
 
 | archivo | qué |
 |---|---|
-| `projects/<slug>/project.json` | el proyecto: título, texto, créditos, su color, fotos, portada y mapa (una foto de `img/` que está en `map` y no en `photos` sale solo en el mapa) |
+| `<lista>/<slug>/project.json` | el proyecto: título, texto, créditos, su color, fotos, portada y mapa (una foto de `img/` que está en `map` y no en `photos` sale solo en el mapa) |
 | `diaris/` | las fotos de diaris, `1.webp`, `2.webp`…: salen todas, barajadas |
-| `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, colores, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
+| `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
 | `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
 
 ```bash
 npm ci            # una vez: sharp, para las fotos del mapa y las og
-npm run build     # data/ + projects/ -> dist/
+npm run build     # data/ + textil/ foto/ diaris/ -> dist/
 npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
 LENTO=2000 npm run serve   # cada página tarda 2 s: para ver el loader
@@ -140,16 +142,18 @@ ni el sitemap.
 ## Estructura
 
 ```
-projects/<slug>/        un proyecto, todo junto
-  project.json                     título, texto, créditos, fotos, portada, mapa
+textil/<slug>/          un proyecto de la lista textil, todo junto
+  project.json                     título, texto, créditos, color, fotos, portada, mapa
   img/1.webp img/2.webp …          sus fotos, tal cual salen de imgToWeb
+foto/<slug>/            uno de la lista foto, igual
+diaris/                 1.webp 2.webp …: las fotos de diaris
 
-data/site.json          título, url, idiomas, listas, menú, colores, contacto y mezcla
+data/site.json          título, url, idiomas, listas, menú, contacto y mezcla
 data/about.json         el texto del about
 
 build/proyectos.mjs     lee los proyectos en el orden de las listas y valida (build y vista previa)
 build/paginas.mjs       las plantillas: datos -> HTML, sin tocar el disco
-build/build.mjs         data/ + projects/ -> dist/, validando antes
+build/build.mjs         data/ + las carpetas -> dist/, validando antes
 build/preview.mjs       la vista previa en el navegador (index.html, Live Server)
 build/serve.mjs         servidor local de dist/
 index.html              la vista previa (no se publica)
@@ -174,25 +178,27 @@ CLAUDE.md               para Claude: qué hacer si el build falla
 
 dist/                   GENERADO por el build — FUERA DE GIT
   index.html
-  projects/<slug>/index.html
+  textil/  foto/  diaris/  about/   las vistas
+  textil/<slug>/index.html         cada proyecto, en la de su lista
   en/  ca/                         lo mismo en cada idioma
   404.html  sitemap.xml  robots.txt  .nojekyll  _headers
   og.jpg                           la imagen para compartir de la portada
   css/  js/                        copia tal cual
-  media/<slug>/img/                las fotos de cada proyecto
-  media/<slug>/mapa/               las del mapa, a 600 px (sharp, desde .cache/)
-  media/<slug>/og.jpg              la imagen para compartir (sharp, desde .cache/)
+  media/<lista>/<slug>/img/        las fotos de cada proyecto
+  media/<lista>/<slug>/mapa/       las del mapa, a 600 px (sharp, desde .cache/)
+  media/<lista>/<slug>/og.jpg      la imagen para compartir (sharp, desde .cache/)
+  media/diaris/                    las de diaris, a 1000 px (sharp, desde .cache/)
 ```
 
-En git va **solo el fuente**: `data/`, `projects/` y el código. Las páginas no
+En git va **solo el fuente**: `data/`, `textil/`, `foto/`, `diaris/` y el código. Las páginas no
 se commitean; las escribe la Action. En la web las fotos se sirven desde
-`media/<slug>/` y no junto a la página de su proyecto, para que `_headers` les dé
+`media/` y no junto a la página de su proyecto, para que `_headers` les dé
 su caché larga sin dársela al HTML.
 
 ## Un proyecto
 
 ```jsonc
-// projects/roma/project.json
+// textil/roma/project.json
 {
   "title":    { "es": "ROMA: CIUDAD EN RUINAS…", "en": "ROME: RUINS…" },
   "short":    { "es": "roma" },                // nombre corto para el mapa (si no, el título)
@@ -224,14 +230,16 @@ su caché larga sin dársela al HTML.
   Roma.
 - Las claves que empiezan por `_` son notas, no contenido.
 - **El nombre del proyecto es el de su carpeta**, y es su dirección:
-  `projects/roma/` → `/projects/roma/`.
+  `textil/roma/` → `/textil/roma/`.
 
 - Los campos van **en inglés** (como en todas las webs nuevas, ver JAMstack);
   lo que se escribe, en `es`, `en` y `ca` (`ca`, el código ISO: el mismo de
   `hreflang` y de `/ca/`).
 
 **En qué lista sale, y en qué orden**: `lists` en `data/site.json`, cada una
-con su nombre en el menú y sus proyectos.
+con su nombre en el menú y sus proyectos. Cada lista es su carpeta: un
+proyecto de `foto` está en `foto/`; si la lista nombra uno que está en la otra
+carpeta, el build para y dice cuál mover.
 
 ```json
 "lists": {
@@ -240,8 +248,8 @@ con su nombre en el menú y sus proyectos.
 }
 ```
 
-Un proyecto que no está en ninguna lista no sale en la web (el build avisa).
-Los colores de `colors` se reparten en este orden.
+Un proyecto que está en la carpeta y no en la lista no sale en la web (el
+build avisa).
 
 ## Fotos nuevas: con imgToWeb
 
@@ -252,8 +260,8 @@ se reordenan y se renumeran. Una sola versión de cada foto: nada más que hacer
 
 **Un proyecto nuevo**:
 
-1. una carpeta en `projects/` con su nombre en minúsculas y con guiones
-   (`projects/nuevo-proyecto/`): es su dirección, `/projects/nuevo-proyecto/`;
+1. una carpeta en la de su lista con su nombre en minúsculas y con guiones
+   (`foto/nuevo-proyecto/`): es su dirección, `/foto/nuevo-proyecto/`;
 2. dentro, las fotos que saca imgToWeb en `img/`, y un `project.json` (lo más
    fácil: copiar el de otro y cambiarlo);
 3. su nombre en los `projects` de una lista de `data/site.json`, donde tenga que
@@ -286,8 +294,8 @@ historial, hasta el commit `18ba9b4`.
 ## El build
 
 `build/build.mjs` escribe `dist/` entera desde cero: `index.html` y un
-`projects/<slug>/index.html` por proyecto, así que las direcciones quedan
-`/projects/roma/`, `/projects/sicky-magazine/`… Son dos plantillas y ya, y
+`<lista>/<slug>/index.html` por proyecto, así que las direcciones quedan
+`/textil/roma/`, `/foto/sicky-magazine/`… Son dos plantillas y ya, y
 salen una vez por idioma (`/`, `/en/`, `/ca/`).
 
 **El SEO**, en cada página:
@@ -312,10 +320,10 @@ lista que nombra un proyecto que no existe paran el build con el archivo y lo qu
 pasa:
 
 ```
-✗ projects/helen/project.json no es un JSON válido (línea 8, columna 3). …
-✗ projects/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
-✗ projects/helen: no encuentro img/99.webp
-✗ projects/helen: en «map», 7 no está entre sus fotos
+✗ foto/helen/project.json no es un JSON válido (línea 8, columna 3). …
+✗ foto/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
+✗ foto/helen: no encuentro img/99.webp
+✗ foto/helen: en «cover», 7 no está entre sus fotos
 ```
 
 En la Action eso sale en rojo, la web publicada se queda como estaba y se abre
@@ -336,12 +344,9 @@ publicado.
 
 En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
 
-En `data/site.json`, `colors` da un color por proyecto, en el orden de
-`lists`: nombres de CSS de las cuatro
-familias de Maroon, MediumSpringGreen, Turquoise y Violet, alternadas para que
-dos proyectos seguidos no sean de la misma. Un proyecto con `color` en
-su `project.json` usa el suyo. Si a alguno no le llega color, el build para y
-lo dice.
+Cada proyecto lleva su color en su `project.json` (`color`): sin él, el build
+para y lo dice. Los que puso manu mientras Almudena no dice los suyos llevan
+una nota `_color`.
 
 El ancho de la columna de un proyecto —800 px— vive en `--col`, en
 `css/style.css`, y `build/build.mjs` lo repite en el `sizes` de cada foto para

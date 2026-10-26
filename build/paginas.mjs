@@ -16,8 +16,8 @@
      <lista>/index.html            cada lista (textil/, foto/)
      diaris/index.html             las fotos de diaris/, barajadas
      about/index.html              el about
-     projects/<slug>/index.html    ficha técnica y galería en scroll
-                                   vertical
+     <lista>/<slug>/index.html     cada proyecto: ficha técnica y
+                                   galería en scroll vertical
 
    Una vez por idioma: el del sitio en la raíz y los demás en su carpeta
    (en/, ca/…), cada página con sus hreflang. Y la 404. */
@@ -65,11 +65,11 @@ const tr = (field, render = esc) => {
 
 /* ── imágenes ────────────────────────────────────────────────────── */
 
-/* Las fotos viven en projects/<slug>/img/ junto a su project.json, y en la
+/* Las fotos viven en <lista>/<slug>/img/ junto a su project.json, y en la
    web se sirven desde media/<slug>/ (ahí las copia el build), aparte de
    las páginas: así _headers les da su caché larga sin tocar el HTML. En
    la vista previa, donde están. */
-const pub = (src) => (preview ? src : src.replace(/^projects\//, 'media/').replace(/^diaris\//, 'media/diaris/'));
+const pub = (src) => (preview ? src : `media/${src}`);
 
 /* De cada foto hay una sola, la de imgToWeb (2000 px de lado largo).
    El mapa, que las enseña pequeñas y a docenas, usa las suyas: las hace
@@ -177,7 +177,7 @@ function contact() {
 }
 
 /* `path` es la dirección de la página dentro del sitio, sin el idioma
-   ('' la portada, 'projects/roma/' un proyecto); sin ella no hay
+   ('' la portada, 'textil/roma/' un proyecto); sin ella no hay
    canonical, hreflang ni og, que es lo que pasa en la 404. `root` va de
    la página a la raíz del sitio, donde están css/, js/ y media/. `image` (y `og`, su versión de 1200×630, ya en dist/) es la que sale al
    compartir el enlace. */
@@ -240,7 +240,7 @@ function mapImages(project) {
 function listItem(root, home, project, i) {
   const { cover } = project;
   const width = cover.h > cover.w ? 70 : 100;
-  return `<li style="grid-row:${i + 1}"><a class="row" href="${attr(home)}projects/${attr(project.slug)}/" style="--c:${attr(project.color)}">
+  return `<li style="grid-row:${i + 1}"><a class="row" href="${attr(home)}${attr(project.dir)}/" style="--c:${attr(project.color)}">
 <div class="pic" style="width:${width}%">${img(cover, { base: root })}</div>
 <h3>${tr(project.title) || esc(project.slug)}</h3>
 </a></li>`;
@@ -311,7 +311,7 @@ function mapPage(projects) {
   const pins = projects.flatMap((project, p) => mapImages(project).map((image, i) => {
     const long = [170, 120, 145][i % 3];   // de tres tamaños, para que no parezca una rejilla
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
-    return `<a class="pin" href="${attr(homeOf(''))}projects/${attr(project.slug)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
+    return `<a class="pin" href="${attr(homeOf(''))}${attr(project.dir)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
       + img(mini(image), { base: root })
       + `<span>${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
@@ -450,9 +450,9 @@ function paras(text) {
 const prose = (text) => paras(text).map((p) => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`).join('\n');
 
 function projectPage(project) {
-  const home = homeOf('../../');   // las páginas cuelgan de projects/<slug>/
+  const home = homeOf('../../');   // las páginas cuelgan de <lista>/<slug>/
   const root = preview ? '' : `../../${cur === lang ? '' : '../'}`;
-  const path = `projects/${project.slug}/`;
+  const path = `${project.dir}/`;
 
   const title = t(project.title) || project.slug;
   const description = t(project.description) || summary(t(project.text));
@@ -548,7 +548,7 @@ function notFoundPage() {
  *   mosaicOg(out, list)   una vista, ya en dist/; o null
  *
  * Devuelve las direcciones (`paths`, sin el idioma: '', 'textil/',
- * 'projects/roma/'…; `listed`, las mismas sin los ocultos, para el
+ * 'textil/roma/'…; `listed`, las mismas sin los ocultos, para el
  * sitemap) y render(l, path), el HTML de una en el idioma `l`.
  */
 export function sitio(opts) {
@@ -569,8 +569,8 @@ export function sitio(opts) {
      salen en el mapa, en las listas, en el about ni en el sitemap. */
   const { projects } = opts;
   const shown = projects.filter((p) => !p.hidden);
-  const paths = [...VIEWS.map(viewPath), ...projects.map((p) => `projects/${p.slug}/`)];
-  const listed = paths.filter((path) => !projects.some((p) => p.hidden && path === `projects/${p.slug}/`));
+  const paths = [...VIEWS.map(viewPath), ...projects.map((p) => `${p.dir}/`)];
+  const listed = paths.filter((path) => !projects.some((p) => p.hidden && path === `${p.dir}/`));
 
   function render(l, path) {
     cur = l;
@@ -579,7 +579,7 @@ export function sitio(opts) {
     if (path === 'diaris/' && diaris.length) return diarisPage(shown);
     const list = LISTS.find((view) => path === viewPath(view));
     if (list) return listPage(list, shown);
-    const project = projects.find((p) => path === `projects/${p.slug}/`);
+    const project = projects.find((p) => path === `${p.dir}/`);
     return project ? projectPage(project) : null;
   }
 

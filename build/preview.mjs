@@ -5,7 +5,7 @@
    mismas plantillas (build/paginas.mjs), leyendo los JSON y las fotos
    tal cual están en la carpeta. La página va en ?p=:
 
-     index.html?p=/en/projects/roma/
+     index.html?p=/en/textil/roma/
 
    Lo que el navegador no puede hacer, no lo hace: el mapa usa las fotos
    grandes (las pequeñas las hace el build) y no hay imágenes para
@@ -57,9 +57,10 @@ async function start() {
   const site = await json('data/site.json');
   const about = await json('data/about.json');
   if (!site || !about) return oops('No encuentro los datos', ['Falta data/site.json o data/about.json.']);
-  const slugs = Object.values(site.lists || {}).flatMap((list) => list?.projects || []).map(slugOf).filter((slug) => typeof slug === 'string');
-  const files = new Map(await Promise.all(slugs.map(async (slug) => {
-    const at = `projects/${slug}/project.json`;
+  const dirs = Object.entries(site.lists || {}).flatMap(([category, list]) => (list?.projects || []).map(slugOf)
+    .filter((slug) => typeof slug === 'string').map((slug) => `${category}/${slug}`));
+  const files = new Map(await Promise.all(dirs.map(async (dir) => {
+    const at = `${dir}/project.json`;
     return [at, await json(at)];
   })));
   /* Lo mismo que comprueba el build con schema/ (en VS Code, subrayado en rojo). */
@@ -68,9 +69,9 @@ async function start() {
     ...[...files].filter(([, data]) => data).flatMap(([at, data]) => validar(data, schemas.project, at))];
   if (invalid.length) return oops('Así no se publicaría', invalid);
 
-  const srcs = slugs.flatMap((slug) => {
-    const data = files.get(`projects/${slug}/project.json`);
-    return data ? photoSrcs(slug, data) : [];
+  const srcs = dirs.flatMap((dir) => {
+    const data = files.get(`${dir}/project.json`);
+    return data ? photoSrcs(dir, data) : [];
   });
   const sizes = new Map(await Promise.all(srcs.map(async (src) => [src, await size(src)])));
 
@@ -90,14 +91,14 @@ async function start() {
 
   const web = sitio({ site: { ...site, noindex: true }, about, projects, diaris, preview: true });
 
-  /* ?p=/en/projects/roma/ → en, projects/roma/ */
+  /* ?p=/en/textil/roma/ → en, textil/roma/ */
   let path = (new URLSearchParams(location.search).get('p') || '/').replace(/^\/+/, '');
   if (path && !path.endsWith('/')) path += '/';
   const first = path.split('/')[0];
   const l = web.LANGS.includes(first) && first !== web.lang ? first : web.lang;
   if (l !== web.lang) path = path.slice(first.length + 1);
   const html = web.paths.includes(path) && web.render(l, path);
-  if (!html) return oops('Esta página no existe', [`No hay ninguna página en ${location.search}. Si es un proyecto, mira que esté en «lists» de data/site.json.`]);
+  if (!html) return oops('Esta página no existe', [`No hay ninguna página en ${location.search}. Si es un proyecto, mira que esté en «lists» de data/site.json y en la carpeta de esa lista.`]);
   write(html);
 }
 

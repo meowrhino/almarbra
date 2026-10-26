@@ -5,8 +5,9 @@ proyecto, cambiar fotos o textos, cambiar qué sale en el mapa… Todo se hace
 desde **Visual Studio Code** (VS Code), un programa gratuito: abres el archivo,
 lo cambias, y con dos clics sale en la web.
 
-> **La regla de oro**: solo tocas **dos carpetas**: `projects/` (tus proyectos)
-> y `data/` (lo general de la web). Lo demás es el código: mejor no tocarlo.
+> **La regla de oro**: solo tocas **tus carpetas**: `textil/` y `foto/` (tus
+> proyectos, cada uno en la de su lista), `diaris/` (sus fotos) y `data/` (lo
+> general de la web). Lo demás es el código: mejor no tocarlo.
 
 Cuando guardas un cambio, la web se actualiza sola en **2 o 3 minutos**. Si te
 equivocas en algo, la web **no se rompe**: se queda como estaba hasta que lo
@@ -44,10 +45,12 @@ imgToWeb se salta las fotos.
 ## 1. Cómo está organizado
 
 ```
-projects/                     ← tus proyectos, uno por carpeta
+textil/                       ← los proyectos de textil, uno por carpeta
   roma/
     project.json              ← los textos del proyecto
     img/                      ← sus fotos: 1.webp, 2.webp, 3.webp…
+  …
+foto/                         ← los de foto, igual
   helen/
     project.json
     img/
@@ -59,7 +62,7 @@ data/
 ```
 
 El **nombre de la carpeta** de un proyecto es su dirección en la web:
-`projects/roma/` → `tuweb.com/projects/roma/`. Va en minúsculas, sin tildes ni
+`textil/roma/` → `tuweb.com/textil/roma/`. Va en minúsculas, sin tildes ni
 espacios (con guiones: `nuevo-proyecto`).
 
 ---
@@ -69,7 +72,7 @@ espacios (con guiones: `nuevo-proyecto`).
 1. **Antes de nada, baja la última versión**: en la barra de abajo del todo,
    pulsa las flechas ⟳ (**Sync**). Así tienes lo que hay publicado.
 2. En la columna de la izquierda, abre el archivo (por ejemplo
-   `projects/helen/project.json`) y cambia lo que quieras. Guarda con **Cmd+S**.
+   `foto/helen/project.json`) y cambia lo que quieras. Guarda con **Cmd+S**.
    Si algo sale **subrayado en rojo**, hay una coma o unas comillas mal:
    arréglalo antes de seguir (punto 6).
 3. **Míralo**: pulsa **Go Live** (abajo a la derecha). Se abre tu web en el
@@ -83,7 +86,7 @@ espacios (con guiones: `nuevo-proyecto`).
 Ya está: en 2-3 minutos sale en la web.
 
 **Para añadir fotos**: arrastra los archivos a su carpeta `img/` (por ejemplo
-`projects/helen/img/`) en la columna de la izquierda de VS Code, y luego los
+`foto/helen/img/`) en la columna de la izquierda de VS Code, y luego los
 pasos 3 a 5.
 
 En la vista previa el mapa tarda un poco más en cargar que en la web de
@@ -158,9 +161,9 @@ vez que alguien entra. No hay JSON: solo las fotos.
 
 ### Cambiar el orden de los proyectos, o esconder uno
 
-En `data/site.json`, en `lists`. Hay dos, **textil** y **foto**, cada una con su
-nombre en el menú (`name`) y los nombres de las carpetas de sus proyectos
-(`projects`), en el orden en que salen:
+En `data/site.json`, en `lists`. Hay dos, **textil** y **foto** (las dos
+carpetas), cada una con su nombre en el menú (`name`) y los nombres de las
+carpetas de sus proyectos (`projects`), en el orden en que salen:
 
 ```json
 "lists": {
@@ -181,7 +184,8 @@ nombre en el menú (`name`) y los nombres de las carpetas de sus proyectos
   mandar el enlace a quien quieras), pero no sale en el mapa, en las listas ni
   en Google, y no pierde su sitio: para que vuelva, pones otra vez `"roma"`.
 - Para **quitarlo del todo**, bórralo de la lista (la carpeta se puede quedar).
-- Para **pasarlo de lista**, lo mueves de una a la otra.
+- Para **pasarlo de lista**, lo mueves de una a la otra, y su carpeta también
+  (de `textil/` a `foto/`, arrastrándola en VS Code).
 
 ### Cambiar el about, tu email o tu Instagram
 
@@ -197,12 +201,13 @@ nombre en el menú (`name`) y los nombres de las carpetas de sus proyectos
 1. **Las fotos**: pásalas por imgToWeb en el orden en que quieras que salgan
    (puedes arrastrarlas para ordenarlas) y descarga el zip.
 2. **La carpeta**: en VS Code, **copia la carpeta de otro proyecto** (por
-   ejemplo `projects/helen/`: clic derecho → Copy, y Paste sobre `projects/`) y
-   cámbiale el nombre a `nuevo-proyecto`.
+   ejemplo `foto/helen/`: clic derecho → Copy, y Paste sobre `foto/`, o sobre
+   `textil/` si va en textil) y cámbiale el nombre a `nuevo-proyecto`.
 3. **Las fotos**: borra las de su `img/` y arrastra ahí las del zip.
 4. **Los textos**: abre su `project.json` y cámbialo (abajo, uno mínimo).
 5. **Que salga**: en `data/site.json`, añade `"nuevo-proyecto"` a los
-   `projects` de la lista `textil` o `foto`, donde quieras que salga.
+   `projects` de su lista (`textil` o `foto`, la de su carpeta), donde quieras
+   que salga.
 6. **Commit** y **Sync Changes** (punto 2).
 
 Un `project.json` mínimo:
@@ -220,6 +225,7 @@ Un `project.json` mínimo:
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": "Make up & hair", "name": "Nombre Apellido", "url": "https://www.instagram.com/usuario/" }
   ],
+  "color": "#5B9DC8",
   "cover": ["1"],
   "map": ["1", "2", "3"],
   "photos": ["1", "2", "3", "4"]
@@ -239,11 +245,11 @@ pequeñas del mapa **se hacen solas**: no tienes que hacer nada.
 | `short` | *(opcional)* un nombre corto para el mapa | `{ "es": "roma" }` |
 | `text` | el texto, lista de párrafos por idioma | `{ "es": ["Uno.", "Dos."] }` |
 | `credits` | quién hizo qué: una persona por línea | ver arriba |
+| `color` | su color: el de su hilo, sus huecos y la ola | `"#982F0C"` |
 | `cover` | la portada: la foto de la lista y de compartir | `["8"]` |
 | `map` | las fotos del mapa | `["1", "3", "5"]` |
 | `photos` | la galería, en orden | `["1", "2", "3"]` |
 | `groups` | *(en vez de `photos`)* la galería por partes, cada una con su nombre, como en Roma | `[{ "name": "Virgen", "photos": ["10", "11"] }]` |
-| `color` | *(opcional)* su color, si no le toca uno solo | `"#982F0C"` |
 | `description` | *(opcional)* la frase que sale en Google y al compartir | `{ "es": "…", "en": "…", "ca": "…" }` |
 
 En `credits`, el rol (`role`) va por idioma; si es igual en los tres, basta con
@@ -289,11 +295,11 @@ lista de archivos) sale un círculo:
   ejemplo:
 
   ```
-  ✗ projects/helen/project.json no es un JSON válido (línea 12, columna 5). …
-  ✗ projects/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
-  ✗ projects/helen: no encuentro img/9.webp
-  ✗ projects/helen: en «cover», 9 no está entre sus fotos
-  ✗ la lista «foto» de data/site.json nombra «helenn», y no hay projects/helenn/project.json
+  ✗ foto/helen/project.json no es un JSON válido (línea 12, columna 5). …
+  ✗ foto/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
+  ✗ foto/helen: no encuentro img/9.webp
+  ✗ foto/helen: en «cover», 9 no está entre sus fotos
+  ✗ la lista «foto» de data/site.json nombra «helenn», y no hay foto/helenn/project.json
   ```
 
   Arréglalo en VS Code (el número de línea te dice dónde mirar; con **Go

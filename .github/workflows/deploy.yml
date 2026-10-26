@@ -1,6 +1,6 @@
 # Cada push a main genera dist/ y lo publica en meowrhino.github.io/almarbra/
 # (sin indexar). Solo en nuestra copia: en la de Almudena publica Cloudflare
-# (wrangler.jsonc) y esto no corre. Las fotos llegan hechas en projects/
+# (wrangler.jsonc) y esto no corre. Las fotos llegan hechas en textil/, foto/ y diaris/
 # (imgToWeb); las pequeñas del mapa y las de compartir las hace el build (sharp).
 name: build & deploy
 on:

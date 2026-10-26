@@ -39,7 +39,7 @@ Tiempo: unos 20 minutos, más lo que tarden los DNS.
 
 ## 4. Comprobar en su dominio
 
-- [ ] La portada (el mapa), `/textil/`, `/foto/`, `/about/` y un proyecto (`/projects/roma/`), y los mismos en `/en/` y `/ca/`.
+- [ ] La portada (el mapa), `/textil/`, `/foto/`, `/about/` y un proyecto (`/textil/roma/`), y los mismos en `/en/` y `/ca/`.
 - [ ] La ola al cambiar de página, y el mapa con sus fotos pequeñas (`/media/<slug>/mapa/`).
 - [ ] `view-source:`: `canonical` y `og:url` con su dominio, y **sin** `<meta name="robots" content="noindex">`.
 - [ ] `/robots.txt` dice `Allow` y `/sitemap.xml` tiene las direcciones de su dominio.

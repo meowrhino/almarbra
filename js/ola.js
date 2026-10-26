@@ -49,14 +49,15 @@
      va en ?p=. */
   const where = (url) => url.searchParams.get('p') || url.pathname;
 
-  /* Dónde está una dirección: los proyectos, al fondo; las vistas (el
-     mapa, las listas, el about), en el orden del menú, por la carpeta
-     (/textil/, /en/about/…); la portada, el mapa. */
+  /* Dónde está una dirección: los proyectos (/textil/roma/), al fondo;
+     las vistas (el mapa, las listas, diaris, el about), en el orden del
+     menú, por la carpeta (/textil/, /en/about/…); la portada, el mapa. */
   const ORDER = [...document.querySelectorAll('.top nav [data-to]')].map((a) => a.dataset.to);
   const place = (url) => {
-    if (where(url).includes('/projects/')) return 'proyecto';
-    const parts = where(url).split('/');
-    return ORDER.find((view) => parts.includes(view)) || 'mapa';
+    const parts = where(url).split('/').filter((part) => part && part !== 'index.html');
+    const at = parts.findIndex((part) => ORDER.includes(part));
+    if (at >= 0 && parts[at + 1]) return 'proyecto';   // /textil/roma/: un proyecto de la lista
+    return parts[at] || 'mapa';
   };
 
   /* De un sitio a otro: eje (para el barrido) y sentido. Al mismo sitio

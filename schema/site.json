@@ -9,8 +9,7 @@
     "langs",
     "description",
     "lists",
-    "menu",
-    "colors"
+    "menu"
   ],
   "additionalProperties": false,
   "patternProperties": {
@@ -80,7 +79,7 @@
       "additionalProperties": {
         "$ref": "#/$defs/lista"
       },
-      "description": "Las listas del menú (textil, foto…), en orden. Lo que va en cada una, y en qué orden, es lo que sale en la web."
+      "description": "Las listas del menú (textil, foto…), en orden. Cada una es una carpeta con sus proyectos dentro (textil/roma/). Lo que va en cada una, y en qué orden, es lo que sale en la web."
     },
     "menu": {
       "type": "object",
@@ -100,13 +99,6 @@
         }
       },
       "description": "Las demás palabras del menú, por idioma: map (el mapa), diaris, about y back (volver)."
-    },
-    "colors": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Los colores de los proyectos (#hex o nombres CSS), que se reparten en el orden de las listas y vuelven a empezar si hay más proyectos que colores."
     },
     "mix": {
       "type": "number",
@@ -146,12 +138,12 @@
         },
         "projects": {
           "type": "array",
-          "description": "Sus proyectos, en el orden en que salen: el nombre de su carpeta en projects/. Para esconder uno sin quitarlo: { \"project\": \"roma\", \"visible\": false }.",
+          "description": "Sus proyectos, en el orden en que salen: el nombre de su carpeta, dentro de la de esta lista (textil/roma/). Para esconder uno sin quitarlo: { \"project\": \"roma\", \"visible\": false }.",
           "items": {
             "anyOf": [
               {
                 "type": "string",
-                "description": "El nombre de la carpeta del proyecto en projects/."
+                "description": "El nombre de la carpeta del proyecto dentro de la carpeta de esta lista."
               },
               {
                 "type": "object",
@@ -162,7 +154,7 @@
                 "properties": {
                   "project": {
                     "type": "string",
-                    "description": "El nombre de la carpeta del proyecto en projects/."
+                    "description": "El nombre de la carpeta del proyecto dentro de la carpeta de esta lista."
                   },
                   "visible": {
                     "type": "boolean",

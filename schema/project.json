@@ -1,10 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "projects/<slug>/project.json: un proyecto",
-  "description": "projects/<slug>/project.json: un proyecto. El nombre de la carpeta es su dirección (/projects/<slug>/). Sus fotos (1.webp, 2.webp… de imgToWeb), en img/ de la misma carpeta. Este fichero lo lee VS Code (por el \"$schema\" de arriba del JSON) para autocompletar, explicar cada campo y subrayar lo que está mal; el build y la vista previa validan con él mismo.",
+  "title": "<lista>/<slug>/project.json: un proyecto",
+  "description": "<lista>/<slug>/project.json: un proyecto, dentro de la carpeta de su lista (textil/, foto/). La carpeta es su dirección (/textil/roma/). Sus fotos (1.webp, 2.webp… de imgToWeb), en img/ de la misma carpeta. Este fichero lo lee VS Code (por el \"$schema\" de arriba del JSON) para autocompletar, explicar cada campo y subrayar lo que está mal; el build y la vista previa validan con él mismo.",
   "type": "object",
   "required": [
-    "title"
+    "title",
+    "color"
   ],
   "additionalProperties": false,
   "patternProperties": {
@@ -42,7 +43,7 @@
     },
     "color": {
       "type": "string",
-      "description": "Opcional: su color (#hex o nombre CSS). Si no, el que le toque de «colors» en data/site.json."
+      "description": "Su color (#hex o nombre CSS): el de su hilo, el de sus huecos mientras cargan las fotos y el de la ola al entrar."
     },
     "cover": {
       "type": "array",

@@ -1,4 +1,4 @@
-/* data/ + projects/ -> dist/
+/* data/ + textil/, foto/ (las listas) + diaris/ -> dist/
 
    Las páginas salen de build/paginas.mjs (las plantillas, las mismas
    que usa la vista previa, build/preview.mjs); aquí, lo que toca el
@@ -9,8 +9,8 @@
      dist/<lista>/index.html            cada lista (textil/, foto/)
      dist/diaris/index.html             las fotos de diaris/, barajadas
      dist/about/index.html              el about
-     dist/projects/<slug>/index.html    ficha técnica y galería en scroll
-                                        vertical
+     dist/<lista>/<slug>/index.html     cada proyecto: ficha técnica y
+                                        galería en scroll vertical
 
    Una vez por idioma: el del sitio en la raíz y los demás en su carpeta
    (dist/en/, dist/ca/…), cada página con sus hreflang.
@@ -37,11 +37,13 @@
 
      data/site.json          título, dirección, descripción, idiomas, las
                              listas con su nombre y sus proyectos, el menú,
-                             colores, email, redes y la mezcla del mapa
+                             email, redes y la mezcla del mapa
      data/about.json         el texto del about, por idioma
-     projects/<slug>/project.json    cada proyecto: título, texto,
-                             créditos, fotos, portada y mapa (ver
-                             build/proyectos.mjs) */
+     <lista>/<slug>/project.json    cada proyecto, en la carpeta de su
+                             lista (textil/, foto/): título, texto,
+                             créditos, color, fotos, portada y mapa
+                             (ver build/proyectos.mjs)
+     diaris/1.webp …         las fotos de diaris */
 
 import { createHash } from 'node:crypto';
 import {
@@ -77,9 +79,11 @@ function read(file, type) {
 const site = read('data/site.json', 'site');
 const about = read('data/about.json', 'about');
 const files = new Map();
-for (const slug of Object.values(site.lists || {}).flatMap((list) => list?.projects || []).map(slugOf)) {
-  const at = `projects/${slug}/project.json`;
-  if (typeof slug === 'string' && existsSync(join(ROOT, at))) files.set(at, read(at, 'project'));
+for (const [category, list] of Object.entries(site.lists || {})) {
+  for (const slug of (list?.projects || []).map(slugOf)) {
+    const at = `${category}/${slug}/project.json`;
+    if (typeof slug === 'string' && existsSync(join(ROOT, at))) files.set(at, read(at, 'project'));
+  }
 }
 if (invalid.length) fail(invalid);
 
@@ -109,7 +113,8 @@ function sizeOf(src) {
 const { projects, errors, warnings } = loadProjects(site, {
   json: (at) => files.get(at),
   size: sizeOf,
-  folders: readdirSync(join(ROOT, 'projects'), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name),
+  folders: Object.keys(site.lists || {}).filter((category) => existsSync(join(ROOT, category))).flatMap((category) =>
+    readdirSync(join(ROOT, category), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => `${category}/${e.name}`)),
 });
 
 /* diaris/: las que se llaman 1.webp, 2.webp…; lo demás no sale. La
@@ -192,9 +197,10 @@ async function makeOg(srcs) {
   return cached;
 }
 
-/** La foto pequeña del mapa de `image` en .cache/mapa/<slug>/. */
+/** La foto pequeña del mapa de `image` en .cache/mapa/<lista>/<slug>/. */
+const miniOf = (src) => join(ROOT, '.cache', 'mapa', src.replace(/\/img\//, '/'));
 async function makeMini(image) {
-  const out = join(ROOT, '.cache', 'mapa', image.src.split('/')[1], image.file);
+  const out = miniOf(image.src);
   if (fresh(out, [image.src])) return;
   mkdirSync(dirname(out), { recursive: true });
   await sharp(join(ROOT, image.src)).resize({ width: Math.min(MINI, image.w) }).webp({ quality: 85 }).toFile(out);
@@ -220,7 +226,7 @@ const ogs = (out, srcs) => {
 };
 const images = {
   mini: (image) => (miniWanted.set(image.src, image), minis(image)),
-  projectOg: (project) => ogs(`media/${project.slug}/og.jpg`, [project.cover.src]),
+  projectOg: (project) => ogs(`media/${project.dir}/og.jpg`, [project.cover.src]),
   mosaicOg: (out, list) => ogs(out, list.slice(0, MOSAIC).map((p) => p.cover.src)),
 };
 
@@ -244,7 +250,7 @@ for (const d of ['css', 'js']) cpSync(join(ROOT, d), join(OUT, d), { recursive: 
 for (const f of ['_headers', 'favicon.svg']) cpSync(join(ROOT, f), join(OUT, f));
 /* Las fotos de cada proyecto, sin su JSON; las del mapa y las og, después. */
 for (const p of projects) {
-  cpSync(join(ROOT, 'projects', p.slug), join(OUT, 'media', p.slug), { recursive: true, filter: (f) => !f.endsWith('.json') });
+  cpSync(join(ROOT, p.dir), join(OUT, 'media', p.dir), { recursive: true, filter: (f) => !f.endsWith('.json') });
 }
 /* Las de diaris, a DIARI px (sin sharp, tal cual). */
 for (const image of diaris) {
@@ -268,7 +274,7 @@ for (const l of LANGS) {
 }
 
 /* Las imágenes que ha hecho sharp, de .cache/ a dist/. */
-for (const src of miniDone) cpSync(join(ROOT, '.cache', 'mapa', src.split('/')[1], src.split('/').pop()), join(OUT, src.replace(/^projects\//, 'media/').replace(/\/img\//, '/mapa/')));
+for (const src of miniDone) cpSync(miniOf(src), join(OUT, 'media', src.replace(/\/img\//, '/mapa/')));
 for (const [out, cached] of ogDone) cpSync(cached, join(OUT, out));
 
 writeFileSync(join(OUT, '404.html'), web.notFound());
