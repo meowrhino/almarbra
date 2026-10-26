@@ -70,9 +70,9 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .top nav { display: flex; gap: 1.25rem; }
 .top nav a { color: var(--dim); }
 
-/* En el móvil el menú no cabe en una fila: salta a otra línea, y en el
-   mapa va en columna (ahí no tapa nada que no se pueda apartar
-   arrastrando). El nombre, a la altura de la primera. */
+/* En el móvil el menú no cabe en una fila: va en columna, a la derecha,
+   en todas las páginas. El nombre, entero en una línea, a la altura de
+   la primera. */
 @media (max-width: 700px) {
   .top {
     align-items: flex-start;
@@ -80,8 +80,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
     min-height: var(--bar);
     padding-block: calc((var(--bar) - 1.4em) / 2);
   }
-  .top nav { flex-wrap: wrap; justify-content: flex-end; gap: .2rem 1rem; }
-  [data-vista="mapa"] .top nav { flex-direction: column; align-items: flex-end; gap: .2rem; }
+  .top .name { white-space: nowrap; }
+  .top nav { flex-direction: column; align-items: flex-end; gap: .2rem; }
 }
 
 /* el idioma, abajo a la derecha: la misma página en los otros */
@@ -136,10 +136,12 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   line-height: 1.35;
 }
 
-/* El texto, como una foto: opaco y con 1rem de aire alrededor, así que
-   un hilo (el del telar, el de un proyecto) pasa por debajo y se corta
-   antes de llegar a una letra. En un proyecto, cada bloque ceñido a lo
-   que ocupa, para no cortar el hilo en el blanco de al lado. */
+/* En un proyecto, el texto como una foto: opaco y con 1rem de aire
+   alrededor, así que el hilo pasa por debajo y se corta antes de llegar
+   a una letra; cada bloque ceñido a lo que ocupa, para no cortar el
+   hilo en el blanco de al lado. En el about y contacto el telar esquiva
+   el texto (js/telar.js), salvo en pantallas estrechas, donde no cabe
+   por los lados: ahí, la mancha. */
 #about div,
 #contacto div,
 .ficha > *,
@@ -147,8 +149,21 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .project .back {
   position: relative;
   z-index: 1;
+}
+
+.ficha > *,
+.group h2,
+.project .back {
   background: var(--bg);
   box-shadow: 0 0 0 1rem var(--bg);
+}
+
+@media (max-width: 700px) {
+  #about div,
+  #contacto div {
+    background: var(--bg);
+    box-shadow: 0 0 0 1rem var(--bg);
+  }
 }
 
 .ficha > *,
@@ -180,10 +195,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   height: 100%;
   overflow: visible;
   pointer-events: none;
-  /* ni por el nombre y el menú, ni por los idiomas: fuera de las franjas */
-  --band: linear-gradient(transparent var(--bar), #000 var(--bar), #000 calc(100% - var(--bar)), transparent calc(100% - var(--bar)));
-  -webkit-mask-image: var(--band);
-  mask-image: var(--band);
 }
 
 /* ── contacto ───────────────────────────────────────────────────────
@@ -382,6 +393,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 .cat ol {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: clamp(2rem, 10vw, 10rem);
@@ -390,7 +402,22 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   list-style: none;
 }
 
-.cat li { padding-bottom: clamp(3rem, 12vh, 8rem); }
+.cat li { position: relative; z-index: 1; padding-bottom: clamp(3rem, 12vh, 8rem); }
+
+/* Los hilos de proyecto a proyecto (js/lista.js), debajo de todo; cada
+   uno se cose cuando asoma la foto a la que va (.cosido). */
+.cat .threads {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.cat .threads path { animation-play-state: paused; }
+.cat .threads path.cosido { animation-play-state: running; }
 .cat li:nth-child(odd) { grid-column: 1; }
 .cat li:nth-child(even) { grid-column: 2; }
 
@@ -489,6 +516,31 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   background: var(--carga, var(--ink));
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 84 18'%3E%3Cpath d='M2 10H6V12H12V14H22V12H26V10H30V8H34V6H38V4H48V6H52V8H56V10H60V12H64V14H76V12H80V10H82' fill='none' stroke='%23000' stroke-width='2' shape-rendering='crispEdges'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
   mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 84 18'%3E%3Cpath d='M2 10H6V12H12V14H22V12H26V10H30V8H34V6H38V4H48V6H52V8H56V10H60V12H64V14H76V12H80V10H82' fill='none' stroke='%23000' stroke-width='2' shape-rendering='crispEdges'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+}
+
+/* Con JavaScript, en su lugar un hilo de verdad (js/ola.js): se cose,
+   se queda y se desteje por donde vino, otro distinto en cada vuelta. */
+.hilado body::after { content: none; }
+
+.carga {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 11;
+  width: 140px;
+  height: 60px;
+  translate: -50% -50%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.carga path {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: square;
+  shape-rendering: crispEdges;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
 }
 
 /* se teje de izquierda a derecha, se queda un momento y se desteje

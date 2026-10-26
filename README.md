@@ -3,7 +3,7 @@
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
 JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
-[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cinco archivos pequeños: el mapa, la transición, los hilos, el hilo de los proyectos y el telar del about.
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son seis archivos pequeños: el mapa, la transición, los hilos, el hilo de los proyectos, los hilos de las listas y el telar del about.
 
 **Para actualizar la web (la clienta): [GUIA.md](GUIA.md).**
 
@@ -163,7 +163,8 @@ schema/                 lo que puede llevar cada JSON (VS Code, build y vista pr
 css/transicion.css      la transición de la casa: igual en todas las webs (JAMstack)
 css/style.css           todo el estilo (y el dibujo de la transición: el loader)
 js/mapa.js              el mapa (con su halo y su pelusa)
-js/telar.js             el telar de detrás del about
+js/telar.js             el telar de detrás del about y contacto
+js/lista.js             los hilos de proyecto a proyecto en las listas
 js/transicion.js        la transición de la casa (igual en todas las webs) y la entrada de las fotos
 js/ola.js               el dibujo de la transición: la ola de píxeles
 js/hilos.js             la curva y la forma de todos los hilos

@@ -18,12 +18,17 @@
      otro idioma               de lado, hacia delante
 
    Los colores: los del proyecto si se entra o se sale de uno; si no, los
-   de todos. El loader (`carga`) va del mismo color, o de todos a tramos.
+   de todos.
+
+   El loader (la espera en blanco, si pasa de medio segundo): un hilo en
+   el centro, distinto cada vez (js/hilos.js), que se cose, se queda y se
+   desteje por donde vino, y vuelta a empezar; de su color, o de unos
+   pocos a puntadas. El de reserva, sin JavaScript, en css/style.css
+   (`carga`). Cuando la página está lista el hilo acaba de destejerse y
+   la ola que destapa nace en su punta.
 
    Cada sitio tiene su grano (LOOK): la ola que tapa lleva el del sitio
-   del que se va, y la que destapa, el del que se llega. Y al entrar en
-   un proyecto desde su foto (el mapa, las listas), la ola que tapa no
-   barre: nace en la foto y se abre en redondo.
+   del que se va, y la que destapa, el del que se llega.
 
    Cada ola, la que tapa y la que destapa, con su frente: la línea por
    donde avanza —lo inclinada que va y cómo se curva— sale distinta cada
@@ -53,7 +58,9 @@
   const ctx = veil.getContext('2d');
 
   const colorOf = (el) => el.style.getPropertyValue('--c').trim();
-  /* El loader: de un color, o de todos a tramos (un degradado duro). */
+  /* Unos pocos colores de la lista, al azar: los del loader. */
+  const few = (colors) => [...colors].sort(() => Math.random() - 0.5).slice(0, 4);
+  /* El loader de reserva (CSS): de un color, o de unos pocos a tramos. */
   const carga = (colors) => (colors.length < 2 ? colors[0]
     : `linear-gradient(90deg, ${colors.map((c, i) => `${c} ${(i / colors.length) * 100}% ${((i + 1) / colors.length) * 100}%`).join(', ')})`);
   /* Los de lo que hay a la vista; en el about, que no tiene, los de todos
@@ -100,13 +107,11 @@
      (las dos al azar, con algo de inclinación) y por encima le corre una
      onda corta, de un píxel, que lo hace moverse. */
 
-  function line(along, across, sign, tilt, round) {
+  function line(along, across, sign, tilt) {
     /* Entre 3 y 7 puntos de lado a lado, cada uno más adelantado o más
-       atrasado (de nada a un cuarto de la pantalla), unidos con curvas.
-       En redondo, el último es el primero: sin costura al dar la vuelta. */
+       atrasado (de nada a un cuarto de la pantalla), unidos con curvas. */
     const depth = along * (0.04 + Math.random() * 0.22);
     const knots = Array.from({ length: 3 + Math.floor(Math.random() * 5) }, () => (Math.random() * 2 - 1) * depth);
-    if (round) knots[knots.length - 1] = knots[0];
     const curve = (u) => {   // u de 0 a 1, de un lado al otro
       const f = u * (knots.length - 1);
       const k = Math.min(knots.length - 2, Math.floor(f));
@@ -118,16 +123,18 @@
 
   const RIPPLE = 1.2;   // lo que se mueve la onda corta, en píxeles de la ola
 
-  /* Desde un punto (`at`): el turno es la distancia al punto y la línea,
-     el ángulo (una vuelta entera, en `across` líneas). */
+  /* Desde un punto (`at`, la punta del loader): el turno es lo que hay
+     desde el punto, en el eje de la ola, hacia un lado o hacia el otro:
+     una franja que crece. */
   function wave({ colors, dir, W, H, C, BAND, at }) {
-    const reach = at && Math.hypot(Math.max(at.x, W - at.x), Math.max(at.y, H - at.y));
-    const along = Math.ceil((at ? reach : dir.axis === 'y' ? H : W) / C);
-    const across = at ? 72 : Math.ceil((dir.axis === 'y' ? W : H) / C);
-    const tilt = at ? 0 : Math.random() * 0.35;
-    const from = line(along, across, dir.sign, tilt, !!at);
-    const to = line(along, across, dir.sign, tilt, !!at);
-    const [k, phase] = [at ? 2 + Math.floor(Math.random() * 4) : 2 + Math.random() * 4, Math.random() * 7];   // en redondo, ondas enteras
+    const L = dir.axis === 'y' ? H : W;
+    const a0 = at && (dir.axis === 'y' ? at.y : at.x);
+    const along = Math.ceil((at ? Math.max(a0, L - a0) : L) / C);
+    const across = Math.ceil((dir.axis === 'y' ? W : H) / C);
+    const tilt = Math.random() * 0.35;
+    const from = line(along, across, dir.sign, tilt);
+    const to = line(along, across, dir.sign, tilt);
+    const [k, phase] = [2 + Math.random() * 4, Math.random() * 7];   // en redondo, ondas enteras
     const low = Math.min(...from, ...to) - RIPPLE;   // que empiece en el turno 0
     /* El retraso de cada línea en el momento t (de 0 a 1). */
     const lag = (t) => from.map((a, i) => a + (to[i] - a) * t
@@ -135,19 +142,10 @@
     const cells = [];
     for (let y = 0; y < H; y += C) {
       for (let x = 0; x < W; x += C) {
-        let step;
-        let ln;
-        if (at) {
-          const [dx, dy] = [x + C / 2 - at.x, y + C / 2 - at.y];
-          step = Math.floor(Math.hypot(dx, dy) / C);
-          ln = Math.floor(((Math.atan2(dy, dx) + Math.PI) / (2 * Math.PI)) * (across - 1));
-        } else {
-          const [a, b] = dir.axis === 'y' ? [y, x] : [x, y];
-          step = Math.floor(a / C);
-          if (dir.sign < 0) step = along - 1 - step;
-          ln = Math.floor(b / C);
-        }
-        cells.push({ x, y, step, line: ln, tint: pick(colors) });
+        const [a, b] = dir.axis === 'y' ? [y, x] : [x, y];
+        let step = Math.floor((at ? Math.abs(a + C / 2 - a0) : a) / C);
+        if (!at && dir.sign < 0) step = along - 1 - step;
+        cells.push({ x, y, step, line: Math.floor(b / C), tint: pick(colors) });
       }
     }
     const end = along + Math.max(...from, ...to) + RIPPLE - low + BAND + 1;
@@ -179,7 +177,7 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     veil.style.opacity = 1;
     const white = bg();
-    const ola = { ...wave({ colors: colors?.length ? colors : allColors(), dir, W, H, C, BAND, at: cover ? at : null }), C, BAND };
+    const ola = { ...wave({ colors: colors?.length ? colors : allColors(), dir, W, H, C, BAND, at }), C, BAND };
 
     /* Avanza a tramos de 1/30 s como mucho: si el navegador se atasca
        (montando el mapa, decodificando fotos), la ola se para y sigue, en
@@ -202,6 +200,102 @@
     });
   }
 
+  /* ── el loader ─────────────────────────────────────────────────────
+
+     Sale cuando se espera en blanco (.cargando en la página vieja,
+     .tapada en la nueva) si pasa de medio segundo, y se va al destapar.
+     Un SVG fijo en el centro con un hilo que se cose (la punta avanza)
+     y se desteje (la cola la sigue), y con cada vuelta, otro hilo. */
+
+  const LW = 140;   // ancho del hilo del loader, en px
+  const LH = 60;
+  let loader = null;
+
+  const NS = 'http://www.w3.org/2000/svg';
+
+  /* Los colores a puntadas de 10 a 20 px: un degradado SVG a saltos,
+     a lo ancho del hilo. */
+  function stitches(grad, colors) {
+    grad.replaceChildren();
+    for (let x = 0; x < LW;) {
+      const w = 10 + Math.random() * 10;
+      const c = pick(colors);
+      for (const at of [x, Math.min(LW, x + w)]) {
+        const stop = document.createElementNS(NS, 'stop');
+        stop.setAttribute('offset', `${(at / LW) * 100}%`);
+        stop.setAttribute('stop-color', c);
+        grad.append(stop);
+      }
+      x += w;
+    }
+  }
+
+  function knit(colors) {
+    if (loader || !colors.length) return;
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'carga');
+    svg.setAttribute('viewBox', `0 0 ${LW} ${LH}`);
+    svg.setAttribute('aria-hidden', 'true');
+    const grad = document.createElementNS(NS, 'linearGradient');
+    grad.id = 'puntadas';
+    grad.setAttribute('gradientUnits', 'userSpaceOnUse');
+    grad.setAttribute('x2', LW);
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('pathLength', '1');
+    path.setAttribute('stroke', 'url(#puntadas)');
+    svg.append(grad, path);
+    document.body.append(svg);
+    root.classList.add('hilado');
+    const me = { svg, path, anim: null, tip: null, over: false };
+    const turn = () => {
+      if (me.over) return;
+      const a = { x: 6, y: LH / 2 + (Math.random() - 0.5) * 24 };
+      const b = { x: LW - 6, y: LH / 2 + (Math.random() - 0.5) * 24 };
+      path.setAttribute('d', hilos.path(hilos.wander(a, b)));
+      stitches(grad, colors);
+      me.tip = b;
+      me.anim = path.animate([
+        { strokeDashoffset: 1 },
+        { strokeDashoffset: 0, offset: 0.45 },
+        { strokeDashoffset: 0, offset: 0.6 },
+        { strokeDashoffset: -1 },
+      ], { duration: 2200, easing: 'ease-in-out' });
+      me.anim.onfinish = turn;
+    };
+    turn();
+    loader = me;
+  }
+
+  /* El remate: el hilo acaba de destejerse, deprisa, y dice dónde queda
+     su punta (en la pantalla), para que la ola nazca ahí. */
+  async function unknit() {
+    if (!loader) return null;
+    const me = loader;
+    loader = null;
+    me.over = true;
+    const now = Number(me.anim?.currentTime) || 0;
+    me.anim?.cancel();
+    const off = now < 990 ? 1 - now / 990 : now < 1320 ? 0 : -(now - 1320) / 880;
+    await me.path.animate([{ strokeDashoffset: off }, { strokeDashoffset: -1 }], { duration: 300 * Math.max(0.2, 1 + off), easing: 'ease-in', fill: 'forwards' }).finished.catch(() => {});
+    const r = me.svg.getBoundingClientRect();
+    me.svg.remove();
+    root.classList.remove('hilado');
+    return { x: r.left + (me.tip.x / LW) * r.width, y: r.top + (me.tip.y / LH) * r.height };
+  }
+
+  /* Cuándo: a los 0,5 s de esperar, como el de reserva. En la página
+     nueva, con los colores que dejó la de antes; en la vieja, los de
+     la ola que acaba de tapar (`waiting`). */
+  let waiting = null;
+  const tick = () => setTimeout(() => {
+    if (root.classList.contains('cargando') || root.classList.contains('tapada')) knit(few(waiting?.colors || allColors()));
+  }, 500);
+  new MutationObserver(() => { if (root.classList.contains('cargando')) tick(); }).observe(root, { attributeFilter: ['class'] });
+  if (root.classList.contains('tapada')) {
+    try { waiting = JSON.parse(sessionStorage.getItem('transicion')); } catch { /* los de la página */ }
+    tick();
+  }
+
   /* Una página que vuelve de la caché del navegador vuelve como se fue:
      tapada. Se limpia, para que la ola tape la foto de antes. */
   addEventListener('pageshow', (e) => { if (e.persisted) ctx.clearRect(0, 0, veil.width, veil.height); });
@@ -212,16 +306,8 @@
        uno o se entra; sin saber de dónde se viene, todos y hacia atrás. */
     datos(from, to, link) {
       let own = null;
-      let at = null;
-      if (link) {
-        own = colorOf(link) || colorOf(document.body);
-        /* a un proyecto desde su foto: la ola nace en la foto */
-        const img = place(to) === 'proyecto' && link.querySelector('img');
-        if (img) {
-          const r = img.getBoundingClientRect();
-          at = { x: r.left + r.width / 2, y: r.top + r.height / 2 };
-        }
-      } else if (from) {
+      if (link) own = colorOf(link) || colorOf(document.body);
+      else if (from) {
         const back = [...document.querySelectorAll('a[href][style*="--c"]')].find((a) => where(new URL(a.href)) === where(from));
         own = place(to) === 'proyecto' ? colorOf(document.body) : back && colorOf(back);
       }
@@ -230,13 +316,12 @@
       return {
         colors,
         dir: from ? way(here, there) : { axis: 'y', sign: -1 },
-        carga: carga(colors),
-        at,
+        carga: carga(few(colors)),
         de: look(here || there),   // el grano con que se tapa, y con que se destapa
         a: look(there),
       };
     },
-    tapar: ({ colors, dir, at, de }) => play({ colors, dir, at, cover: true, C: de.c, BAND: de.band }),
-    destapar: ({ colors, dir, a }) => play({ colors, dir, cover: false, C: a.c, BAND: a.band }),
+    tapar: (datos) => { waiting = datos; return play({ ...datos, cover: true, C: datos.de.c, BAND: datos.de.band }); },
+    destapar: async ({ colors, dir, a }) => play({ colors, dir, cover: false, at: await unknit(), C: a.c, BAND: a.band }),
   };
 })();

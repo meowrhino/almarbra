@@ -4,7 +4,8 @@
    s), se queda (HOLD), se desteje en el mismo sentido —la cola sigue a
    la punta— y, tras un respiro, vuelve a entrar en otro sitio. La forma
    no cambia: lo único que se mueve es la punta. Pocos a la vez
-   (STRANDS) y sin pasar por el texto. */
+   (STRANDS) y sin pasar por el texto: nacen a un lado, y si la curva
+   se mete en él, se tira otra. */
 
 (() => {
   const root = document.documentElement;
@@ -25,6 +26,10 @@
   back.setAttribute('aria-hidden', 'true');
   about.prepend(back);
   const text = about.querySelector('div');
+  /* Lo que no se pisa: el texto, y en las franjas de arriba y abajo el
+     nombre, el menú, el crédito y los idiomas; por el blanco entre
+     ellos, sí se pasa. */
+  const solid = [text, ...document.querySelectorAll('.top .name, .top nav, .credito, .idiomas')];
 
   /* Un sitio libre a un lado del texto (antes de `from` o después de
      `to`), a suertes entre los dos; si no queda hueco, cualquiera. */
@@ -34,22 +39,36 @@
     return a + Math.random() * (b - a);
   }
 
+  const AIR = 24;   // px entre un hilo y las letras, como poco
+
+  const hits = (p, r) => p.x > r.left - AIR && p.x < r.right + AIR && p.y > r.top - AIR && p.y < r.bottom + AIR;
+
+  /* Una curva de lado a lado que no toque nada: hasta diez intentos; si
+     no hay manera (el texto ocupa casi todo), la última. */
+  function strand(weft, box, W, H) {
+    const rects = solid.map((el) => el.getBoundingClientRect());
+    let pts;
+    for (let i = 0; i < 10; i++) {
+      let a;
+      let b;
+      if (weft) {
+        const y = lane(box.top, box.bottom, H);
+        [a, b] = [{ x: -10, y }, { x: W + 10, y: y + (Math.random() - 0.5) * 120 }];
+      } else {
+        const x = lane(box.left, box.right, W);
+        [a, b] = [{ x, y: -10 }, { x: x + (Math.random() - 0.5) * 120, y: H + 10 }];
+      }
+      pts = Math.random() < 0.5 ? hilos.wander(a, b) : hilos.wander(b, a);   // el sentido, como la lanzadera
+      if (!pts.some((p) => rects.some((r) => hits(p, r)))) break;
+    }
+    return pts;
+  }
+
   /* Una vida nueva: dirección, sitio, sentido y color. */
   function born(s, t) {
     const W = innerWidth;
     const H = innerHeight;
-    const box = text.getBoundingClientRect();
-    const ida = Math.random() < 0.5;   // el sentido, como la lanzadera
-    let a;
-    let b;
-    if (s.weft) {
-      const y = lane(box.top, box.bottom, H);
-      [a, b] = [{ x: -10, y }, { x: W + 10, y: y + (Math.random() - 0.5) * 120 }];
-    } else {
-      const x = lane(box.left, box.right, W);
-      [a, b] = [{ x, y: -10 }, { x: x + (Math.random() - 0.5) * 120, y: H + 10 }];
-    }
-    s.el.setAttribute('d', hilos.path(ida ? hilos.wander(a, b) : hilos.wander(b, a)));
+    s.el.setAttribute('d', hilos.path(strand(s.weft, text.getBoundingClientRect(), W, H)));
     s.el.setAttribute('stroke', palette[Math.floor(Math.random() * palette.length)]);
     s.from = t;
     s.life = 2 * GROW + HOLD + 3 + Math.random() * 12;   // con el respiro del final

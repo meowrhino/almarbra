@@ -12,7 +12,7 @@
     { "role": "Make up", "name": "Xina Rodriguez", "url": "https://www.instagram.com/xinaarodriguez/" },
     { "role": "Hair", "name": "Hanna Liepkova", "url": "https://www.instagram.com/hanna_liepkova/" },
     { "role": "Set design", "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" },
-    { "role": "Modelo", "name": "Yarlin Bido & Eddy", "url": "https://www.instagram.com/yarlinbido/" }
+    { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Yarlin Bido & Eddy", "url": "https://www.instagram.com/yarlinbido/" }
   ],
   "color": "#4E7D5B",
   "_color": "Color inventado por manu (26-10), pendiente de que Almudena diga el suyo.",
