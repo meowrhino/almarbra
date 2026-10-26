@@ -89,7 +89,11 @@ async function start() {
   const { images: diaris, errors: diarisErrors } = loadDiaris(numbers, (src) => sizes.get(src));
   if (diarisErrors.length) return oops('Así no se publicaría', diarisErrors);
 
-  const web = sitio({ site: { ...site, noindex: true }, about, projects, diaris, preview: true });
+  const contactSize = await size('contacto/1.webp');
+  if (contactSize === null) return oops('Así no se publicaría', ['contacto/1.webp no es un WebP de verdad (pásala por imgToWeb)']);
+  const contactPhoto = contactSize ? { name: '1', file: '1.webp', src: 'contacto/1.webp', ...contactSize } : null;
+
+  const web = sitio({ site: { ...site, noindex: true }, about, projects, diaris, contactPhoto, preview: true });
 
   /* ?p=/en/textil/roma/ → en, textil/roma/ */
   let path = (new URLSearchParams(location.search).get('p') || '/').replace(/^\/+/, '');

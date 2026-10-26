@@ -70,15 +70,17 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .top nav { display: flex; gap: 1.25rem; }
 .top nav a { color: var(--dim); }
 
-/* En el móvil, en el mapa, el menú en columna: en fila no cabe, y ahí
-   no tapa nada que no se pueda apartar arrastrando. El nombre, a la
-   altura de la primera. */
+/* En el móvil el menú no cabe en una fila: salta a otra línea, y en el
+   mapa va en columna (ahí no tapa nada que no se pueda apartar
+   arrastrando). El nombre, a la altura de la primera. */
 @media (max-width: 700px) {
-  [data-vista="mapa"] .top {
+  .top {
     align-items: flex-start;
     height: auto;
+    min-height: var(--bar);
     padding-block: calc((var(--bar) - 1.4em) / 2);
   }
+  .top nav { flex-wrap: wrap; justify-content: flex-end; gap: .2rem 1rem; }
   [data-vista="mapa"] .top nav { flex-direction: column; align-items: flex-end; gap: .2rem; }
 }
 
@@ -182,6 +184,20 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   -webkit-mask-image: var(--band);
   mask-image: var(--band);
 }
+
+/* ── contacto ───────────────────────────────────────────────────────
+
+   Como el about: arriba a la izquierda, bajo el nombre. La foto (si la
+   hay) y debajo el email y las redes, del tamaño del texto del about. */
+
+#contacto {
+  padding: .5rem var(--pad) calc(var(--bar) + var(--pad));
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  line-height: 1.35;
+}
+
+#contacto figure { max-width: 32rem; margin: 0 0 1.5rem; }
+#contacto img { width: 100%; }
 
 /* ── el mapa ─────────────────────────────────────────────────────────
 

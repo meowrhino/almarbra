@@ -56,6 +56,7 @@ foto/                         ← los de foto, igual
     img/
   …
 diaris/                       ← las fotos de diaris: 1.webp, 2.webp, 3.webp…
+contacto/                     ← la foto de contacto: 1.webp
 data/
   site.json                   ← qué proyectos salen y en qué orden, tu email, Instagram, el menú…
   about.json                  ← el texto del about
@@ -187,12 +188,16 @@ carpetas de sus proyectos (`projects`), en el orden en que salen:
 - Para **pasarlo de lista**, lo mueves de una a la otra, y su carpeta también
   (de `textil/` a `foto/`, arrastrándola en VS Code).
 
-### Cambiar el about, tu email o tu Instagram
+### Cambiar el about, tu email, tu Instagram o la foto de contacto
 
-- El texto, en `data/about.json` (igual que el de un proyecto: lista de párrafos
-  en `es`, `en` y `ca`).
-- El email y el Instagram, en `data/site.json`: `"email"` y `"instagram"`. En
-  el Instagram, solo tu usuario, sin la @: `"instagram": "almarbra_"`.
+- El texto del about, en `data/about.json` (igual que el de un proyecto: lista
+  de párrafos en `es`, `en` y `ca`).
+- El email y el Instagram salen en **contacto**. Se cambian en
+  `data/site.json`: `"email"` y `"instagram"`. En el Instagram, solo tu
+  usuario, sin la @: `"instagram": "almarbra_"`.
+- La foto de contacto: pásala por imgToWeb y súbela a la carpeta `contacto/`
+  con el nombre `1.webp`. Para cambiarla, sustituye esa. Sin foto, la página
+  sale con el email y el Instagram solos.
 
 ---
 

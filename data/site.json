@@ -1,6 +1,6 @@
 {
   "$schema": "../schema/site.json",
-  "_": "Lo general de la web. «description», por idioma, es la que sale en Google y al compartir. «email» e «instagram» (solo el usuario, sin @) salen al pie del about; vacíos, no sale nada. Otras redes, en «social», con la dirección entera. «lists»: las listas del menú, cada una con su nombre por idioma y sus proyectos («projects», el nombre de su carpeta) en el orden en que salen; cada lista es una carpeta (textil/, foto/) y sus proyectos van dentro; uno que está en la carpeta y no en la lista no sale en la web; para esconder uno sin quitarlo, { \"project\": \"roma\", \"visible\": false }: tiene su página, pero no sale en el mapa, en las listas ni en Google. «menu»: las demás palabras del menú, por idioma. «diaris» es la página de las fotos de la carpeta diaris/ (1.webp, 2.webp…), que salen todas, en otro orden en cada visita. El color de cada proyecto va en su project.json («color»). «mix», de 0 a 100: en el mapa, con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto.",
+  "_": "Lo general de la web. «description», por idioma, es la que sale en Google y al compartir. «email» e «instagram» (solo el usuario, sin @) salen en la página de contacto; vacíos, no sale nada. Otras redes, en «social», con la dirección entera. «lists»: las listas del menú, cada una con su nombre por idioma y sus proyectos («projects», el nombre de su carpeta) en el orden en que salen; cada lista es una carpeta (textil/, foto/) y sus proyectos van dentro; uno que está en la carpeta y no en la lista no sale en la web; para esconder uno sin quitarlo, { \"project\": \"roma\", \"visible\": false }: tiene su página, pero no sale en el mapa, en las listas ni en Google. «menu»: las demás palabras del menú, por idioma. «contact», la palabra de la página de contacto, que lleva la foto de contacto/1.webp (si está), el email y las redes. «diaris» es la página de las fotos de la carpeta diaris/ (1.webp, 2.webp…), que salen todas, en otro orden en cada visita. El color de cada proyecto va en su project.json («color»). «mix», de 0 a 100: en el mapa, con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto.",
   "title": "almudena gonzalez",
   "url": null,
   "lang": "es",
@@ -22,6 +22,7 @@
     "map": { "es": "mapa", "en": "map", "ca": "mapa" },
     "diaris": { "es": "diaris", "en": "diaris", "ca": "diaris" },
     "about": { "es": "about", "en": "about", "ca": "about" },
+    "contact": { "es": "contacto", "en": "contact", "ca": "contacte" },
     "back": { "es": "back", "en": "back", "ca": "back" }
   },
   "mix": 50

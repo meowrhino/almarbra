@@ -59,12 +59,12 @@
     },
     "email": {
       "type": "string",
-      "description": "Sale al pie del about. Vacío, no sale."
+      "description": "Sale en la página de contacto. Vacío, no sale."
     },
     "instagram": {
       "type": "string",
       "pattern": "^@?[A-Za-z0-9._]*$",
-      "description": "El usuario de Instagram, solo el nombre: \"almarbra_\" (con o sin @). Sale al pie del about como @almarbra_. Vacío, no sale."
+      "description": "El usuario de Instagram, solo el nombre: \"almarbra_\" (con o sin @). Sale en la página de contacto como @almarbra_. Vacío, no sale."
     },
     "social": {
       "type": "array",
@@ -72,7 +72,7 @@
         "type": "string",
         "pattern": "^https?://"
       },
-      "description": "Otras redes, la dirección entera: [\"https://vimeo.com/usuario\"]. Salen al pie del about, detrás del Instagram."
+      "description": "Otras redes, la dirección entera: [\"https://vimeo.com/usuario\"]. Salen en la página de contacto, detrás del Instagram."
     },
     "lists": {
       "type": "object",
@@ -94,11 +94,14 @@
         "about": {
           "$ref": "#/$defs/texto"
         },
+        "contact": {
+          "$ref": "#/$defs/texto"
+        },
         "back": {
           "$ref": "#/$defs/texto"
         }
       },
-      "description": "Las demás palabras del menú, por idioma: map (el mapa), diaris, about y back (volver)."
+      "description": "Las demás palabras del menú, por idioma: map (el mapa), diaris, about, contact (contacto) y back (volver)."
     },
     "mix": {
       "type": "number",

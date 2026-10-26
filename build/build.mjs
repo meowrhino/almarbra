@@ -9,6 +9,7 @@
      dist/<lista>/index.html            cada lista (textil/, foto/)
      dist/diaris/index.html             las fotos de diaris/, barajadas
      dist/about/index.html              el about
+     dist/contacto/index.html           la foto de contacto/, el email y las redes
      dist/<lista>/<slug>/index.html     cada proyecto: ficha técnica y
                                         galería en scroll vertical
 
@@ -128,6 +129,11 @@ if (gap >= 0) warnings.push(`diaris: falta ${gap + 1}.webp (en la web salen toda
 const { images: diaris, errors: diarisErrors } = loadDiaris(numbers, sizeOf);
 errors.push(...diarisErrors);
 
+/* contacto/1.webp: la foto de la página de contacto. Si no está, sale sin. */
+const contactSize = sizeOf('contacto/1.webp');
+if (contactSize === null) errors.push('contacto/1.webp no es un WebP de verdad (pásala por imgToWeb)');
+const contactPhoto = contactSize ? { name: '1', file: '1.webp', src: 'contacto/1.webp', ...contactSize } : null;
+
 for (const w of warnings) console.warn(`⚠ ${w}`);
 if (errors.length) fail(errors);
 
@@ -231,7 +237,7 @@ const images = {
 };
 
 /* La primera pasada, sin escribir nada: qué imágenes piden las plantillas. */
-const dry = sitio({ site, about, projects, diaris, version, ...images });
+const dry = sitio({ site, about, projects, diaris, contactPhoto, version, ...images });
 for (const l of dry.LANGS) for (const path of dry.paths) dry.render(l, path);
 if (sharp) {
   for (const image of miniWanted.values()) {
@@ -262,7 +268,12 @@ for (const image of diaris) {
   cpSync(from, join(OUT, 'media', 'diaris', image.file));
 }
 
-const web = sitio({ site, about, projects, diaris, version, ...images });
+if (contactPhoto) {
+  mkdirSync(join(OUT, 'media', 'contacto'), { recursive: true });
+  cpSync(join(ROOT, contactPhoto.src), join(OUT, 'media', 'contacto', contactPhoto.file));
+}
+
+const web = sitio({ site, about, projects, diaris, contactPhoto, version, ...images });
 const { LANGS, LISTS, paths, listed } = web;
 
 for (const l of LANGS) {
@@ -270,7 +281,7 @@ for (const l of LANGS) {
     mkdirSync(join(OUT, prefix(l), path), { recursive: true });
     writeFileSync(join(OUT, prefix(l), path, 'index.html'), web.render(l, path));
   }
-  console.log(`${prefix(l) || '/'}`.padEnd(8) + `mapa, ${LISTS.join(', ')}, ${diaris.length ? `diaris (${diaris.length} fotos), ` : ''}about y ${projects.length} proyectos`);
+  console.log(`${prefix(l) || '/'}`.padEnd(8) + `mapa, ${LISTS.join(', ')}, ${diaris.length ? `diaris (${diaris.length} fotos), ` : ''}about, contacto y ${projects.length} proyectos`);
 }
 
 /* Las imágenes que ha hecho sharp, de .cache/ a dist/. */

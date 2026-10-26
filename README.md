@@ -16,8 +16,8 @@ con lo que está puesto marcado; el idioma (**es · en · ca**) abajo a la
 derecha, salvo en el mapa. Todo sin fondo y en `difference`, para que se lea
 sobre las fotos.
 
-- **portada** (`/`): el **mapa**. Las dos **listas**, **diaris** y el **about** son páginas
-  propias: `/textil/`, `/foto/`, `/diaris/`, `/about/` (y en `/en/`, `/ca/`); las
+- **portada** (`/`): el **mapa**. Las dos **listas**, **diaris**, el **about** y **contacto** son páginas
+  propias: `/textil/`, `/foto/`, `/diaris/`, `/about/`, `/contacto/` (y en `/en/`, `/ca/`); las
   direcciones viejas con `#` (`/#about`) redirigen. En el mapa salen los
   proyectos de las dos.
 
@@ -49,7 +49,8 @@ sobre las fotos.
   `difference` ya las deja leer sobre las fotos.
 
   El about: el texto de `data/about.json` arriba a la izquierda, bajo el
-  nombre; debajo, el email y el Instagram, y quién hizo la web. Detrás, un telar: hilos de borde a borde, en horizontal y en
+  nombre, y abajo quién hizo la web. Contacto, igual de alineado: la foto de
+  `contacto/1.webp` (si está) y debajo el email y el Instagram. Detrás, un telar: hilos de borde a borde, en horizontal y en
   vertical, que se tejen muy despacio, se quedan y se destejen.
 
   **Al cargar**, primero salen los huecos de las fotos —una trama de píxeles

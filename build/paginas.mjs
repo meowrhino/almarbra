@@ -16,6 +16,7 @@
      <lista>/index.html            cada lista (textil/, foto/)
      diaris/index.html             las fotos de diaris/, barajadas
      about/index.html              el about
+     contacto/index.html           la foto de contacto/, el email y las redes
      <lista>/<slug>/index.html     cada proyecto: ficha técnica y
                                    galería en scroll vertical
 
@@ -35,6 +36,7 @@ let LANGS;
 let LISTS;
 let VIEWS;
 let diaris;
+let contactPhoto;
 
 /* Las páginas se enlazan entre sí con rutas relativas; solo lo que se lee
    desde fuera —canonical, og:image, sitemap— y la 404 necesitan la
@@ -160,7 +162,7 @@ const person = () => ({
   ...(socials().length ? { sameAs: socials() } : {}),
 });
 
-/* Al pie del texto del about: el email, el Instagram y las redes de data/site.json (de
+/* En contacto: el email, el Instagram y las redes de data/site.json (de
    Instagram sale @usuario; de lo demás, el nombre del sitio). */
 function contact() {
   const handle = (url) => {
@@ -261,7 +263,7 @@ ${items.map((p, i) => listItem(root, home, p, i)).join('\n')}
 const viewPath = (view) => (view === 'mapa' ? '' : `${view}/`);
 /* El nombre de una vista en el menú: el de su lista, o el de «menu»
    (las vistas mapa y about, y el back de los proyectos). */
-const MENU = { mapa: 'map', diaris: 'diaris', about: 'about', volver: 'back' };
+const MENU = { mapa: 'map', diaris: 'diaris', about: 'about', contacto: 'contact', volver: 'back' };
 const label = (view) => tr(site.lists?.[view]?.name || site.menu?.[MENU[view]]) || esc(view.replace(/-/g, ' '));
 
 /** El menú de arriba, igual en todas las páginas. El nombre lleva
@@ -382,7 +384,7 @@ function aboutPage(projects) {
 
 <main>
 <section id="about" data-colores="${attr(palette(projects))}">
-<div>${tr(about, prose)}${contact()}</div>
+<div>${tr(about, prose)}</div>
 <p class="credito">web: <a href="https://meowrhino.studio" target="_blank" rel="noopener">meowrhino</a></p>
 </section>
 </main>`,
@@ -392,6 +394,30 @@ function aboutPage(projects) {
 /* Diaris: las fotos de diaris/ en columnas, como un tumblr, barajadas
    en cada visita (sin JavaScript, en su orden). Cada hueco, con la trama
    de un color de los proyectos mientras llega su foto. */
+/* Contacto: como el about, arriba a la izquierda bajo el nombre: la
+   foto de contacto/ (1.webp, si está) y debajo el email y las redes. */
+function contactPage(projects) {
+  const root = viewRoot('contacto');
+  const name = t(site.menu?.contact) || 'contacto';
+  return page({
+    title: name,
+    path: viewPath('contacto'),
+    root,
+    vista: 'contacto',
+    image: contactPhoto || projects[0].cover,
+    og: contactPhoto ? null : mosaicOg('og.jpg', projects),
+    head: ld(person()),
+    body: `${topBar({ home: homeOf('../'), root, path: viewPath('contacto'), view: 'contacto' })}
+
+<main>
+<section id="contacto">
+<h1 class="sr-only">${esc(name)}</h1>
+${contactPhoto ? `<figure>${img({ ...contactPhoto, alt: site.title }, { base: root, eager: true })}</figure>\n` : ''}${contact()}
+</section>
+</main>`,
+  });
+}
+
 function diarisPage(projects) {
   const root = viewRoot('diaris');
   const colors = [...new Set(projects.map((p) => p.color))];
@@ -540,6 +566,7 @@ function notFoundPage() {
  *   site, about           data/site.json y data/about.json
  *   projects              los proyectos, ya leídos (build/proyectos.mjs)
  *   diaris                las fotos de diaris/ (loadDiaris)
+ *   contactPhoto          la foto de contacto/1.webp, o null
  *   preview               true en la vista previa: las fotos, donde
  *                         están, y los enlaces, a index.html?p=/ruta/
  *   version(file)         el ?v=<hash> de un archivo de css/ o js/
@@ -562,7 +589,8 @@ export function sitio(opts) {
   LANGS = site.langs || [lang];
   LISTS = Object.keys(site.lists || {});
   diaris = opts.diaris || [];
-  VIEWS = ['mapa', ...LISTS, ...(diaris.length ? ['diaris'] : []), 'about'];
+  contactPhoto = opts.contactPhoto || null;
+  VIEWS = ['mapa', ...LISTS, ...(diaris.length ? ['diaris'] : []), 'about', 'contacto'];
   cur = lang;
 
   /* Los ocultos («visible»: false en la lista) tienen su página, pero no
@@ -577,6 +605,7 @@ export function sitio(opts) {
     if (path === '') return mapPage(shown);
     if (path === 'about/') return aboutPage(shown);
     if (path === 'diaris/' && diaris.length) return diarisPage(shown);
+    if (path === 'contacto/') return contactPage(shown);
     const list = LISTS.find((view) => path === viewPath(view));
     if (list) return listPage(list, shown);
     const project = projects.find((p) => path === `${p.dir}/`);
