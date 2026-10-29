@@ -1,6 +1,6 @@
 /* La transición entre páginas, la de la casa (JAMstack, patrones.md
    §6c): este archivo y css/transicion.css son iguales en todas las webs.
-   Lo que se ve lo pone cada una (window.dibujo; aquí, js/ola.js).
+   Lo que se ve lo pone cada una (window.dibujo); sin él, un fundido.
 
    Al ir a otra página de la web, la pantalla se tapa, se cambia de
    página y la nueva se destapa cuando está lista: montada y con las
@@ -13,7 +13,9 @@
 
    Con atrás y adelante del navegador no se puede tapar antes de irse:
    la página nueva tapa una foto de la de antes (View Transitions, donde
-   las hay; donde no, nace en blanco). Con prefers-reduced-motion, nada.
+   las hay; donde no, nace en blanco). No se mira prefers-reduced-motion
+   (JAMstack, regla 11): con "reducir movimiento" en el sistema la web
+   salía sin su diseño.
 
    El dibujo, window.dibujo, de un script que va antes que este; sin él,
    un fundido:
@@ -31,7 +33,6 @@
 (() => {
   const root = document.documentElement;
   const KEY = 'transicion';
-  const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const HOLD = 250;    // ms en blanco, como mínimo, entre tapar y destapar
   const WAIT = 2500;   // ms que se espera, como mucho, a que lo nuevo esté listo
@@ -108,7 +109,7 @@
      y se va. */
   document.addEventListener('click', (e) => {
     const a = e.target.closest('a[href]');
-    if (!a || still || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     if (a.target === '_blank' || a.hasAttribute('download')) return;
     const to = new URL(a.href, location.href);
     if (to.origin !== location.origin) return;
@@ -130,7 +131,7 @@
      cual: igual, pero el <head> no vuelve a correr. */
   addEventListener('pageshow', (e) => {
     root.classList.remove('cargando');   // se volvió a esta antes de irse del todo
-    if (!e.persisted || still) return;
+    if (!e.persisted) return;
     root.classList.add('tapada', 'tapando');
     if (!('onpagereveal' in window)) { root.classList.remove('tapando'); back(null); return; }
     addEventListener('pagereveal', (r) => {

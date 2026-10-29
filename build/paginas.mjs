@@ -115,7 +115,7 @@ try {
   const d = JSON.parse(sessionStorage.getItem('transicion'));
   back = !d && performance.getEntriesByType('navigation')[0]?.type === 'back_forward';
   if (d?.carga) html.style.setProperty('--carga', d.carga);   // el color del loader, del dibujo
-  if (!matchMedia('(prefers-reduced-motion: reduce)').matches && (back || d)) html.classList.add('tapada');
+  if (back || d) html.classList.add('tapada');
 } catch {}
 window.revelada = ${preview ? 'false' : "'onpagereveal' in window"} ? new Promise((done) => addEventListener('pagereveal', (e) => {
   const vt = e.viewTransition;
