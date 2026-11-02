@@ -73,7 +73,10 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* Arriba a la derecha: mapa, lista y about, y en un proyecto su nombre */
 .top nav { display: flex; gap: 1.25rem; }
 .top .name { letter-spacing: .075em; }   /* tracking 75 */
-.top nav a { color: var(--dim); }
+/* El menú, de la tinta entera, como el nombre: a medias (--dim), en
+   difference sale un negativo a medias, lavado sobre las fotos. Donde
+   se está, subrayado. */
+.top nav [aria-current="page"] { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; }
 
 /* En el móvil el menú no cabe en una fila: va en columna, a la derecha,
    en todas las páginas. El nombre, entero en una línea, a la altura de
@@ -486,6 +489,13 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 #diaris li::before { content: ""; height: var(--s); }
+
+/* En el móvil, filas más bajas: que quepan dos horizontales, y así haya
+   filas de varias formas que alternar (con una sola por fila, casi todas
+   serían horizontales seguidas). */
+@media (max-width: 700px) {
+  #diaris { --fila: 27vw; }
+}
 
 /* ── los hilos ───────────────────────────────────────────────────────
 

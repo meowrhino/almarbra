@@ -392,10 +392,6 @@ function aboutPage(projects) {
   });
 }
 
-/* Diaris: las fotos de diaris/ en filas de huecos que llenan el ancho,
-   barajadas en cada visita y cada una en un sitio de su hueco (sin
-   JavaScript, en su orden y centradas; css/style.css). Cada foto, con
-   la trama de un color de los proyectos mientras llega. */
 /* Contacto: como el about pero en el centro y más pequeño: la foto de
    contacto/ (1.webp, si está) y debajo el email y las redes. Detrás, el
    mismo telar (js/telar.js). */
@@ -422,6 +418,68 @@ function contactPage(projects) {
   });
 }
 
+/* Diaris: las fotos de diaris/ en filas de huecos que llenan el ancho,
+   barajadas en cada visita y cada una en un sitio de su hueco (sin
+   JavaScript, en su orden y centradas; css/style.css). Cada foto, con
+   la trama de un color de los proyectos mientras llega.
+
+   El script va justo detrás de la lista, para que corra antes de
+   pintar. Baraja, y luego mira las filas como las cortará el navegador
+   (cada hueco mide --r × --fila más el aire, en el ancho de la lista):
+   si una fila es de la misma combinación que la de encima (una
+   horizontal y una vertical, y otra igual debajo; el orden no cuenta),
+   cambia una de sus fotos por la más cercana de otra forma —detrás, o
+   si no queda, delante— y vuelve a mirar. Si se atasca, baraja otra
+   vez (hasta 20), y se queda con el reparto con menos repetidas. Se
+   mira al cargar: si luego cambia el ancho de la ventana, las filas se
+   cortan por otro sitio y puede repetirse alguna. */
+const diarisScript = `<script>{
+const ul = document.currentScript.previousElementSibling;
+const probe = ul.appendChild(document.createElement('div'));
+probe.style.cssText = 'position:absolute;visibility:hidden;height:var(--fila)';
+const F = probe.offsetHeight;
+probe.remove();
+const W = ul.clientWidth;
+const G = parseFloat(getComputedStyle(ul).columnGap);
+const r = (li) => parseFloat(li.style.getPropertyValue('--r'));
+const kind = (li) => (r(li) > 1.1 ? 'h' : r(li) < 0.9 ? 'v' : 'c');
+const sig = (row) => row.map(kind).sort().join('');
+const rows = (lis) => {
+  const out = [[]];
+  let w = -G;
+  for (const li of lis) {
+    const b = r(li) * F;
+    if (out.at(-1).length && w + G + b > W) { out.push([]); w = -G; }
+    out.at(-1).push(li);
+    w += G + b;
+  }
+  return out;
+};
+let best = [...ul.children];
+let fewest = Infinity;
+for (let round = 0; round < 20 && fewest; round++) {
+  const lis = [...ul.children];
+  for (let i = lis.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [lis[i], lis[j]] = [lis[j], lis[i]]; }
+  for (let tries = 0; tries < 150; tries++) {
+    const f = rows(lis);
+    const same = f.map((row, k) => k > 0 && sig(row) === sig(f[k - 1]));
+    const n = same.filter(Boolean).length;
+    if (n < fewest) { fewest = n; best = [...lis]; }
+    if (!n) break;
+    const i = same.indexOf(true);
+    const a = lis.indexOf(f[i][Math.floor(Math.random() * f[i].length)]);
+    const near = new Set([...f[i], ...f[i - 1]]);
+    const other = (li) => !near.has(li) && kind(li) !== kind(lis[a]);
+    let b = lis.findIndex((li, j) => j > a && other(li));
+    if (b < 0) b = lis.findLastIndex((li, j) => j < a && other(li));
+    if (b < 0) break;
+    [lis[a], lis[b]] = [lis[b], lis[a]];
+  }
+}
+ul.append(...best);
+for (const li of best) { li.style.setProperty('--x', Math.random().toFixed(2)); li.style.setProperty('--y', Math.random().toFixed(2)); }
+}</script>`;
+
 function diarisPage(projects) {
   const root = viewRoot('diaris');
   const colors = [...new Set(projects.map((p) => p.color))];
@@ -441,8 +499,7 @@ function diarisPage(projects) {
 <ul>
 ${diaris.map((image, i) => `<li style="--c:${attr(colors[i % colors.length])};--r:${(image.w / image.h).toFixed(4)}">${img({ ...image, alt: name }, { base: root })}</li>`).join('\n')}
 </ul>
-<script>{ const ul = document.currentScript.previousElementSibling; for (let i = ul.children.length; i > 1; i--) ul.append(ul.children[Math.floor(Math.random() * i)]);
-for (const li of ul.children) { li.style.setProperty('--x', Math.random().toFixed(2)); li.style.setProperty('--y', Math.random().toFixed(2)); } }</script>
+${diarisScript}
 </section>
 </main>`,
   });
