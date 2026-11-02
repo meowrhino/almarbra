@@ -287,15 +287,15 @@ const label = (view) => tr(site.lists?.[view]?.name || site.menu?.[MENU[view]]) 
     `root`, a la raíz del sitio. */
 function topBar({ home = '', root = '', path = null, view = null }) {
   const link = (to) => `<a href="${attr(home + viewPath(to))}" data-to="${attr(to)}"${to === view ? ' aria-current="page"' : ''}>${label(to)}</a>`;
-  /* Abajo a la derecha: los idiomas y, con JavaScript, el botón del modo
-     oscuro (el <head> lo atiende). */
-  const langs = path !== null
-    ? `<div class="idiomas"><button type="button" class="tema" aria-label="modo oscuro" aria-pressed="false">◐</button>${
-      LANGS.length > 1 ? LANGS.map((l) => `<a href="${attr(preview ? `?p=/${prefix(l)}${path}` : root + prefix(l) + path)}" hreflang="${l}" lang="${l}"${l === cur ? ' aria-current="true"' : ''}>${l}</a>`).join('') : ''}</div>`
+  /* Abajo a la derecha, los idiomas; abajo a la izquierda, con JavaScript,
+     el botón del modo oscuro (el <head> lo atiende). */
+  const langs = path !== null && LANGS.length > 1
+    ? `<div class="idiomas">${LANGS.map((l) => `<a href="${attr(preview ? `?p=/${prefix(l)}${path}` : root + prefix(l) + path)}" hreflang="${l}" lang="${l}"${l === cur ? ' aria-current="true"' : ''}>${l}</a>`).join('')}</div>`
     : '';
   return `<header class="top">
 <a href="${attr(home)}" class="name">${esc(site.title)}</a>
 ${langs}
+<button type="button" class="tema" aria-label="modo oscuro" aria-pressed="false">◐</button>
 <nav>
 ${VIEWS.map(link).join('\n')}
 </nav>

@@ -107,28 +107,28 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .top nav { flex-direction: column; align-items: flex-end; gap: .2rem; }
 }
 
-/* Abajo a la derecha: el idioma (la misma página en los otros) y el
-   botón del modo oscuro. En difference, como el menú: en el mapa y en
-   diaris pasan fotos por debajo. */
-.idiomas {
+/* Abajo a la derecha, el idioma (la misma página en los otros); abajo a
+   la izquierda, el botón del modo oscuro. En difference, como el menú:
+   en el mapa y en diaris pasan fotos por debajo. */
+.idiomas,
+.tema {
   --ink: #fff;
   --dim: rgba(255, 255, 255, .55);
   position: fixed;
-  right: var(--pad);
   bottom: 0;
   z-index: 3;
   display: flex;
   align-items: center;
-  gap: .6rem;
   height: var(--bar);
   color: var(--ink);
   mix-blend-mode: difference;
 }
 
+.idiomas { right: var(--pad); gap: .6rem; }
 .idiomas a { color: var(--dim); }
 
 .tema {
-  margin-right: .4rem;
+  left: var(--pad);
   padding: 0;
   border: 0;
   font: inherit;
@@ -222,7 +222,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* en la franja de abajo, como los idiomas: el telar no entra en ella */
 #about .credito {   /* #about: que no le llegue el margen de #about p */
   position: absolute;
-  left: var(--pad);
+  left: calc(var(--pad) + 2rem);   /* a la derecha del botón del modo oscuro */
   bottom: 0;
   display: flex;
   align-items: center;

@@ -13,8 +13,8 @@ fotos mandando, unidas por hilos de píxeles del color de cada proyecto.
 **La interfaz**, igual en todas las páginas: el nombre arriba a la izquierda
 (lleva siempre a la portada); **mapa · arte textil · editorial photography ·
 diaries · about · contacto** arriba a la derecha, con lo que está puesto
-marcado; el idioma (**es · en · ca**) y el botón del **modo oscuro** (◐) abajo
-a la derecha, en todas las páginas. Todo sin fondo y en `difference`, para que
+marcado; el idioma (**es · en · ca**) abajo a la derecha y el botón del **modo oscuro** (◐) abajo
+a la izquierda, en todas las páginas. Todo sin fondo y en `difference`, para que
 se lea sobre las fotos.
 
 **El modo oscuro** (2026-11-02): fondo negro y cada proyecto con su color neón

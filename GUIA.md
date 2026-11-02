@@ -259,7 +259,7 @@ pequeñas del mapa **se hacen solas**: no tienes que hacer nada.
 | `text` | el texto, lista de párrafos por idioma | `{ "es": ["Uno.", "Dos."] }` |
 | `credits` | quién hizo qué: una persona por línea | ver arriba |
 | `color` | su color: el de su hilo, sus huecos y la ola | `"#982F0C"` |
-| `neon` | el mismo color en versión neón, para el modo oscuro (el botón ◐ de abajo a la derecha); si no está, se usa `color` | `"#FF6633"` |
+| `neon` | el mismo color en versión neón, para el modo oscuro (el botón ◐ de abajo a la izquierda); si no está, se usa `color` | `"#FF6633"` |
 | `cover` | la portada: la foto de la lista y de compartir | `["8"]` |
 | `map` | las fotos del mapa | `["1", "3", "5"]` |
 | `photos` | la galería, en orden | `["1", "2", "3"]` |
