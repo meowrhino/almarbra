@@ -290,7 +290,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    y las galerías. */
 .pin,
 .row .pic,
-#diaris li {
+#diaris li::before {
   background: repeating-conic-gradient(color-mix(in srgb, var(--c) 35%, transparent) 0 25%, transparent 0 50%) 0 0 / 6px 6px;
 }
 
@@ -439,34 +439,53 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* ── diaris ──────────────────────────────────────────────────────────
 
-   Las fotos de diaris/ en columnas, como un tumblr: cada una entera, a
-   lo ancho de su columna, con poco aire entre ellas y mucho entre
-   columnas. Tres columnas; en el móvil, dos, con el aire de entre
-   fotos. El orden lo baraja un script al pintar (build/paginas.mjs). */
+   Las fotos de diaris/ en filas de huecos que llenan el ancho: todos
+   los de una fila a la misma altura, y la fila estirada hasta los dos
+   bordes. Cada fila sale de una altura según las fotos que le toquen,
+   alrededor de --fila. Cómo: cada hueco crece en proporción a su forma
+   (--r, ancho / alto, del build), y así el sobrante de la fila se
+   reparte sin cambiar las alturas. La última fila no se estira
+   (ul::after se queda el sobrante).
+
+   Dentro de su hueco, cada foto entera, al 90 % (--s) y en un sitio
+   de él (--x y --y, de 0 a 1: de un lado al otro de lo que sobra). El
+   orden y el sitio los pone al azar un script al pintar
+   (build/paginas.mjs); sin él, en su orden y centradas. */
 
 #diaris {
-  --gap: clamp(.5rem, 1.5vw, 1.25rem);
+  --gap: clamp(1rem, 3vw, 3rem);
+  --fila: clamp(10rem, 24vw, 22rem);
   padding: clamp(1rem, 4vh, 3rem) var(--pad) var(--bar);
 }
 
 #diaris ul {
-  columns: 3;
-  column-gap: clamp(6rem, 8vw, 9rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+#diaris ul::after { content: ""; flex: 999 1 0; }
+
 #diaris li {
-  break-inside: avoid;
-  margin-bottom: var(--gap);
+  --s: 90%;
+  position: relative;
+  flex: var(--r) 1 calc(var(--r) * var(--fila));
+  aspect-ratio: var(--r);
 }
 
-#diaris img { width: 100%; }
-
-@media (max-width: 700px) {
-  #diaris ul { columns: 2; column-gap: var(--gap); }
+/* la foto y, mientras llega, su trama, en el mismo sitio */
+#diaris li::before,
+#diaris img {
+  position: absolute;
+  left: calc((100% - var(--s)) * var(--x, .5));
+  top: calc((100% - var(--s)) * var(--y, .5));
+  width: var(--s);
 }
+
+#diaris li::before { content: ""; height: var(--s); }
 
 /* ── los hilos ───────────────────────────────────────────────────────
 

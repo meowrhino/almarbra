@@ -392,9 +392,10 @@ function aboutPage(projects) {
   });
 }
 
-/* Diaris: las fotos de diaris/ en columnas, como un tumblr, barajadas
-   en cada visita (sin JavaScript, en su orden). Cada hueco, con la trama
-   de un color de los proyectos mientras llega su foto. */
+/* Diaris: las fotos de diaris/ en filas de huecos que llenan el ancho,
+   barajadas en cada visita y cada una en un sitio de su hueco (sin
+   JavaScript, en su orden y centradas; css/style.css). Cada foto, con
+   la trama de un color de los proyectos mientras llega. */
 /* Contacto: como el about pero en el centro y más pequeño: la foto de
    contacto/ (1.webp, si está) y debajo el email y las redes. Detrás, el
    mismo telar (js/telar.js). */
@@ -438,9 +439,10 @@ function diarisPage(projects) {
 <section id="diaris">
 <h1 class="sr-only">${esc(name)}</h1>
 <ul>
-${diaris.map((image, i) => `<li style="--c:${attr(colors[i % colors.length])}">${img({ ...image, alt: name }, { base: root })}</li>`).join('\n')}
+${diaris.map((image, i) => `<li style="--c:${attr(colors[i % colors.length])};--r:${(image.w / image.h).toFixed(4)}">${img({ ...image, alt: name }, { base: root })}</li>`).join('\n')}
 </ul>
-<script>{ const ul = document.currentScript.previousElementSibling; for (let i = ul.children.length; i > 1; i--) ul.append(ul.children[Math.floor(Math.random() * i)]); }</script>
+<script>{ const ul = document.currentScript.previousElementSibling; for (let i = ul.children.length; i > 1; i--) ul.append(ul.children[Math.floor(Math.random() * i)]);
+for (const li of ul.children) { li.style.setProperty('--x', Math.random().toFixed(2)); li.style.setProperty('--y', Math.random().toFixed(2)); } }</script>
 </section>
 </main>`,
   });
