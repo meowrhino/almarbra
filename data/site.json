@@ -34,9 +34,9 @@
     },
     "foto": {
       "name": {
-        "es": "Editorial Photography",
-        "en": "Editorial Photography",
-        "ca": "Editorial Photography"
+        "es": "Editorial",
+        "en": "Editorial",
+        "ca": "Editorial"
       },
       "projects": [
         "sicky-magazine",

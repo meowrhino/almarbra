@@ -11,7 +11,7 @@ Fondo blanco, Helvetica (la del sistema: nada que descargar) en minúscula y las
 fotos mandando, unidas por hilos de píxeles del color de cada proyecto.
 
 **La interfaz**, igual en todas las páginas: el nombre arriba a la izquierda
-(lleva siempre a la portada); **mapa · arte textil · editorial photography ·
+(lleva siempre a la portada); **mapa · arte textil · editorial ·
 diaries · about · contacto** arriba a la derecha, con lo que está puesto
 marcado; el idioma (**es · en · ca**) abajo a la derecha y el botón del **modo oscuro** (◐) abajo
 a la izquierda, en todas las páginas. Todo sin fondo y en `difference`, para que
