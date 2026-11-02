@@ -95,10 +95,11 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* Arriba a la derecha: mapa, lista y about, y en un proyecto su nombre */
 .top nav { display: flex; gap: 1.25rem; }
 .top .name { letter-spacing: .075em; }   /* tracking 75 */
-/* El menú, de la tinta entera, como el nombre: a medias (--dim), en
-   difference sale un negativo a medias, lavado sobre las fotos. Donde
-   se está, subrayado. */
-.top nav [aria-current="page"] { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .25em; }
+/* El menú y los idiomas, de la tinta entera, como el nombre: a medias
+   (--dim), en difference sale un negativo a medias, lavado sobre las
+   fotos. Donde se está, en negrita (Amsi Pro Bold). */
+.idiomas [aria-current],
+.top nav [aria-current="page"] { font-weight: 700; }
 
 /* En el móvil el menú no cabe en una fila: va en columna, a la derecha,
    en todas las páginas. El nombre, entero en una línea, a la altura de
@@ -132,7 +133,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 .idiomas { right: var(--pad); gap: .6rem; }
-.idiomas a { color: var(--dim); }
+.idiomas a { color: var(--ink); }
 
 .tema {
   left: var(--pad);
@@ -147,10 +148,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .tema[aria-pressed="true"] { color: var(--ink); }
 :root:not(.js) .tema { display: none; }
-
-/* lo que está puesto: el idioma y la página */
-.idiomas [aria-current],
-.top [aria-current="page"] { color: var(--ink); }
 
 @media (hover: hover) {
   .top a:hover,
