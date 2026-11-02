@@ -200,6 +200,16 @@
     });
   }
 
+  /* Todo en blanco: tapa la página nueva mientras el hilo acaba de
+     destejerse, que ya no la tapa .tapada y si no asomaría. */
+  function blank() {
+    veil.width = innerWidth;   // a 1×: es un color liso
+    veil.height = innerHeight;
+    ctx.fillStyle = bg();
+    ctx.fillRect(0, 0, innerWidth, innerHeight);
+    veil.style.opacity = 1;
+  }
+
   /* ── el loader ─────────────────────────────────────────────────────
 
      Sale cuando se espera en blanco (.cargando en la página vieja,
@@ -322,6 +332,9 @@
       };
     },
     tapar: (datos) => { waiting = datos; return play({ ...datos, cover: true, C: datos.de.c, BAND: datos.de.band }); },
-    destapar: async ({ colors, dir, a }) => play({ colors, dir, cover: false, at: await unknit(), C: a.c, BAND: a.band }),
+    destapar: async ({ colors, dir, a }) => {
+      blank();
+      return play({ colors, dir, cover: false, at: await unknit(), C: a.c, BAND: a.band });
+    },
   };
 })();

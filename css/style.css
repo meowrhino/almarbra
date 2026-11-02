@@ -72,7 +72,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 /* Arriba a la derecha: mapa, lista y about, y en un proyecto su nombre */
 .top nav { display: flex; gap: 1.25rem; }
-.top .name { letter-spacing: .05em; }   /* tracking 50 */
+.top .name { letter-spacing: .075em; }   /* tracking 75 */
 .top nav a { color: var(--dim); }
 
 /* En el móvil el menú no cabe en una fila: va en columna, a la derecha,
@@ -440,9 +440,9 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 /* ── diaris ──────────────────────────────────────────────────────────
 
    Las fotos de diaris/ en columnas, como un tumblr: cada una entera, a
-   lo ancho de su columna, con poco aire entre ellas. Tres columnas; en
-   el móvil, dos. El orden lo baraja un script al pintar
-   (build/paginas.mjs). */
+   lo ancho de su columna, con poco aire entre ellas y mucho entre
+   columnas. Tres columnas; en el móvil, dos, con el aire de entre
+   fotos. El orden lo baraja un script al pintar (build/paginas.mjs). */
 
 #diaris {
   --gap: clamp(.5rem, 1.5vw, 1.25rem);
@@ -451,7 +451,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 #diaris ul {
   columns: 3;
-  column-gap: var(--gap);
+  column-gap: clamp(6rem, 8vw, 9rem);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -465,7 +465,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 #diaris img { width: 100%; }
 
 @media (max-width: 700px) {
-  #diaris ul { columns: 2; }
+  #diaris ul { columns: 2; column-gap: var(--gap); }
 }
 
 /* ── los hilos ───────────────────────────────────────────────────────
