@@ -126,7 +126,7 @@ const tema = (dark) => {
   if (dark) html.dataset.theme = 'dark'; else delete html.dataset.theme;
   document.querySelector('.tema')?.setAttribute('aria-pressed', String(dark));
 };
-try { if (localStorage.getItem('tema') === 'dark') tema(true); } catch {}
+try { if (localStorage.getItem('tema') === 'dark') { tema(true); addEventListener('DOMContentLoaded', () => tema(true)); } } catch {}   // el botón aún no está: se marca al llegar
 addEventListener('click', (e) => {
   if (!e.target.closest('.tema')) return;
   const dark = html.dataset.theme !== 'dark';
