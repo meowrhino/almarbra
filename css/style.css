@@ -16,13 +16,17 @@
   --pad: clamp(1rem, 4vw, 3rem);
 }
 
+/* Amsi Pro (Stawix), la de Almudena: regular y bold, en woff2 propias. */
+@font-face { font-family: "Amsi Pro"; font-weight: 400; src: url("fonts/AmsiPro-Regular.woff2") format("woff2"); font-display: swap; }
+@font-face { font-family: "Amsi Pro"; font-weight: 700; src: url("fonts/AmsiPro-Bold.woff2") format("woff2"); font-display: swap; }
+
 *, *::before, *::after { box-sizing: border-box; }
 
 html { background: var(--bg); }
 
 body {
   margin: 0;
-  font: 400 clamp(14px, 1.5vw, 16px)/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;   /* la del sistema: nada que descargar */
+  font: 400 clamp(14px, 1.5vw, 16px)/1.4 "Amsi Pro", "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: -.01em;
   color: var(--ink);
   background: var(--bg);
@@ -67,7 +71,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 /* Arriba a la derecha: mapa, lista y about, y en un proyecto su nombre */
-.top nav { display: flex; gap: 1.25rem; text-transform: none; }   /* los nombres de las secciones, como los escribe ella en site.json */
+.top nav { display: flex; gap: 1.25rem; }
 .top .name { letter-spacing: .05em; }   /* tracking 50 */
 .top nav a { color: var(--dim); }
 
@@ -389,7 +393,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .js .cat h1 { display: none; }   /* con JavaScript, ya lo dice el menú */
 
 .cat h1 {
-  text-transform: none;
   margin: 0 0 clamp(1.5rem, 5vh, 3rem);
   font-size: 1em;
   font-weight: 400;
@@ -408,20 +411,6 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .cat li { position: relative; z-index: 1; padding-bottom: clamp(3rem, 12vh, 8rem); }
 
-/* Los hilos de proyecto a proyecto (js/lista.js), debajo de todo; cada
-   uno se cose cuando asoma la foto a la que va (.cosido). */
-.cat .threads {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-
-.cat .threads path { animation-play-state: paused; }
-.cat .threads path.cosido { animation-play-state: running; }
 .cat li:nth-child(odd) { grid-column: 1; }
 .cat li:nth-child(even) { grid-column: 2; }
 

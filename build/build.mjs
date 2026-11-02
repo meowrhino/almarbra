@@ -30,7 +30,7 @@
    seguidas, y las listas y el about son páginas. Con él: js/mapa.js monta el mapa,
    js/transicion.js tapa y destapa al cambiar de página (con el dibujo
    de js/ola.js), js/hilos.js da la forma a los hilos, js/telar.js teje
-   el fondo del about y js/hilo.js dibuja el de los proyectos.
+   el fondo del about y contacto y js/hilo.js dibuja el de los proyectos.
 
      node build/build.mjs      (npm run build)
 

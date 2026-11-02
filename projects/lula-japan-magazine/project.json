@@ -7,14 +7,76 @@
   },
   "text": {},
   "credits": [
-    { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
-    { "role": { "es": "Asistente de fotografía", "en": "Photo assistant", "ca": "Photo assistant" }, "name": "Tamara Ruibal", "url": "https://www.instagram.com/tamararuibalrua/" },
-    { "role": { "es": "Estilismo", "en": "Styling", "ca": "Estilisme" }, "name": "Paloma Monago", "url": "https://www.instagram.com/palomamonago/" },
-    { "role": { "es": "Maquillaje y peluquería", "en": "Make up & hair", "ca": "Maquillatge i perruqueria" }, "name": "Regina Khanipova", "url": "https://www.instagram.com/reginakhanipova/" },
-    { "role": { "es": "Agencia", "en": "Agency", "ca": "Agencia" }, "name": "Two Management Barcelona", "url": "https://www.instagram.com/twomanagementbarcelona/" }
+    {
+      "role": {
+        "es": "Fotografía",
+        "en": "Photography",
+        "ca": "Fotografia"
+      },
+      "name": "Almudena González",
+      "url": "https://www.instagram.com/almarbra_/"
+    },
+    {
+      "role": {
+        "es": "Asistente de fotografía",
+        "en": "Photo assistant",
+        "ca": "Photo assistant"
+      },
+      "name": "Tamara Ruibal",
+      "url": "https://www.instagram.com/tamararuibalrua/"
+    },
+    {
+      "role": {
+        "es": "Estilismo",
+        "en": "Styling",
+        "ca": "Estilisme"
+      },
+      "name": "Paloma Monago",
+      "url": "https://www.instagram.com/palomamonago/"
+    },
+    {
+      "role": {
+        "es": "Maquillaje y peluquería",
+        "en": "Make up & hair",
+        "ca": "Maquillatge i perruqueria"
+      },
+      "name": "Regina Khanipova",
+      "url": "https://www.instagram.com/reginakhanipova/"
+    },
+    {
+      "role": {
+        "es": "Agencia",
+        "en": "Agency",
+        "ca": "Agencia"
+      },
+      "name": "Two Management Barcelona",
+      "url": "https://www.instagram.com/twomanagementbarcelona/"
+    }
   ],
   "color": "#E0554B",
-  "cover": ["4"],
-  "map": ["1", "4", "7", "8", "9", "10", "11"],
-  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"]
+  "cover": [
+    "4"
+  ],
+  "map": [
+    "1",
+    "4",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11"
+  ],
+  "photos": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11"
+  ]
 }

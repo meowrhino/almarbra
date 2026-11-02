@@ -199,6 +199,8 @@ carpetas de sus proyectos (`projects`), en el orden en que salen:
 - La foto de contacto: pásala por imgToWeb y súbela a la carpeta `contacto/`
   con el nombre `1.webp`. Para cambiarla, sustituye esa. Sin foto, la página
   sale con el email y el Instagram solos.
+- Si un JSON se te descoloca, **Format Document** en VS Code (clic derecho
+  dentro del archivo) lo deja como estaba: los nuestros van ya con ese formato.
 - La foto del about: está en la carpeta `about/` y `data/about.json` dice cuál
   en `"photo"`, con el nombre del archivo sin el `.webp`: `"photo": "about"`
   es `about/about.webp`. Para cambiarla, pásala por imgToWeb, súbela a

@@ -31,35 +31,45 @@
      ellos, sí se pasa. */
   const solid = [text, ...document.querySelectorAll('.top .name, .top nav, .credito, .idiomas')];
 
-  /* Un sitio libre a un lado del texto (antes de `from` o después de
-     `to`), a suertes entre los dos; si no queda hueco, cualquiera. */
-  function lane(from, to, all) {
-    const gaps = [[40, from - 40], [to + 40, all - 40]].filter(([a, b]) => b - a > 80);
-    const [a, b] = gaps.length ? gaps[Math.floor(Math.random() * gaps.length)] : [40, all - 40];
-    return a + Math.random() * (b - a);
-  }
-
   const AIR = 24;   // px entre un hilo y las letras, como poco
+
+  /* Un sitio libre en el eje: lo que queda entre las sombras de todo lo
+     sólido (el texto y la foto, el nombre, el menú…) proyectadas en él,
+     a suertes entre los huecos; si no queda ninguno, null. Devuelve el
+     sitio y el margen que le queda hasta el borde del hueco. */
+  function lane(weft, rects, all) {
+    const taken = rects.map((r) => (weft ? [r.top - AIR, r.bottom + AIR] : [r.left - AIR, r.right + AIR])).sort((p, q) => p[0] - q[0]);
+    const gaps = [];
+    let at = 10;
+    for (const [a, b] of taken) { if (a - at > 20) gaps.push([at, a]); at = Math.max(at, b); }
+    if (all - 10 - at > 20) gaps.push([at, all - 10]);
+    if (!gaps.length) return null;
+    const [a, b] = gaps[Math.floor(Math.random() * gaps.length)];
+    const spot = a + 10 + Math.random() * (b - a - 20);
+    return [spot, Math.min(spot - a, b - spot)];
+  }
 
   const hits = (p, r) => p.x > r.left - AIR && p.x < r.right + AIR && p.y > r.top - AIR && p.y < r.bottom + AIR;
 
   /* Una curva de lado a lado que no toque nada: hasta diez intentos; si
-     no hay manera (el texto ocupa casi todo), la última. */
-  function strand(weft, box, W, H) {
+     no hay manera (el texto ocupa casi todo), null. */
+  function strand(weft, W, H) {
     const rects = solid.map((el) => el.getBoundingClientRect());
-    let pts;
+    let pts = null;
     for (let i = 0; i < 10; i++) {
+      const found = lane(weft, rects, weft ? H : W);
+      if (!found) break;
+      const [at, room] = found;
+      const drift = (Math.random() - 0.5) * Math.min(120, room * 0.4);   // el otro extremo, un poco más allá
       let a;
       let b;
       if (weft) {
-        const y = lane(box.top, box.bottom, H);
-        [a, b] = [{ x: -10, y }, { x: W + 10, y: y + (Math.random() - 0.5) * 120 }];
+        [a, b] = [{ x: -10, y: at }, { x: W + 10, y: at + drift }];
       } else {
-        const x = lane(box.left, box.right, W);
-        [a, b] = [{ x, y: -10 }, { x: x + (Math.random() - 0.5) * 120, y: H + 10 }];
+        [a, b] = [{ x: at, y: -10 }, { x: at + drift, y: H + 10 }];
       }
-      pts = Math.random() < 0.5 ? hilos.wander(a, b) : hilos.wander(b, a);   // el sentido, como la lanzadera
-      if (!pts.some((p) => rects.some((r) => hits(p, r)))) break;
+      const try_ = Math.random() < 0.5 ? hilos.wander(a, b, room) : hilos.wander(b, a, room);   // el sentido, como la lanzadera
+      if (!try_.some((p) => rects.some((r) => hits(p, r)))) { pts = try_; break; }
     }
     return pts;
   }
@@ -68,7 +78,10 @@
   function born(s, t) {
     const W = innerWidth;
     const H = innerHeight;
-    s.el.setAttribute('d', hilos.path(strand(s.weft, text.getBoundingClientRect(), W, H)));
+    /* Si en su eje no hay hueco (la foto y el texto llenan el alto), va
+       por el otro; si tampoco, este turno no sale. */
+    const pts = strand(s.weft, W, H) || strand(!s.weft, W, H);
+    s.el.setAttribute('d', pts ? hilos.path(pts) : '');
     s.el.setAttribute('stroke', palette[Math.floor(Math.random() * palette.length)]);
     s.from = t;
     s.life = 2 * GROW + HOLD + 3 + Math.random() * 12;   // con el respiro del final

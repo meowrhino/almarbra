@@ -16,14 +16,16 @@ globalThis.hilos = (() => {
 
   /* La recta de a a b, desviada por dos ondas —una larga, que la curva
      entera, y otra corta, que la hace temblar— que se apagan en los
-     extremos, para que salga y llegue justo a a y a b. */
-  function wander(a, b) {
+     extremos, para que salga y llegue justo a a y a b. `room`, si se
+     da, es lo más que se aparta de la recta (el telar, por un pasillo
+     estrecho). */
+  function wander(a, b, room = Infinity) {
     const dx = b.x - a.x;
     const dy = b.y - a.y;
     const len = Math.hypot(dx, dy) || 1;
     const waves = 0.5 + Math.random() * 1.5;
-    const amp = (0.06 + Math.random() * 0.12) * len * (Math.random() < 0.5 ? -1 : 1);
-    const wobble = Math.min(14, len * 0.04);
+    const amp = Math.min((0.06 + Math.random() * 0.12) * len, room * 0.6) * (Math.random() < 0.5 ? -1 : 1);
+    const wobble = Math.min(14, len * 0.04, room * 0.2);
     const phase = Math.random() * Math.PI * 2;
     const n = Math.max(8, Math.ceil(len / 8));
     return Array.from({ length: n + 1 }, (_, k) => {

@@ -7,14 +7,82 @@
   },
   "text": {},
   "credits": [
-    { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
-    { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Hugo", "url": "https://www.instagram.com/hugomboume/" },
-    { "role": { "es": "Estilismo", "en": "Styling", "ca": "Estilisme" }, "name": "Virginia Bruni", "url": "https://www.instagram.com/virginia_bruni/" },
-    { "role": { "es": "Maquillaje y peluquería", "en": "Make up & hair", "ca": "Maquillatge i perruqueria" }, "name": "Melissa Morena", "url": "https://www.instagram.com/bissamorena/" },
-    { "role": { "es": "Escenografía", "en": "Set design", "ca": "Escenografia" }, "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" }
+    {
+      "role": {
+        "es": "Fotografía",
+        "en": "Photography",
+        "ca": "Fotografia"
+      },
+      "name": "Almudena González",
+      "url": "https://www.instagram.com/almarbra_/"
+    },
+    {
+      "role": {
+        "es": "Modelo",
+        "en": "Model",
+        "ca": "Model"
+      },
+      "name": "Hugo",
+      "url": "https://www.instagram.com/hugomboume/"
+    },
+    {
+      "role": {
+        "es": "Estilismo",
+        "en": "Styling",
+        "ca": "Estilisme"
+      },
+      "name": "Virginia Bruni",
+      "url": "https://www.instagram.com/virginia_bruni/"
+    },
+    {
+      "role": {
+        "es": "Maquillaje y peluquería",
+        "en": "Make up & hair",
+        "ca": "Maquillatge i perruqueria"
+      },
+      "name": "Melissa Morena",
+      "url": "https://www.instagram.com/bissamorena/"
+    },
+    {
+      "role": {
+        "es": "Escenografía",
+        "en": "Set design",
+        "ca": "Escenografia"
+      },
+      "name": "Jhonson Camilo",
+      "url": "https://www.instagram.com/papitaa_criolla/"
+    }
   ],
   "color": "#2F5D8A",
-  "cover": ["6"],
-  "map": ["1", "4", "5", "7", "9", "10", "11", "13"],
-  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]
+  "cover": [
+    "6"
+  ],
+  "map": [
+    "1",
+    "4",
+    "5",
+    "7",
+    "9",
+    "10",
+    "11",
+    "13"
+  ],
+  "photos": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16"
+  ]
 }

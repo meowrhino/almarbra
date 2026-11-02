@@ -359,7 +359,6 @@ function listPage(category, projects) {
     image: items[0].cover,
     og: mosaicOg(`og-${category}.jpg`, items),
     head: remember(category),
-    scripts: ['js/lista.js'],
     body: `${topBar({ home: homeOf('../'), root, path: viewPath(category), view: category })}
 
 <main>

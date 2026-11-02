@@ -7,15 +7,93 @@
   },
   "text": {},
   "credits": [
-    { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
-    { "role": { "es": "Estilismo", "en": "Styling", "ca": "Estilisme" }, "name": "Paloma Monago", "url": "https://www.instagram.com/palomamonago/" },
-    { "role": { "es": "Maquillaje", "en": "Make up", "ca": "Maquillatge" }, "name": "Xina Rodriguez", "url": "https://www.instagram.com/xinaarodriguez/" },
-    { "role": { "es": "Peluquería", "en": "Hair", "ca": "Perruqueria" }, "name": "Hanna Liepkova", "url": "https://www.instagram.com/hanna_liepkova/" },
-    { "role": { "es": "Escenografía", "en": "Set design", "ca": "Escenografia" }, "name": "Jhonson Camilo", "url": "https://www.instagram.com/papitaa_criolla/" },
-    { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Yarlin Bido & Eddy", "url": "https://www.instagram.com/yarlinbido/" }
+    {
+      "role": {
+        "es": "Fotografía",
+        "en": "Photography",
+        "ca": "Fotografia"
+      },
+      "name": "Almudena González",
+      "url": "https://www.instagram.com/almarbra_/"
+    },
+    {
+      "role": {
+        "es": "Estilismo",
+        "en": "Styling",
+        "ca": "Estilisme"
+      },
+      "name": "Paloma Monago",
+      "url": "https://www.instagram.com/palomamonago/"
+    },
+    {
+      "role": {
+        "es": "Maquillaje",
+        "en": "Make up",
+        "ca": "Maquillatge"
+      },
+      "name": "Xina Rodriguez",
+      "url": "https://www.instagram.com/xinaarodriguez/"
+    },
+    {
+      "role": {
+        "es": "Peluquería",
+        "en": "Hair",
+        "ca": "Perruqueria"
+      },
+      "name": "Hanna Liepkova",
+      "url": "https://www.instagram.com/hanna_liepkova/"
+    },
+    {
+      "role": {
+        "es": "Escenografía",
+        "en": "Set design",
+        "ca": "Escenografia"
+      },
+      "name": "Jhonson Camilo",
+      "url": "https://www.instagram.com/papitaa_criolla/"
+    },
+    {
+      "role": {
+        "es": "Modelo",
+        "en": "Model",
+        "ca": "Model"
+      },
+      "name": "Yarlin Bido & Eddy",
+      "url": "https://www.instagram.com/yarlinbido/"
+    }
   ],
   "color": "#4E7D5B",
-  "cover": ["4"],
-  "map": ["2", "3", "4", "6", "8", "17", "19"],
-  "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"]
+  "cover": [
+    "4"
+  ],
+  "map": [
+    "2",
+    "3",
+    "4",
+    "6",
+    "8",
+    "17",
+    "19"
+  ],
+  "photos": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11",
+    "12",
+    "13",
+    "14",
+    "15",
+    "16",
+    "17",
+    "18",
+    "19"
+  ]
 }
