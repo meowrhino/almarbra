@@ -121,8 +121,11 @@ try { if (localStorage.getItem('tema') === 'dark') tema(true); } catch {}
 addEventListener('click', (e) => {
   if (!e.target.closest('.tema')) return;
   const dark = html.dataset.theme !== 'dark';
-  tema(dark);
   try { localStorage.setItem('tema', dark ? 'dark' : 'light'); } catch {}
+  /* con un fundido (una View Transition de la misma página, .fundiendo en css/style.css) */
+  if (!document.startViewTransition) { tema(dark); return; }
+  html.classList.add('fundiendo');
+  document.startViewTransition(() => tema(dark)).finished.finally(() => html.classList.remove('fundiendo'));
 });
 let back = false;
 try {

@@ -31,6 +31,13 @@
 [style*="--luz"] { --c: var(--luz); }
 [data-theme="dark"] [style*="--luz"] { --c: var(--neon, var(--luz)); }
 
+/* Al cambiar de modo, un fundido: la página de antes se desvanece sobre
+   la nueva (una View Transition de la misma página; css/transicion.css
+   deja la de atrás y adelante quieta, por eso aquí se dice aparte). */
+:root.fundiendo::view-transition-old(root) { animation: desvanecer .5s ease-out forwards; }
+:root.fundiendo::view-transition-new(root) { animation: none; }
+@keyframes desvanecer { to { opacity: 0; } }
+
 /* Amsi Pro (Stawix), la de Almudena: regular y bold, en woff2 propias. */
 @font-face { font-family: "Amsi Pro"; font-weight: 400; src: url("fonts/AmsiPro-Regular.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Amsi Pro"; font-weight: 700; src: url("fonts/AmsiPro-Bold.woff2") format("woff2"); font-display: swap; }
