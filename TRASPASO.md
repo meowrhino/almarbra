@@ -28,7 +28,9 @@ Tiempo: unos 20 minutos, más lo que tarden los DNS.
 ## 2. Cloudflare
 
 - [ ] En su Cloudflare: **Workers & Pages → Create → Import a repository** → `almarbra/almudena`.
-      Lo demás lo lee de `wrangler.jsonc` (instala sharp con `npm install`, build `node build/build.mjs`, sale `dist/`).
+      El formulario por defecto vale (*Build* `npm run build`, *Deploy* `npx wrangler deploy`, *Preview builds* activado),
+      **salvo el Project name: `almarbra`**, el `name` de `wrangler.jsonc`. Lo demás lo lee de ahí
+      (instala sharp con `npm install`, sale `dist/`).
 - [ ] **Settings → Domains & Routes → Add → Custom domain**: su dominio (y `www`, si lo quiere).
 - [ ] En **su** repo, `data/site.json` → `"url": "https://almudenagonzalez.com"`. Commit y push
       a su repo (no al de meowrhino). Con eso deja de llevar `noindex`.
