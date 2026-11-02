@@ -48,8 +48,8 @@ sobre las fotos.
   proyecto se encienden del todo. Sin desenfoque bajo las franjas: el
   `difference` ya las deja leer sobre las fotos.
 
-  El about: el texto de `data/about.json` arriba a la izquierda, bajo el
-  nombre, y abajo quién hizo la web. Contacto, en el centro y más pequeño: la foto de
+  El about: la foto de `about/` que nombra `data/about.json` → `photo` (si
+  la hay) y el texto, arriba a la izquierda, bajo el nombre, y abajo quién hizo la web. Contacto, en el centro y más pequeño: la foto de
   `contacto/1.webp` (si está) y debajo el email y el Instagram. Detrás de los dos, un telar: hilos de borde a borde, en horizontal y en
   vertical, que se tejen muy despacio, se quedan y se destejen.
 
@@ -100,10 +100,10 @@ sobre las fotos.
 
 ## Lo que se cambia sin tocar código
 
-Cada sección es una carpeta y sus proyectos van dentro (receta de JAMstack,
-2026-10-26): cada proyecto, con todo lo suyo, en la carpeta de su lista,
-`textil/<slug>/project.json` o `foto/<slug>/project.json`, y sus fotos en `img/`
-(`1.webp`, `2.webp`…); las de diaris, en `diaris/`. Lo general, en `data/`. Cada
+Todos los proyectos en `projects/` (2026-11-02; del 26-10 al 2-11, cada lista
+su carpeta): cada proyecto, con todo lo suyo, en `projects/<slug>/project.json`
+y sus fotos en `img/` (`1.webp`, `2.webp`…); en qué lista sale, y por tanto su
+dirección (`/textil/roma/`), lo dice `lists` en `site.json`. Las de diaris, en `diaris/`. Lo general, en `data/`. Cada
 JSON general lleva arriba una nota (`"_"`) que dice qué se puede poner. Se edita,
 se hace push y en un par de minutos está publicado.
 
@@ -112,11 +112,11 @@ se hace push y en un par de minutos está publicado.
 | `<lista>/<slug>/project.json` | el proyecto: título, texto, créditos, su color, fotos, portada y mapa (una foto de `img/` que está en `map` y no en `photos` sale solo en el mapa) |
 | `diaris/` | las fotos de diaris, `1.webp`, `2.webp`…: salen todas, barajadas |
 | `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
-| `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español) |
+| `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español), y `photo`: su foto, un `.webp` de `about/` sin la extensión |
 
 ```bash
 npm ci            # una vez: sharp, para las fotos del mapa y las og
-npm run build     # data/ + textil/ foto/ diaris/ -> dist/
+npm run build     # data/ + projects/ diaris/ -> dist/
 npm run serve     # dist/ en http://localhost:8000
 npm run dev       # build + serve
 LENTO=2000 npm run serve   # cada página tarda 2 s: para ver el loader
@@ -143,10 +143,9 @@ ni el sitemap.
 ## Estructura
 
 ```
-textil/<slug>/          un proyecto de la lista textil, todo junto
+projects/<slug>/        un proyecto, todo junto
   project.json                     título, texto, créditos, color, fotos, portada, mapa
   img/1.webp img/2.webp …          sus fotos, tal cual salen de imgToWeb
-foto/<slug>/            uno de la lista foto, igual
 diaris/                 1.webp 2.webp …: las fotos de diaris
 
 data/site.json          título, url, idiomas, listas, menú, contacto y mezcla
@@ -192,7 +191,7 @@ dist/                   GENERADO por el build — FUERA DE GIT
   media/diaris/                    las de diaris, a 1000 px (sharp, desde .cache/)
 ```
 
-En git va **solo el fuente**: `data/`, `textil/`, `foto/`, `diaris/` y el código. Las páginas no
+En git va **solo el fuente**: `data/`, `projects/`, `diaris/`, `about/`, `contacto/` y el código. Las páginas no
 se commitean; las escribe la Action. En la web las fotos se sirven desde
 `media/` y no junto a la página de su proyecto, para que `_headers` les dé
 su caché larga sin dársela al HTML.
@@ -200,7 +199,7 @@ su caché larga sin dársela al HTML.
 ## Un proyecto
 
 ```jsonc
-// textil/roma/project.json
+// projects/roma/project.json
 {
   "title":    { "es": "ROMA: CIUDAD EN RUINAS…", "en": "ROME: RUINS…" },
   "short":    { "es": "roma" },                // nombre corto para el mapa (si no, el título)
@@ -231,17 +230,17 @@ su caché larga sin dársela al HTML.
   Un salto de línea dentro de un párrafo (`\n`) se queda, como en los versos de
   Roma.
 - Las claves que empiezan por `_` son notas, no contenido.
-- **El nombre del proyecto es el de su carpeta**, y es su dirección:
-  `textil/roma/` → `/textil/roma/`.
+- **El nombre del proyecto es el de su carpeta**, y con su lista es su
+  dirección: `projects/roma/` en `textil` → `/textil/roma/`.
 
 - Los campos van **en inglés** (como en todas las webs nuevas, ver JAMstack);
   lo que se escribe, en `es`, `en` y `ca` (`ca`, el código ISO: el mismo de
   `hreflang` y de `/ca/`).
 
 **En qué lista sale, y en qué orden**: `lists` en `data/site.json`, cada una
-con su nombre en el menú y sus proyectos. Cada lista es su carpeta: un
-proyecto de `foto` está en `foto/`; si la lista nombra uno que está en la otra
-carpeta, el build para y dice cuál mover.
+con su nombre en el menú y sus proyectos. Pasar uno de lista es moverlo de
+un array al otro; si una lista nombra uno que no está en `projects/`, el build
+para y lo dice.
 
 ```json
 "lists": {
@@ -262,8 +261,8 @@ se reordenan y se renumeran. Una sola versión de cada foto: nada más que hacer
 
 **Un proyecto nuevo**:
 
-1. una carpeta en la de su lista con su nombre en minúsculas y con guiones
-   (`foto/nuevo-proyecto/`): es su dirección, `/foto/nuevo-proyecto/`;
+1. una carpeta en `projects/` con su nombre en minúsculas y con guiones
+   (`projects/nuevo-proyecto/`): con su lista, es su dirección, `/foto/nuevo-proyecto/`;
 2. dentro, las fotos que saca imgToWeb en `img/`, y un `project.json` (lo más
    fácil: copiar el de otro y cambiarlo);
 3. su nombre en los `projects` de una lista de `data/site.json`, donde tenga que
@@ -322,10 +321,10 @@ lista que nombra un proyecto que no existe paran el build con el archivo y lo qu
 pasa:
 
 ```
-✗ foto/helen/project.json no es un JSON válido (línea 8, columna 3). …
-✗ foto/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
-✗ foto/helen: no encuentro img/99.webp
-✗ foto/helen: en «cover», 7 no está entre sus fotos
+✗ projects/helen/project.json no es un JSON válido (línea 8, columna 3). …
+✗ projects/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
+✗ projects/helen: no encuentro img/99.webp
+✗ projects/helen: en «cover», 7 no está entre sus fotos
 ```
 
 En la Action eso sale en rojo, la web publicada se queda como estaba y se abre

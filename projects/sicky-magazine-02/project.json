@@ -9,12 +9,11 @@
   "credits": [
     { "role": { "es": "Fotografía", "en": "Photography", "ca": "Fotografia" }, "name": "Almudena González", "url": "https://www.instagram.com/almarbra_/" },
     { "role": { "es": "Asistente de fotografía", "en": "Photo assistant", "ca": "Photo assistant" }, "name": "Tamara Ruibal", "url": "https://www.instagram.com/tamararuibalrua/" },
-    { "role": { "es": "Estilismo", "en": "styling", "ca": "Estilisme" }, "name": "Luciana", "url": "https://www.instagram.com/lucianacbe/" },
-    { "role": "Make up & hair", "name": "Lu Romero", "url": "https://www.instagram.com/luromeromakeup/" },
+    { "role": { "es": "Estilismo", "en": "Styling", "ca": "Estilisme" }, "name": "Luciana", "url": "https://www.instagram.com/lucianacbe/" },
+    { "role": { "es": "Maquillaje y peluquería", "en": "Make up & hair", "ca": "Maquillatge i perruqueria" }, "name": "Lu Romero", "url": "https://www.instagram.com/luromeromakeup/" },
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "Esther Murphy", "url": "https://www.instagram.com/estheermurphy/" }
   ],
   "color": "#9CC9A0",
-  "_color": "Color inventado por manu (26-10), pendiente de que Almudena diga el suyo.",
   "cover": ["8"],
   "map": ["1", "2", "4", "6", "8", "9", "11", "15"],
   "photos": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"]

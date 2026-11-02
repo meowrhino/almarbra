@@ -8,7 +8,7 @@
      dist/index.html                    portada: el mapa
      dist/<lista>/index.html            cada lista (textil/, foto/)
      dist/diaris/index.html             las fotos de diaris/, barajadas
-     dist/about/index.html              el about
+     dist/about/index.html              el about, con la foto de about/
      dist/contacto/index.html           la foto de contacto/, el email y las redes
      dist/<lista>/<slug>/index.html     cada proyecto: ficha técnica y
                                         galería en scroll vertical
@@ -40,10 +40,9 @@
                              listas con su nombre y sus proyectos, el menú,
                              email, redes y la mezcla del mapa
      data/about.json         el texto del about, por idioma
-     <lista>/<slug>/project.json    cada proyecto, en la carpeta de su
-                             lista (textil/, foto/): título, texto,
-                             créditos, color, fotos, portada y mapa
-                             (ver build/proyectos.mjs)
+     projects/<slug>/project.json   cada proyecto: título, texto, créditos,
+                             color, fotos, portada y mapa; en qué lista
+                             sale lo dice site.json (ver build/proyectos.mjs)
      diaris/1.webp …         las fotos de diaris */
 
 import { createHash } from 'node:crypto';
@@ -80,9 +79,9 @@ function read(file, type) {
 const site = read('data/site.json', 'site');
 const about = read('data/about.json', 'about');
 const files = new Map();
-for (const [category, list] of Object.entries(site.lists || {})) {
+for (const list of Object.values(site.lists || {})) {
   for (const slug of (list?.projects || []).map(slugOf)) {
-    const at = `${category}/${slug}/project.json`;
+    const at = `projects/${slug}/project.json`;
     if (typeof slug === 'string' && existsSync(join(ROOT, at))) files.set(at, read(at, 'project'));
   }
 }
@@ -114,8 +113,8 @@ function sizeOf(src) {
 const { projects, errors, warnings } = loadProjects(site, {
   json: (at) => files.get(at),
   size: sizeOf,
-  folders: Object.keys(site.lists || {}).filter((category) => existsSync(join(ROOT, category))).flatMap((category) =>
-    readdirSync(join(ROOT, category), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => `${category}/${e.name}`)),
+  folders: existsSync(join(ROOT, 'projects'))
+    ? readdirSync(join(ROOT, 'projects'), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => `projects/${e.name}`) : [],
 });
 
 /* diaris/: las que se llaman 1.webp, 2.webp…; lo demás no sale. La
@@ -133,6 +132,12 @@ errors.push(...diarisErrors);
 const contactSize = sizeOf('contacto/1.webp');
 if (contactSize === null) errors.push('contacto/1.webp no es un WebP de verdad (pásala por imgToWeb)');
 const contactPhoto = contactSize ? { name: '1', file: '1.webp', src: 'contacto/1.webp', ...contactSize } : null;
+
+/* about/<photo>.webp: la foto del about, la que diga data/about.json → "photo". */
+const aboutSize = about.photo ? sizeOf(`about/${about.photo}.webp`) : undefined;
+if (about.photo && aboutSize === undefined) errors.push(`data/about.json: en «photo», no encuentro about/${about.photo}.webp`);
+if (aboutSize === null) errors.push(`about/${about.photo}.webp no es un WebP de verdad (pásala por imgToWeb)`);
+const aboutPhoto = aboutSize ? { name: about.photo, file: `${about.photo}.webp`, src: `about/${about.photo}.webp`, ...aboutSize } : null;
 
 for (const w of warnings) console.warn(`⚠ ${w}`);
 if (errors.length) fail(errors);
@@ -237,7 +242,7 @@ const images = {
 };
 
 /* La primera pasada, sin escribir nada: qué imágenes piden las plantillas. */
-const dry = sitio({ site, about, projects, diaris, contactPhoto, version, ...images });
+const dry = sitio({ site, about, projects, diaris, contactPhoto, aboutPhoto, version, ...images });
 for (const l of dry.LANGS) for (const path of dry.paths) dry.render(l, path);
 if (sharp) {
   for (const image of miniWanted.values()) {
@@ -256,7 +261,7 @@ for (const d of ['css', 'js']) cpSync(join(ROOT, d), join(OUT, d), { recursive: 
 for (const f of ['_headers', 'favicon.svg']) cpSync(join(ROOT, f), join(OUT, f));
 /* Las fotos de cada proyecto, sin su JSON; las del mapa y las og, después. */
 for (const p of projects) {
-  cpSync(join(ROOT, p.dir), join(OUT, 'media', p.dir), { recursive: true, filter: (f) => !f.endsWith('.json') });
+  cpSync(join(ROOT, p.folder), join(OUT, 'media', p.folder), { recursive: true, filter: (f) => !f.endsWith('.json') });
 }
 /* Las de diaris, a DIARI px (sin sharp, tal cual). */
 for (const image of diaris) {
@@ -268,12 +273,12 @@ for (const image of diaris) {
   cpSync(from, join(OUT, 'media', 'diaris', image.file));
 }
 
-if (contactPhoto) {
-  mkdirSync(join(OUT, 'media', 'contacto'), { recursive: true });
-  cpSync(join(ROOT, contactPhoto.src), join(OUT, 'media', 'contacto', contactPhoto.file));
+for (const photo of [contactPhoto, aboutPhoto].filter(Boolean)) {
+  mkdirSync(join(OUT, 'media', photo.src.split('/')[0]), { recursive: true });
+  cpSync(join(ROOT, photo.src), join(OUT, 'media', photo.src.split('/')[0], photo.file));
 }
 
-const web = sitio({ site, about, projects, diaris, contactPhoto, version, ...images });
+const web = sitio({ site, about, projects, diaris, contactPhoto, aboutPhoto, version, ...images });
 const { LANGS, LISTS, paths, listed } = web;
 
 for (const l of LANGS) {

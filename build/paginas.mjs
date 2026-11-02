@@ -15,7 +15,7 @@
      index.html                    portada: el mapa
      <lista>/index.html            cada lista (textil/, foto/)
      diaris/index.html             las fotos de diaris/, barajadas
-     about/index.html              el about
+     about/index.html              el about: la foto de about/ y el texto
      contacto/index.html           la foto de contacto/, el email y las redes
      <lista>/<slug>/index.html     cada proyecto: ficha técnica y
                                    galería en scroll vertical
@@ -37,6 +37,7 @@ let LISTS;
 let VIEWS;
 let diaris;
 let contactPhoto;
+let aboutPhoto;
 
 /* Las páginas se enlazan entre sí con rutas relativas; solo lo que se lee
    desde fuera —canonical, og:image, sitemap— y la 404 necesitan la
@@ -377,15 +378,15 @@ function aboutPage(projects) {
     root,
     vista: 'about',
     description: paras(t(about))[0],
-    image: projects[0].cover,
-    og: mosaicOg('og.jpg', projects),
+    image: aboutPhoto || projects[0].cover,
+    og: aboutPhoto ? null : mosaicOg('og.jpg', projects),
     head: ld(person()),
     scripts: ['js/telar.js'],
     body: `${topBar({ home: homeOf('../'), root, path: viewPath('about'), view: 'about' })}
 
 <main>
 <section id="about" data-colores="${attr(palette(projects))}">
-<div>${tr(about, prose)}</div>
+<div>${aboutPhoto ? `<figure>${img({ ...aboutPhoto, alt: site.title }, { base: root, eager: true })}</figure>` : ''}${tr(about, prose)}</div>
 <p class="credito">web: <a href="https://meowrhino.studio" target="_blank" rel="noopener">meowrhino</a></p>
 </section>
 </main>`,
@@ -570,6 +571,7 @@ function notFoundPage() {
  *   projects              los proyectos, ya leídos (build/proyectos.mjs)
  *   diaris                las fotos de diaris/ (loadDiaris)
  *   contactPhoto          la foto de contacto/1.webp, o null
+ *   aboutPhoto            la foto de about/ que nombra about.json → photo, o null
  *   preview               true en la vista previa: las fotos, donde
  *                         están, y los enlaces, a index.html?p=/ruta/
  *   version(file)         el ?v=<hash> de un archivo de css/ o js/
@@ -593,6 +595,7 @@ export function sitio(opts) {
   LISTS = Object.keys(site.lists || {});
   diaris = opts.diaris || [];
   contactPhoto = opts.contactPhoto || null;
+  aboutPhoto = opts.aboutPhoto || null;
   VIEWS = ['mapa', ...LISTS, ...(diaris.length ? ['diaris'] : []), 'about', 'contacto'];
   cur = lang;
 

@@ -67,7 +67,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 /* Arriba a la derecha: mapa, lista y about, y en un proyecto su nombre */
-.top nav { display: flex; gap: 1.25rem; }
+.top nav { display: flex; gap: 1.25rem; text-transform: none; }   /* los nombres de las secciones, como los escribe ella en site.json */
+.top .name { letter-spacing: .05em; }   /* tracking 50 */
 .top nav a { color: var(--dim); }
 
 /* En el móvil el menú no cabe en una fila: va en columna, a la derecha,
@@ -170,6 +171,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .group h2 { width: fit-content; }
 
 #about p { margin: 0 0 1em; }
+#about figure { margin: 0 0 1.5rem; }
+#about figure img { width: 100%; }
 
 /* el email y las redes, al pie (content/web.json) */
 .contacto { display: flex; flex-wrap: wrap; gap: 0 1.25em; }
@@ -386,6 +389,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .js .cat h1 { display: none; }   /* con JavaScript, ya lo dice el menú */
 
 .cat h1 {
+  text-transform: none;
   margin: 0 0 clamp(1.5rem, 5vh, 3rem);
   font-size: 1em;
   font-weight: 400;

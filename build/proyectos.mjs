@@ -1,7 +1,7 @@
 /* Los proyectos, como los usan build.mjs y preview.mjs.
 
-     <lista>/<slug>/project.json        título, texto, créditos, fotos…
-     <lista>/<slug>/img/1.webp …        sus fotos, como las saca imgToWeb
+     projects/<slug>/project.json       título, texto, créditos, fotos…
+     projects/<slug>/img/1.webp …       sus fotos, como las saca imgToWeb
 
    Cada lista de data/site.json («lists»: textil, foto) es una carpeta, y
    sus proyectos van dentro. Salen en el orden de la lista; uno que está
@@ -135,7 +135,7 @@ export const photoSrcs = (dir, data) => [...new Set([data.photos, data.map, ...[
  *   json(at)     el JSON de `at` ya leído, o undefined si no está
  *   size(src)    el ancho y alto de una foto (webpSize), null si no es
  *                un WebP, o undefined si no está
- *   folders      las carpetas de proyecto que hay («textil/roma»…), para
+ *   folders      las carpetas de proyecto que hay («projects/roma»…), para
  *                avisar de las que no salen; o null si no se sabe
  *
  * Devuelve los proyectos y lo que esté mal, para que el build pare o
@@ -152,13 +152,14 @@ export function loadProjects(site, { json, size, folders = null }) {
       const slug = slugOf(entry);
       if (typeof slug !== 'string') continue;   // lo dice el esquema
       if (projects.some((p) => p.slug === slug)) { errors.push(`«${slug}» está dos veces en las listas de data/site.json`); continue; }
+      /* Todos los proyectos viven en projects/ (`folder`); la lista en la
+         que está cada uno le da su dirección (`dir`: textil/roma). */
+      const folder = `projects/${slug}`;
       const dir = `${category}/${slug}`;
-      const at = `${dir}/project.json`;
+      const at = `${folder}/project.json`;
       const data = json(at);
       if (data === undefined) {
-        const elsewhere = (folders || []).find((f) => f.endsWith(`/${slug}`));
-        errors.push(`la lista «${category}» de data/site.json nombra «${slug}», y no hay ${at}`
-          + (elsewhere ? ` (está en ${elsewhere}/: muévela a ${category}/, o pásala a la lista «${elsewhere.split('/')[0]}»)` : ''));
+        errors.push(`la lista «${category}» de data/site.json nombra «${slug}», y no hay ${at} (la carpeta se llama igual que lo que pone en la lista)`);
         continue;
       }
       /* Lo que tiene que ser una lista, que lo sea: si no, un mensaje
@@ -174,24 +175,24 @@ export function loadProjects(site, { json, size, folders = null }) {
 
       const image = (name) => {
         const file = fileOf(name);
-        const src = `${dir}/img/${file}`;
+        const src = `${folder}/img/${file}`;
         const wh = size(src);
-        if (wh === undefined) { errors.push(`${dir}: no encuentro img/${file}`); return null; }
-        if (!wh) { errors.push(`${dir}: img/${file} no es un WebP de verdad (pásala por imgToWeb)`); return null; }
+        if (wh === undefined) { errors.push(`${folder}: no encuentro img/${file}`); return null; }
+        if (!wh) { errors.push(`${folder}: img/${file} no es un WebP de verdad (pásala por imgToWeb)`); return null; }
         return { name: file.replace(/\.webp$/, ''), file, src, ...wh };
       };
       /* Las fotos van en «photos», o por grupos en «groups» (Roma). */
       const groups = list(data.groups, 'groups').concat(data.groups ? [] : [{ name: null, photos: data.photos }])
         .map((g) => ({ name: g.name, images: list(g.photos, 'photos').map(image).filter(Boolean) }));
       const images = groups.flatMap((g) => g.images);
-      if (!images.length) errors.push(`${dir}: no tiene fotos`);
+      if (!images.length) errors.push(`${folder}: no tiene fotos`);
 
       /* La de «cover» tiene que estar entre sus fotos; las de «map», no:
          una de img/ que no está en «photos» sale solo en el mapa. */
       const pick = (field) => [].concat(data[field] || []).map((name) => {
         const found = images.find((i) => i.name === String(name).replace(/\.webp$/, ''));
         if (!found && field === 'map') return image(name);
-        if (!found) errors.push(`${dir}: en «${field}», ${name} no está entre sus fotos`);
+        if (!found) errors.push(`${folder}: en «${field}», ${name} no está entre sus fotos`);
         return found;
       }).filter(Boolean);
 
@@ -199,6 +200,7 @@ export function loadProjects(site, { json, size, folders = null }) {
         ...data,
         slug,
         dir,
+        folder,
         category,
         hidden: entry.visible === false,
         groups,
@@ -209,16 +211,13 @@ export function loadProjects(site, { json, size, folders = null }) {
     }
   }
 
-  for (const dir of folders || []) {
-    const [category, slug] = dir.split('/');
-    if (!projects.some((p) => p.dir === dir) && !errors.some((e) => e.includes(`«${slug}»`))) {
-      warnings.push(`${dir} no está en la lista «${category}» de data/site.json: no sale en la web`);
-    }
+  for (const folder of folders || []) {
+    if (!projects.some((p) => p.folder === folder)) warnings.push(`${folder} no está en ninguna lista de data/site.json: no sale en la web`);
   }
 
   /* Cada proyecto, su color, en su project.json. */
   for (const project of projects) {
-    if (!project.color) errors.push(`${project.dir}/project.json: falta «color», el de su hilo y sus huecos: "color": "#5B9DC8"`);
+    if (!project.color) errors.push(`${project.folder}/project.json: falta «color», el de su hilo y sus huecos: "color": "#5B9DC8"`);
   }
   for (const category of Object.keys(lists)) {
     if (!projects.some((p) => p.category === category && !p.hidden)) errors.push(`data/site.json: la lista «${category}» no tiene ningún proyecto a la vista`);

@@ -17,6 +17,11 @@
     "$schema": {
       "type": "string"
     },
+    "photo": {
+      "type": "string",
+      "pattern": "^[^/\\\\.]+$",
+      "description": "La foto del about: el nombre de un .webp de la carpeta about/, sin la extensión (\"about\" → about/about.webp). Sin este campo, sale solo el texto."
+    },
     "es": {
       "type": "array",
       "items": {

@@ -79,7 +79,7 @@
       "additionalProperties": {
         "$ref": "#/$defs/lista"
       },
-      "description": "Las listas del menú (textil, foto…), en orden. Cada una es una carpeta con sus proyectos dentro (textil/roma/). Lo que va en cada una, y en qué orden, es lo que sale en la web."
+      "description": "Las listas del menú (textil, foto…), en orden. Cada una nombra sus proyectos (carpetas de projects/) y les da su dirección (/textil/roma/). Lo que va en cada una, y en qué orden, es lo que sale en la web."
     },
     "menu": {
       "type": "object",
@@ -141,12 +141,12 @@
         },
         "projects": {
           "type": "array",
-          "description": "Sus proyectos, en el orden en que salen: el nombre de su carpeta, dentro de la de esta lista (textil/roma/). Para esconder uno sin quitarlo: { \"project\": \"roma\", \"visible\": false }.",
+          "description": "Sus proyectos, en el orden en que salen: el nombre de su carpeta en projects/ (projects/roma/). Para esconder uno sin quitarlo: { \"project\": \"roma\", \"visible\": false }.",
           "items": {
             "anyOf": [
               {
                 "type": "string",
-                "description": "El nombre de la carpeta del proyecto dentro de la carpeta de esta lista."
+                "description": "El nombre de la carpeta del proyecto en projects/."
               },
               {
                 "type": "object",
@@ -157,7 +157,7 @@
                 "properties": {
                   "project": {
                     "type": "string",
-                    "description": "El nombre de la carpeta del proyecto dentro de la carpeta de esta lista."
+                    "description": "El nombre de la carpeta del proyecto en projects/."
                   },
                   "visible": {
                     "type": "boolean",

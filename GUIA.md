@@ -5,9 +5,9 @@ proyecto, cambiar fotos o textos, cambiar qué sale en el mapa… Todo se hace
 desde **Visual Studio Code** (VS Code), un programa gratuito: abres el archivo,
 lo cambias, y con dos clics sale en la web.
 
-> **La regla de oro**: solo tocas **tus carpetas**: `textil/` y `foto/` (tus
-> proyectos, cada uno en la de su lista), `diaris/` (sus fotos) y `data/` (lo
-> general de la web). Lo demás es el código: mejor no tocarlo.
+> **La regla de oro**: solo tocas **tus carpetas**: `projects/` (tus
+> proyectos), `diaris/` (sus fotos), `about/` y `contacto/` (sus fotos) y
+> `data/` (lo general de la web). Lo demás es el código: mejor no tocarlo.
 
 Cuando guardas un cambio, la web se actualiza sola en **2 o 3 minutos**. Si te
 equivocas en algo, la web **no se rompe**: se queda como estaba hasta que lo
@@ -45,25 +45,26 @@ imgToWeb se salta las fotos.
 ## 1. Cómo está organizado
 
 ```
-textil/                       ← los proyectos de textil, uno por carpeta
+projects/                     ← todos los proyectos, uno por carpeta
   roma/
     project.json              ← los textos del proyecto
     img/                      ← sus fotos: 1.webp, 2.webp, 3.webp…
-  …
-foto/                         ← los de foto, igual
   helen/
     project.json
     img/
   …
+  …
 diaris/                       ← las fotos de diaris: 1.webp, 2.webp, 3.webp…
 contacto/                     ← la foto de contacto: 1.webp
+about/                        ← la foto del about: la que diga data/about.json
 data/
   site.json                   ← qué proyectos salen y en qué orden, tu email, Instagram, el menú…
   about.json                  ← el texto del about
 ```
 
-El **nombre de la carpeta** de un proyecto es su dirección en la web:
-`textil/roma/` → `tuweb.com/textil/roma/`. Va en minúsculas, sin tildes ni
+El **nombre de la carpeta** de un proyecto, junto con la lista en la que lo
+pones en `data/site.json`, es su dirección en la web: `projects/roma/` en la
+lista `textil` → `tuweb.com/textil/roma/`. Va en minúsculas, sin tildes ni
 espacios (con guiones: `nuevo-proyecto`).
 
 ---
@@ -73,7 +74,7 @@ espacios (con guiones: `nuevo-proyecto`).
 1. **Antes de nada, baja la última versión**: en la barra de abajo del todo,
    pulsa las flechas ⟳ (**Sync**). Así tienes lo que hay publicado.
 2. En la columna de la izquierda, abre el archivo (por ejemplo
-   `foto/helen/project.json`) y cambia lo que quieras. Guarda con **Cmd+S**.
+   `projects/helen/project.json`) y cambia lo que quieras. Guarda con **Cmd+S**.
    Si algo sale **subrayado en rojo**, hay una coma o unas comillas mal:
    arréglalo antes de seguir (punto 6).
 3. **Míralo**: pulsa **Go Live** (abajo a la derecha). Se abre tu web en el
@@ -87,7 +88,7 @@ espacios (con guiones: `nuevo-proyecto`).
 Ya está: en 2-3 minutos sale en la web.
 
 **Para añadir fotos**: arrastra los archivos a su carpeta `img/` (por ejemplo
-`foto/helen/img/`) en la columna de la izquierda de VS Code, y luego los
+`projects/helen/img/`) en la columna de la izquierda de VS Code, y luego los
 pasos 3 a 5.
 
 En la vista previa el mapa tarda un poco más en cargar que en la web de
@@ -185,8 +186,8 @@ carpetas de sus proyectos (`projects`), en el orden en que salen:
   mandar el enlace a quien quieras), pero no sale en el mapa, en las listas ni
   en Google, y no pierde su sitio: para que vuelva, pones otra vez `"roma"`.
 - Para **quitarlo del todo**, bórralo de la lista (la carpeta se puede quedar).
-- Para **pasarlo de lista**, lo mueves de una a la otra, y su carpeta también
-  (de `textil/` a `foto/`, arrastrándola en VS Code).
+- Para **pasarlo de lista**, mueves su nombre de una lista a la otra en
+  `data/site.json`. La carpeta no se toca.
 
 ### Cambiar el about, tu email, tu Instagram o la foto de contacto
 
@@ -198,6 +199,10 @@ carpetas de sus proyectos (`projects`), en el orden en que salen:
 - La foto de contacto: pásala por imgToWeb y súbela a la carpeta `contacto/`
   con el nombre `1.webp`. Para cambiarla, sustituye esa. Sin foto, la página
   sale con el email y el Instagram solos.
+- La foto del about: está en la carpeta `about/` y `data/about.json` dice cuál
+  en `"photo"`, con el nombre del archivo sin el `.webp`: `"photo": "about"`
+  es `about/about.webp`. Para cambiarla, pásala por imgToWeb, súbela a
+  `about/` y pon su nombre en `"photo"`. Sin `"photo"`, sale solo el texto.
 
 ---
 
@@ -206,8 +211,8 @@ carpetas de sus proyectos (`projects`), en el orden en que salen:
 1. **Las fotos**: pásalas por imgToWeb en el orden en que quieras que salgan
    (puedes arrastrarlas para ordenarlas) y descarga el zip.
 2. **La carpeta**: en VS Code, **copia la carpeta de otro proyecto** (por
-   ejemplo `foto/helen/`: clic derecho → Copy, y Paste sobre `foto/`, o sobre
-   `textil/` si va en textil) y cámbiale el nombre a `nuevo-proyecto`.
+   ejemplo `projects/helen/`: clic derecho → Copy, y Paste sobre `projects/`)
+   y cámbiale el nombre a `nuevo-proyecto`.
 3. **Las fotos**: borra las de su `img/` y arrastra ahí las del zip.
 4. **Los textos**: abre su `project.json` y cámbialo (abajo, uno mínimo).
 5. **Que salga**: en `data/site.json`, añade `"nuevo-proyecto"` a los
@@ -300,11 +305,11 @@ lista de archivos) sale un círculo:
   ejemplo:
 
   ```
-  ✗ foto/helen/project.json no es un JSON válido (línea 12, columna 5). …
-  ✗ foto/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
-  ✗ foto/helen: no encuentro img/9.webp
-  ✗ foto/helen: en «cover», 9 no está entre sus fotos
-  ✗ la lista «foto» de data/site.json nombra «helenn», y no hay foto/helenn/project.json
+  ✗ projects/helen/project.json no es un JSON válido (línea 12, columna 5). …
+  ✗ projects/helen/project.json: "covr" no es un campo de aquí (¿mal escrito?). Los que hay: …
+  ✗ projects/helen: no encuentro img/9.webp
+  ✗ projects/helen: en «cover», 9 no está entre sus fotos
+  ✗ la lista «foto» de data/site.json nombra «helenn», y no hay projects/helenn/project.json
   ```
 
   Arréglalo en VS Code (el número de línea te dice dónde mirar; con **Go

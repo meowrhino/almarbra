@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "<lista>/<slug>/project.json: un proyecto",
-  "description": "<lista>/<slug>/project.json: un proyecto, dentro de la carpeta de su lista (textil/, foto/). La carpeta es su dirección (/textil/roma/). Sus fotos (1.webp, 2.webp… de imgToWeb), en img/ de la misma carpeta. Este fichero lo lee VS Code (por el \"$schema\" de arriba del JSON) para autocompletar, explicar cada campo y subrayar lo que está mal; el build y la vista previa validan con él mismo.",
+  "description": "projects/<slug>/project.json: un proyecto. Su dirección la da la lista de data/site.json en la que está (/textil/roma/). Sus fotos (1.webp, 2.webp… de imgToWeb), en img/ de la misma carpeta. Este fichero lo lee VS Code (por el \"$schema\" de arriba del JSON) para autocompletar, explicar cada campo y subrayar lo que está mal; el build y la vista previa validan con él mismo.",
   "type": "object",
   "required": [
     "title",

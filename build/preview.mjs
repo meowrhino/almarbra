@@ -57,8 +57,8 @@ async function start() {
   const site = await json('data/site.json');
   const about = await json('data/about.json');
   if (!site || !about) return oops('No encuentro los datos', ['Falta data/site.json o data/about.json.']);
-  const dirs = Object.entries(site.lists || {}).flatMap(([category, list]) => (list?.projects || []).map(slugOf)
-    .filter((slug) => typeof slug === 'string').map((slug) => `${category}/${slug}`));
+  const dirs = Object.values(site.lists || {}).flatMap((list) => (list?.projects || []).map(slugOf)
+    .filter((slug) => typeof slug === 'string').map((slug) => `projects/${slug}`));
   const files = new Map(await Promise.all(dirs.map(async (dir) => {
     const at = `${dir}/project.json`;
     return [at, await json(at)];
@@ -93,7 +93,12 @@ async function start() {
   if (contactSize === null) return oops('Así no se publicaría', ['contacto/1.webp no es un WebP de verdad (pásala por imgToWeb)']);
   const contactPhoto = contactSize ? { name: '1', file: '1.webp', src: 'contacto/1.webp', ...contactSize } : null;
 
-  const web = sitio({ site: { ...site, noindex: true }, about, projects, diaris, contactPhoto, preview: true });
+  const aboutSize = about.photo ? await size(`about/${about.photo}.webp`) : undefined;
+  if (about.photo && aboutSize === undefined) return oops('Así no se publicaría', [`data/about.json: en «photo», no encuentro about/${about.photo}.webp`]);
+  if (aboutSize === null) return oops('Así no se publicaría', [`about/${about.photo}.webp no es un WebP de verdad (pásala por imgToWeb)`]);
+  const aboutPhoto = aboutSize ? { name: about.photo, file: `${about.photo}.webp`, src: `about/${about.photo}.webp`, ...aboutSize } : null;
+
+  const web = sitio({ site: { ...site, noindex: true }, about, projects, diaris, contactPhoto, aboutPhoto, preview: true });
 
   /* ?p=/en/textil/roma/ → en, textil/roma/ */
   let path = (new URLSearchParams(location.search).get('p') || '/').replace(/^\/+/, '');
