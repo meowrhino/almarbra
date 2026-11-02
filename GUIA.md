@@ -20,11 +20,11 @@ arregles (abajo, en *Si algo va mal*).
 1. Hazte una cuenta en [github.com](https://github.com) y pásanos tu nombre de
    usuario.
 2. Te pasamos **una copia de la web a tu cuenta**: desde ese momento es tuya y
-   vive en `https://github.com/TU-USUARIO/almarbra`.
+   vive en `https://github.com/almarbra/almudena`.
 3. Instala **Visual Studio Code**: https://code.visualstudio.com
 4. Ábrelo y trae la web a tu ordenador: a la izquierda, el icono de las ramas
    (**Source Control**) → **Clone Repository** → **Clone from GitHub** → entra
-   con tu cuenta → elige `TU-USUARIO/almarbra` → elige una carpeta de tu
+   con tu cuenta → elige `almarbra/almudena` → elige una carpeta de tu
    ordenador → **Open**. Si te pide instalar Git, acepta.
 
 A partir de aquí, la web es esa carpeta: cada vez que abras VS Code, se abre
@@ -297,7 +297,7 @@ Un proyecto escondido (`"visible": false`) no sale en Google.
 - **después de la última, no**: `["1", "2", "3",]` ✗.
 
 **Cómo saber si ha ido bien**: en github.com, en tu web
-(`github.com/TU-USUARIO/almarbra`), al lado del último cambio (encima de la
+(`github.com/almarbra/almudena`), al lado del último cambio (encima de la
 lista de archivos) sale un círculo:
 
 - 🟢 verde: publicado.

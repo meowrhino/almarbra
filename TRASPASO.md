@@ -15,18 +15,19 @@ Tiempo: unos 20 minutos, más lo que tarden los DNS.
 ## Antes
 
 - [ ] `main` está al día y sin cambios a medias (`git status` limpio).
-- [ ] Almudena tiene cuenta de GitHub. Su usuario: `<su-usuario>`.
+- [x] Almudena tiene cuenta de GitHub. Su usuario: `almarbra`; el repo, `almarbra/almudena`.
 - [ ] Almudena tiene cuenta de Cloudflare, y el dominio (`almudenagonzalez.com`, por ejemplo) a mano.
 
 ## 1. Su copia
 
-- [ ] En su cuenta, **New repository** → `almarbra`, público y vacío (sin README ni licencia).
-- [ ] Desde esta carpeta: `git push https://github.com/<su-usuario>/almarbra.git main`
-      (si pide permiso, que nos añada antes como colaboradores, paso 3).
+- [x] En su cuenta, **New repository** → `almudena`, público y vacío (sin README ni licencia). Nos dio Write.
+- [x] Copia **sin historial** (2026-11-02): el árbol de `main` (`git archive`) en un repo nuevo con un solo
+      commit, y push a `https://github.com/almarbra/almudena.git`. Lo de antes del traspaso se queda en
+      el de meowrhino.
 
 ## 2. Cloudflare
 
-- [ ] En su Cloudflare: **Workers & Pages → Create → Import a repository** → `<su-usuario>/almarbra`.
+- [ ] En su Cloudflare: **Workers & Pages → Create → Import a repository** → `almarbra/almudena`.
       Lo demás lo lee de `wrangler.jsonc` (instala sharp con `npm install`, build `node build/build.mjs`, sale `dist/`).
 - [ ] **Settings → Domains & Routes → Add → Custom domain**: su dominio (y `www`, si lo quiere).
 - [ ] En **su** repo, `data/site.json` → `"url": "https://almudenagonzalez.com"`. Commit y push
