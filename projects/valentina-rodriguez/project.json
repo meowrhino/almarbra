@@ -1,0 +1,32 @@
+{
+  "$schema": "../../schema/project.json",
+  "_borrador": "El texto en inglés y catalán es traducción nuestra del de Almudena (2026-11-02). El color lo puso meowrhino: pendiente del suyo. El vídeo es el principio de «TIMELINE FINAL» (2 min 5 s, lo que cabe en 25 MB); la pieza entera iría en Vimeo.",
+  "title": {
+    "es": "Valentina Rodriguez",
+    "en": "Valentina Rodriguez",
+    "ca": "Valentina Rodriguez"
+  },
+  "text": {
+    "es": [
+      "Documentación de procesos para la artista Valentina Rodriguez."
+    ],
+    "en": [
+      "Process documentation for the artist Valentina Rodriguez."
+    ],
+    "ca": [
+      "Documentació de processos per a l’artista Valentina Rodriguez."
+    ]
+  },
+  "credits": [],
+  "color": "#8C2E3A",
+  "neon": "#FF3355",
+  "cover": [
+    "1"
+  ],
+  "map": [
+    "1"
+  ],
+  "photos": [
+    "1"
+  ]
+}
