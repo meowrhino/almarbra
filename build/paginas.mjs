@@ -82,13 +82,15 @@ const pub = (src) => (preview ? src : `media/${src}`);
    `cap` limita la foto a su ancho real: las verticales rondan los 1333
    de ancho, y sin este tope se ampliarían en pantallas grandes y se
    verían blandas. */
-function img(image, { base = '', eager = false, cap = false } = {}) {
+function img(image, { base = '', eager = false, cap = false, controls = false } = {}) {
   /* Un vídeo (img/N.webm): en bucle y sin sonido, con su fotograma
-     mientras llega; el navegador lo pide cuando se ve (preload). */
+     mientras llega; el navegador lo pide cuando se ve (preload). En la
+     galería, con sus mandos (la línea de tiempo, el sonido si lo tiene
+     y la pantalla completa); en las listas, solo el bucle. */
   if (image.video) {
     return `<video src="${attr(base + pub(image.video))}" poster="${attr(base + pub(image.src))}"`
       + ` width="${image.w}" height="${image.h}" autoplay muted loop playsinline preload="${eager ? 'auto' : 'metadata'}"`
-      + (cap ? ` style="max-width:${image.w}px"` : '') + ` aria-label="${attr(image.alt || '')}"></video>`;
+      + (controls ? ' controls' : '') + (cap ? ` style="max-width:${image.w}px"` : '') + ` aria-label="${attr(image.alt || '')}"></video>`;
   }
   return `<img src="${attr(base + pub(image.src))}"`
     + ` width="${image.w}" height="${image.h}" alt="${attr(image.alt || '')}"`
@@ -593,7 +595,7 @@ function projectPage(project) {
   const gallery = project.groups.map(({ name, images }, g) =>
     `<section class="group">\n${name ? `<h2>${esc(name)}</h2>\n` : ''}`
     + images.map((image, i) =>
-        `<figure>${img({ ...image, alt: [title, name].filter(Boolean).join(' — ') }, { base: root, cap: true, eager: g === 0 && i === 0 })}</figure>`
+        `<figure>${img({ ...image, alt: [title, name].filter(Boolean).join(' — ') }, { base: root, cap: true, controls: true, eager: g === 0 && i === 0 })}</figure>`
       ).join('\n')
     + '\n</section>'
   );
