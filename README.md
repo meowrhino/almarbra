@@ -519,6 +519,11 @@ en el mapa.
 - El contacto va sin foto, a propósito (el código la pondría si hubiera
   `contacto/1.webp`).
 - Los colores neón del modo oscuro son los calculados: que diga los suyos.
+- **Timeline** (`projects/timeline/`, 2026-11-02): el primer proyecto con vídeo.
+  Título, texto y color inventados por meowrhino (nota `_borrador`): que ponga
+  los suyos. El vídeo es el principio de «TIMELINE FINAL» (2 min 5 s, 23,7 MB,
+  lo que cabe en los 25 MiB de Cloudflare), de videoToWeb a 1080 sin sonido;
+  la pieza entera (4 min 31 s) iría en Vimeo.
 
 ## Historia
 

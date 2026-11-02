@@ -1,0 +1,29 @@
+{
+  "$schema": "../../schema/project.json",
+  "_borrador": "Datos inventados por meowrhino (2026-11-02) para montar el proyecto: título, texto y color, pendientes de que Almudena ponga los suyos. El vídeo es el principio de TIMELINE FINAL (2 min 5 s, lo que cabe en 25 MB); la pieza entera iría en Vimeo.",
+  "title": {
+    "es": "TIMELINE",
+    "en": "TIMELINE",
+    "ca": "TIMELINE"
+  },
+  "text": {
+    "es": [
+      "Una línea de tiempo del taller: el baño de tinte, el hilo que se tensa y el tejido que se levanta del telar, grabados mientras pasan.",
+      "Vídeo en bucle; la pieza entera, en Vimeo."
+    ],
+    "en": [
+      "A timeline of the studio: the dye bath, the thread pulled taut and the cloth lifted off the loom, recorded as they happen.",
+      "Looping video; the full piece, on Vimeo."
+    ],
+    "ca": [
+      "Una línia de temps del taller: el bany de tint, el fil que es tensa i el teixit que s'aixeca del teler, gravats mentre passen.",
+      "Vídeo en bucle; la peça sencera, a Vimeo."
+    ]
+  },
+  "credits": [],
+  "color": "#8C2E3A",
+  "neon": "#FF3355",
+  "cover": ["1"],
+  "map": ["1"],
+  "photos": ["1"]
+}
