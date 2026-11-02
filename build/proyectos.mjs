@@ -126,7 +126,10 @@ const fileOf = (name) => `${String(name).replace(/\.webp$/, '')}.webp`;
     las pide antes de leer los proyectos). */
 export const photoSrcs = (dir, data) => [...new Set([data.photos, data.map, ...[].concat(data.groups || []).map((g) => g?.photos)]
   .flatMap((list) => (Array.isArray(list) ? list : []))
-  .map((name) => `${dir}/img/${fileOf(name)}`))];
+  .flatMap((name) => {   // y, por si es un vídeo, su webm y su fotograma
+    const n = fileOf(name).replace(/\.webp$/, '');
+    return [`${dir}/img/${n}.webp`, `${dir}/img/${n}.webm`, `${dir}/img/${n}.poster.webp`];
+  }))];
 
 /**
  * Lee los proyectos en el orden de site.lists, y mira lo general de
@@ -173,13 +176,26 @@ export function loadProjects(site, { json, size, folders = null }) {
       if (data.title && typeof data.title !== 'object') errors.push(`${at}: «title» va por idioma: { "es": "…", "en": "…" }`);
       list(data.credits, 'credits');
 
+      /* Una foto es img/N.webp. Un vídeo es img/N.webm con su fotograma
+         img/N.poster.webp al lado (los dos los saca videoToWeb): `src` es
+         el fotograma (sirve de foto en el mapa, las listas y al
+         compartir) y `video`, el webm. */
       const image = (name) => {
         const file = fileOf(name);
+        const n = file.replace(/\.webp$/, '');
         const src = `${folder}/img/${file}`;
         const wh = size(src);
-        if (wh === undefined) { errors.push(`${folder}: no encuentro img/${file}`); return null; }
+        if (wh === undefined) {
+          const video = `${folder}/img/${n}.webm`;
+          if (size(video) === undefined) { errors.push(`${folder}: no encuentro img/${file}`); return null; }
+          const poster = `${folder}/img/${n}.poster.webp`;
+          const pwh = size(poster);
+          if (pwh === undefined) { errors.push(`${folder}: img/${n}.webm no tiene su fotograma img/${n}.poster.webp al lado (los dos los saca videoToWeb)`); return null; }
+          if (!pwh) { errors.push(`${folder}: img/${n}.poster.webp no es un WebP de verdad`); return null; }
+          return { name: n, file: `${n}.poster.webp`, src: poster, video, ...pwh };
+        }
         if (!wh) { errors.push(`${folder}: img/${file} no es un WebP de verdad (pásala por imgToWeb)`); return null; }
-        return { name: file.replace(/\.webp$/, ''), file, src, ...wh };
+        return { name: n, file, src, ...wh };
       };
       /* Las fotos van en «photos», o por grupos en «groups» (Roma). */
       const groups = list(data.groups, 'groups').concat(data.groups ? [] : [{ name: null, photos: data.photos }])

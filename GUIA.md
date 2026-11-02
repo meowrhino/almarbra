@@ -150,6 +150,20 @@ pasa nada):
 2. Súbelas a su carpeta `img/`.
 3. Añade sus números a `photos` en el `project.json`.
 
+### Un vídeo en un proyecto
+
+Un vídeo va como una foto más, por su número. Se prepara con **videoToWeb**:
+https://meowrhino.github.io/videoToWeb/ (en Chrome o Firefox), con la opción
+**fotograma** activada: de cada vídeo salen dos archivos, el vídeo (`.webm`) y
+su fotograma (`.poster.webp`), que es lo que se ve mientras llega y lo que sale
+en el mapa y al compartir. Los dos van a `img/` con el mismo número:
+`img/5.webm` y `img/5.poster.webp`, y en el JSON se pone `"5"` como con una
+foto (en `photos`, `cover` o `map`). En la web se ve en bucle y sin sonido.
+
+Cuanto más corto, mejor: un vídeo de minutos pesa decenas de MB y tarda en
+llegar; para la web lo mejor es un trozo de unos segundos en bucle. Un
+archivo no puede pasar de **25 MB**: si pasa, la web no se publica.
+
 ### Diaris: añadir o quitar fotos
 
 En diaris salen **todas** las fotos de la carpeta `diaris/`, en otro orden cada

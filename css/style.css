@@ -56,7 +56,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-img { display: block; max-width: 100%; height: auto; }
+img, video { display: block; max-width: 100%; height: auto; }
 a { color: inherit; text-decoration: none; }
 a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
@@ -461,7 +461,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 .row { display: block; }
 .cat li:nth-child(even) .row { text-align: right; }
 .cat li:nth-child(even) .pic { margin-left: auto; }
-.row .pic img { width: 100%; }
+.row .pic :is(img, video) { width: 100%; }
 
 .row h3 {
   margin: .6rem 0 0;
@@ -737,7 +737,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    frena, y entonces se quedan centradas antes que ampliarse y verse
    blandas. */
 .group figure { margin: 0 0 clamp(.75rem, 3vh, 2rem); }
-.group figure img { width: 100%; margin: 0 auto; }
+.group figure :is(img, video) { width: 100%; margin: 0 auto; }
 
 @media (max-width: 700px) {
   .credits { grid-template-columns: 1fr; gap: 0; }

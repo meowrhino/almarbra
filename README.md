@@ -286,6 +286,15 @@ Y ya: las fotos pequeñas del mapa y la imagen para compartir las hace el build.
 siguiente y se añaden a `photos`. Para rehacer el orden entero, imgToWeb con
 todas otra vez.
 
+**Un vídeo** (2026-11-02) va por su número como una foto: `img/N.webm` con su
+fotograma `img/N.poster.webp` al lado (los dos los saca
+[videoToWeb](https://github.com/meowrhino/videoToWeb) con «fotograma»), y en el
+JSON `"N"`. El build lo detecta al no encontrar `N.webp`: el fotograma hace de
+foto en el mapa, las listas (miniatura) y la og, y donde va la foto sale un
+`<video>` en bucle, mudo, con `preload="metadata"` (`auto` el primero de la
+galería). Cloudflare no sirve archivos de más de 25 MiB: un vídeo largo va
+recortado a un trozo en bucle, o a Vimeo.
+
 **El mapa** no usa las grandes: enseña las fotos a 170 px como mucho (340 con
 el zoom), y bajarse 94 de 2000 px eran 30 MB. El build hace de cada foto del mapa
 una de 600 px con sharp (en `.cache/mapa/`, fuera de git, y solo las que no

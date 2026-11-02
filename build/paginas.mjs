@@ -83,6 +83,13 @@ const pub = (src) => (preview ? src : `media/${src}`);
    de ancho, y sin este tope se ampliarían en pantallas grandes y se
    verían blandas. */
 function img(image, { base = '', eager = false, cap = false } = {}) {
+  /* Un vídeo (img/N.webm): en bucle y sin sonido, con su fotograma
+     mientras llega; el navegador lo pide cuando se ve (preload). */
+  if (image.video) {
+    return `<video src="${attr(base + pub(image.video))}" poster="${attr(base + pub(image.src))}"`
+      + ` width="${image.w}" height="${image.h}" autoplay muted loop playsinline preload="${eager ? 'auto' : 'metadata'}"`
+      + (cap ? ` style="max-width:${image.w}px"` : '') + ` aria-label="${attr(image.alt || '')}"></video>`;
+  }
   return `<img src="${attr(base + pub(image.src))}"`
     + ` width="${image.w}" height="${image.h}" alt="${attr(image.alt || '')}"`
     + (cap ? ` style="max-width:${image.w}px"` : '')
@@ -125,7 +132,10 @@ addEventListener('click', (e) => {
   /* con un fundido (una View Transition de la misma página, .fundiendo en css/style.css) */
   if (!document.startViewTransition) { tema(dark); return; }
   html.classList.add('fundiendo');
-  document.startViewTransition(() => tema(dark)).finished.finally(() => html.classList.remove('fundiendo'));
+  const vt = document.startViewTransition(() => tema(dark));
+  const done = () => html.classList.remove('fundiendo');
+  vt.ready.catch(() => {});   // si el navegador la salta (la pestaña escondida), sin error en la consola
+  vt.finished.then(done, done);
 });
 let back = false;
 try {
@@ -343,7 +353,7 @@ function mapPage(projects) {
     const long = [170, 120, 145][i % 3];   // de tres tamaños, para que no parezca una rejilla
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
     return `<a class="pin" href="${attr(homeOf(''))}${attr(project.dir)}/" tabindex="-1" data-p="${p}" style="${tone(project)};width:${width}px">`
-      + img(mini(image), { base: root })
+      + img({ ...mini(image), video: null }, { base: root })   // en el mapa, un vídeo es su fotograma
       + `<span class="sr-only">${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
 
