@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "<lista>/<slug>/project.json: un proyecto",
+  "title": "projects/<slug>/project.json: un proyecto",
   "description": "projects/<slug>/project.json: un proyecto. Su dirección la da la lista de data/site.json en la que está (/textil/roma/). Sus fotos (1.webp, 2.webp… de imgToWeb), en img/ de la misma carpeta. Este fichero lo lee VS Code (por el \"$schema\" de arriba del JSON) para autocompletar, explicar cada campo y subrayar lo que está mal; el build y la vista previa validan con él mismo.",
   "type": "object",
   "required": [
@@ -44,6 +44,10 @@
     "color": {
       "type": "string",
       "description": "Su color (#hex o nombre CSS): el de su hilo, el de sus huecos mientras cargan las fotos y el de la ola al entrar."
+    },
+    "neon": {
+      "type": "string",
+      "description": "Opcional: el mismo color en versión neón, para el modo oscuro (fondo negro). Si no está, se usa «color»."
     },
     "cover": {
       "type": "array",

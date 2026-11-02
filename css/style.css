@@ -16,6 +16,21 @@
   --pad: clamp(1rem, 4vw, 3rem);
 }
 
+/* El modo oscuro: el botón de abajo a la derecha (el <head> de cada
+   página lo guarda en localStorage y pone data-theme="dark"). Fondo
+   negro, y cada proyecto con su color neón en vez del claro: los dos
+   vienen en el style de cada cosa (--luz y --neon, de build/paginas.mjs)
+   y aquí se elige cuál es --c. */
+[data-theme="dark"] {
+  --bg: #000;
+  --ink: #fff;
+  --dim: rgba(255, 255, 255, .55);
+  color-scheme: dark;
+}
+
+[style*="--luz"] { --c: var(--luz); }
+[data-theme="dark"] [style*="--luz"] { --c: var(--neon, var(--luz)); }
+
 /* Amsi Pro (Stawix), la de Almudena: regular y bold, en woff2 propias. */
 @font-face { font-family: "Amsi Pro"; font-weight: 400; src: url("fonts/AmsiPro-Regular.woff2") format("woff2"); font-display: swap; }
 @font-face { font-family: "Amsi Pro"; font-weight: 700; src: url("fonts/AmsiPro-Bold.woff2") format("woff2"); font-display: swap; }
@@ -92,20 +107,39 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
   .top nav { flex-direction: column; align-items: flex-end; gap: .2rem; }
 }
 
-/* el idioma, abajo a la derecha: la misma página en los otros */
+/* Abajo a la derecha: el idioma (la misma página en los otros) y el
+   botón del modo oscuro. En difference, como el menú: en el mapa y en
+   diaris pasan fotos por debajo. */
 .idiomas {
+  --ink: #fff;
+  --dim: rgba(255, 255, 255, .55);
   position: fixed;
   right: var(--pad);
   bottom: 0;
+  z-index: 3;
   display: flex;
   align-items: center;
   gap: .6rem;
   height: var(--bar);
+  color: var(--ink);
+  mix-blend-mode: difference;
 }
 
-[data-vista="mapa"] .idiomas { display: none; }
-
 .idiomas a { color: var(--dim); }
+
+.tema {
+  margin-right: .4rem;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  font-size: 1.1em;
+  color: var(--dim);
+  background: none;
+  cursor: pointer;
+}
+
+.tema[aria-pressed="true"] { color: var(--ink); }
+:root:not(.js) .tema { display: none; }
 
 /* lo que está puesto: el idioma y la página */
 .idiomas [aria-current],
@@ -113,7 +147,8 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 @media (hover: hover) {
   .top a:hover,
-  .idiomas a:hover { color: var(--ink); }
+  .idiomas a:hover,
+  .tema:hover { color: var(--ink); }
 }
 
 /* ── el mapa, las listas y el about: cada uno, su página ─────────────
@@ -266,22 +301,13 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .pin img { width: 100%; }
 
-/* el nombre del proyecto no se ve: solo lo leen los lectores de pantalla */
-.pin span {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
+/* (el nombre del proyecto, dentro, es .sr-only: solo para lectores de pantalla) */
 .pin { transition: opacity .2s; }
 
 /* Los hilos, a media luz. Al pasar por una foto se enciende su proyecto
    (js/mapa.js): sus hilos, a tope; las fotos de los demás se apagan y
    sus hilos se quedan como estaban. */
-.threads path { opacity: .35; }
+.threads path { stroke: var(--c); opacity: .35; }   /* --luz y --neon, copiados de su foto (js/mapa.js) */
 .threads path.on { opacity: 1; }
 .dim .pin:not(.on) { opacity: .15; }
 
@@ -321,7 +347,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 }
 
 .pixeles path { transition: opacity .6s steps(4, end); }
-.pelusa { opacity: .3; animation: hueco .4s steps(4, end) 2s backwards; }   /* como su hilo, a media luz */
+.pelusa { fill: var(--c); opacity: .3; animation: hueco .4s steps(4, end) 2s backwards; }   /* como su hilo, a media luz */
 .pelusa.on { opacity: .8; }
 .halo { opacity: .45; }
 
@@ -330,7 +356,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
    puede escribir en él). En
    difference, como el menú. */
 .zoom { display: none; }
-[data-vista="mapa"] .zoom {
+.js[data-vista="mapa"] .zoom {
   --ink: #fff;
   --dim: rgba(255, 255, 255, .55);
   position: fixed;
@@ -393,7 +419,15 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
 .cat + .cat { margin-top: clamp(4rem, 14vh, 9rem); }
 
-.js .cat h1 { display: none; }   /* con JavaScript, ya lo dice el menú */
+/* con JavaScript, ya lo dice el menú: se queda solo para lectores de pantalla */
+.js .cat h1 {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
 .cat h1 {
   margin: 0 0 clamp(1.5rem, 5vh, 3rem);
@@ -585,10 +619,7 @@ a:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
 
    Una sola columna —800 px como mucho— centrada y con aire por los
    cuatro costados: arriba la ficha, debajo las fotos, todas al mismo
-   ancho. Por encima, un hilo de su color (js/hilo.js).
-
-   Los 800 también los sabe build/build.mjs, que los pone en el `sizes`
-   de cada foto: si cambian aquí, cambian allí. */
+   ancho. Por encima, un hilo de su color (js/hilo.js). */
 
 .project {
   --col: 800px;

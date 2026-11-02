@@ -57,7 +57,9 @@
   document.body.append(veil);
   const ctx = veil.getContext('2d');
 
-  const colorOf = (el) => el.style.getPropertyValue('--c').trim();
+  /* --c lo pone el CSS según el modo (claro o oscuro) de --luz y --neon. */
+  const colorOf = (el) => getComputedStyle(el).getPropertyValue('--c').trim();
+  const dark = () => root.dataset.theme === 'dark';
   /* Unos pocos colores de la lista, al azar: los del loader. */
   const few = (colors) => [...colors].sort(() => Math.random() - 0.5).slice(0, 4);
   /* El loader de reserva (CSS): de un color, o de unos pocos a tramos. */
@@ -65,8 +67,8 @@
     : `linear-gradient(90deg, ${colors.map((c, i) => `${c} ${(i / colors.length) * 100}% ${((i + 1) / colors.length) * 100}%`).join(', ')})`);
   /* Los de lo que hay a la vista; en el about, que no tiene, los de todos
      los proyectos (data-colores). */
-  const allColors = () => [...new Set([...document.querySelectorAll('[style*="--c"]')].map(colorOf)
-    .concat(JSON.parse(document.querySelector('[data-colores]')?.dataset.colores || '[]')).filter(Boolean))];
+  const allColors = () => [...new Set([...document.querySelectorAll('[style*="--luz"]')].map(colorOf)
+    .concat(JSON.parse(document.querySelector('[data-colores]')?.dataset[dark() ? 'neones' : 'colores'] || '[]')).filter(Boolean))];
   const pick = (colors) => colors[Math.floor(Math.random() * colors.length)];
 
   const bg = () => getComputedStyle(root).getPropertyValue('--bg');
@@ -318,7 +320,7 @@
       let own = null;
       if (link) own = colorOf(link) || colorOf(document.body);
       else if (from) {
-        const back = [...document.querySelectorAll('a[href][style*="--c"]')].find((a) => where(new URL(a.href)) === where(from));
+        const back = [...document.querySelectorAll('a[href][style*="--luz"]')].find((a) => where(new URL(a.href)) === where(from));
         own = place(to) === 'proyecto' ? colorOf(document.body) : back && colorOf(back);
       }
       const colors = own ? [own] : allColors();

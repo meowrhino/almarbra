@@ -74,10 +74,16 @@
     await wait(HOLD);
   }
 
+  /* Mientras se tapa o se destapa no se atiende otro clic: dos dibujos a
+     la vez se pisan. */
+  let busy = false;
+
   async function uncover(datos) {
+    busy = true;
     await ready();
     root.classList.remove('tapada');
     await dibujo.destapar(datos);
+    busy = false;
   }
 
   /* Con atrás o adelante. Si el navegador ha dejado la foto de la página
@@ -115,6 +121,8 @@
     if (to.origin !== location.origin) return;
     if (to.pathname === location.pathname && to.search === location.search) return;
     e.preventDefault();
+    if (busy) return;
+    busy = true;
     const datos = dibujo.datos(new URL(location.href), to, a);
     dibujo.tapar(datos).then(() => {
       /* tapada, a esperar la página nueva: si tarda, sale el loader */

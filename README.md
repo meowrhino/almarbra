@@ -3,7 +3,7 @@
 Portfolio de **Almudena González**. Sitio estático de verdad: el contenido vive en
 JSON, un script escupe un `.html` por proyecto en `dist/`, y el navegador solo
 recibe HTML, CSS e imágenes. Sigue la receta de
-[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Cero dependencias**, y el JavaScript de navegador son cinco archivos pequeños: el mapa, la transición, los hilos, el hilo de los proyectos y el telar del about.
+[meowrhino/JAMstack](https://github.com/meowrhino/JAMstack), como polroig. **Una dependencia** (sharp, para las fotos pequeñas del mapa y las imágenes de compartir), y el JavaScript de navegador son seis archivos pequeños: el mapa, la transición y su ola, los hilos, el hilo de los proyectos y el telar del about.
 
 **Para actualizar la web (la clienta): [GUIA.md](GUIA.md).**
 
@@ -11,19 +11,31 @@ Fondo blanco, Helvetica (la del sistema: nada que descargar) en minúscula y las
 fotos mandando, unidas por hilos de píxeles del color de cada proyecto.
 
 **La interfaz**, igual en todas las páginas: el nombre arriba a la izquierda
-(lleva siempre a la portada); **mapa · textil · foto · about** arriba a la derecha,
-con lo que está puesto marcado; el idioma (**es · en · ca**) abajo a la
-derecha, salvo en el mapa. Todo sin fondo y en `difference`, para que se lea
-sobre las fotos.
+(lleva siempre a la portada); **mapa · arte textil · editorial photography ·
+diaries · about · contacto** arriba a la derecha, con lo que está puesto
+marcado; el idioma (**es · en · ca**) y el botón del **modo oscuro** (◐) abajo
+a la derecha, en todas las páginas. Todo sin fondo y en `difference`, para que
+se lea sobre las fotos.
+
+**El modo oscuro** (2026-11-02): fondo negro y cada proyecto con su color neón
+(`neon` en su `project.json`; sin él, `color`) en el hilo, los huecos, la ola y
+el telar. Se elige con el botón, se guarda en `localStorage` y el `<script>`
+del `<head>` lo pone (`data-theme="dark"` en `<html>`) antes de pintar, así que
+no parpadea. En el CSS, cada cosa con color lleva los dos en su `style`
+(`--luz` y `--neon`) y `[data-theme="dark"]` elige cuál es `--c`; los scripts
+leen `--c` ya calculado. El menú, el zoom y los idiomas van en `difference`,
+así que salen bien sobre los dos fondos sin tocarlos.
 
 - **portada** (`/`): el **mapa**. Las dos **listas**, **diaris**, el **about** y **contacto** son páginas
   propias: `/textil/`, `/foto/`, `/diaris/`, `/about/`, `/contacto/` (y en `/en/`, `/ca/`); las
   direcciones viejas con `#` (`/#about`) redirigen. En el mapa salen los
   proyectos de las dos.
 
-  Diaris: las fotos de `diaris/` (`1.webp`, `2.webp`…, sin JSON), en tres
-  columnas como un tumblr (dos en el móvil), barajadas en cada visita por un
-  script al pintar; sin JavaScript, en su orden. El build las publica a
+  Diaris: las fotos de `diaris/` (`1.webp`, `2.webp`…, sin JSON), en filas
+  que llenan el ancho, cada foto al 90 % de su hueco y en un sitio al azar de
+  él, barajadas en cada visita por un script al pintar (sin dos filas seguidas
+  de la misma combinación de formas); sin JavaScript, en su orden y centradas.
+  El build las publica a
   1000 px (sharp, `.cache/diaris/`). Cada hueco, con la trama de un color de
   los proyectos mientras llega su foto.
 
@@ -109,7 +121,7 @@ se hace push y en un par de minutos está publicado.
 
 | archivo | qué |
 |---|---|
-| `<lista>/<slug>/project.json` | el proyecto: título, texto, créditos, su color, fotos, portada y mapa (una foto de `img/` que está en `map` y no en `photos` sale solo en el mapa) |
+| `projects/<slug>/project.json` | el proyecto: título, texto, créditos, sus colores (`color` y `neon`), fotos, portada y mapa (una foto de `img/` que está en `map` y no en `photos` sale solo en el mapa) |
 | `diaris/` | las fotos de diaris, `1.webp`, `2.webp`…: salen todas, barajadas |
 | `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
 | `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español), y `photo`: su foto, un `.webp` de `about/` sin la extensión |
@@ -207,7 +219,8 @@ su caché larga sin dársela al HTML.
     { "role": { "es": "Modelo", "en": "Model", "ca": "Model" }, "name": "…", "url": "https://…" },
     { "role": "Make up & hair", "name": "…" }
   ],
-  "color":    "#982F0C",                      // si no, el que le toque de site.json
+  "color":    "#982F0C",                      // obligatorio: su hilo, sus huecos y su ola
+  "neon":     "#FF6633",                      // el mismo en neón, para el modo oscuro
   "cover":    ["10"],                         // la portada: la de la lista y al compartir
   "map":      ["2", "3", "5"],                // las del mapa
   "photos":   ["1", "2", "3"]                 // la galería, en este orden
@@ -345,13 +358,12 @@ publicado.
 En GitHub, *Settings → Pages → Source* tiene que estar en **GitHub Actions**.
 
 Cada proyecto lleva su color en su `project.json` (`color`): sin él, el build
-para y lo dice. Los que puso manu mientras Almudena no dice los suyos llevan
-una nota `_color`.
+para y lo dice. Y `neon`, su versión para el modo oscuro (sin él, se usa
+`color`): los de ahora salen del claro con el mismo tono, saturación entera y
+luz al 60 %, hasta que Almudena diga los suyos.
 
 El ancho de la columna de un proyecto —800 px— vive en `--col`, en
-`css/style.css`, y `build/build.mjs` lo repite en el `sizes` de cada foto para
-que el navegador no se baje una más grande de la cuenta. Si cambia uno, cambia el
-otro.
+`css/style.css`.
 
 ## El JavaScript de navegador
 
@@ -429,7 +441,9 @@ haya dominio (y siempre en github.io).
 
 ## Lanzar
 
-El Instagram y el email ya están. Lo que falta es el dominio.
+Ya está todo: el Instagram, el email y el dominio, `almarbra.com` (en
+`site.json` → `url` desde el 2026-11-02). Lo que se hizo, por si hay que
+repetirlo en otra web:
 
 **1. En `data/site.json`:**
 
@@ -487,10 +501,15 @@ en el mapa.
   alfabético hasta que diga otro (se cambia en `lists`).
 - **Las sinopsis de Light Beam Digital, Mattering y Unbound Threads** son la de
   Cuerpo Esquema con el nombre cambiado, a propósito (la clienta, 14/10): es el
-  mismo proyecto. Los tres vienen sin catalán.
+  mismo proyecto.
 - **Águeda va corta de resolución**: sus fotos están por debajo de 1400 px. En la
   columna de 800 se defiende, pero no aguanta más.
-- El about en inglés y catalán es traducción provisional: que lo revise ella.
+- Las traducciones (el about, Roma, Cuerpo Esquema y Corpórea en catalán) son
+  las finales (2026-11-02). Sicky Magazine (II) se titula «SICKY MAGAZINE II»
+  para que no tenga el mismo título que el primero.
+- El contacto va sin foto, a propósito (el código la pondría si hubiera
+  `contacto/1.webp`).
+- Los colores neón del modo oscuro son los calculados: que diga los suyos.
 
 ## Historia
 

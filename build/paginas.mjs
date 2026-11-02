@@ -31,6 +31,7 @@ let version;
 let mini;
 let projectOg;
 let mosaicOg;
+let aboutOg;
 let lang;
 let LANGS;
 let LISTS;
@@ -104,13 +105,25 @@ function img(image, { base = '', eager = false, cap = false } = {}) {
                    Transition): la página nueva, transparente salvo la ola.
                    window.revelada dice si la hay (js/transicion.js)
 
-   Es el de la transición de la casa, igual en todas las webs (salvo .js,
-   de almarbra). En la vista previa la página se pinta cuando el
-   navegador ya ha revelado index.html: no hay View Transition que
-   esperar. */
+   Es el de la transición de la casa, igual en todas las webs (salvo .js
+   y el modo oscuro, de almarbra: data-theme="dark" si se eligió, guardado
+   en localStorage; el botón .tema lo cambia). En la vista previa la
+   página se pinta cuando el navegador ya ha revelado index.html: no hay
+   View Transition que esperar. */
 const headScript = () => `<script>{
 const html = document.documentElement;
 html.classList.add('js');
+const tema = (dark) => {
+  if (dark) html.dataset.theme = 'dark'; else delete html.dataset.theme;
+  document.querySelector('.tema')?.setAttribute('aria-pressed', String(dark));
+};
+try { if (localStorage.getItem('tema') === 'dark') tema(true); } catch {}
+addEventListener('click', (e) => {
+  if (!e.target.closest('.tema')) return;
+  const dark = html.dataset.theme !== 'dark';
+  tema(dark);
+  try { localStorage.setItem('tema', dark ? 'dark' : 'light'); } catch {}
+});
 let back = false;
 try {
   const d = JSON.parse(sessionStorage.getItem('transicion'));
@@ -243,7 +256,7 @@ function mapImages(project) {
 function listItem(root, home, project, i) {
   const { cover } = project;
   const width = cover.h > cover.w ? 70 : 100;
-  return `<li style="grid-row:${i + 1}"><a class="row" href="${attr(home)}${attr(project.dir)}/" style="--c:${attr(project.color)}">
+  return `<li style="grid-row:${i + 1}"><a class="row" href="${attr(home)}${attr(project.dir)}/" style="${tone(project)}">
 <div class="pic" style="width:${width}%">${img(cover, { base: root })}</div>
 <h3>${tr(project.title) || esc(project.slug)}</h3>
 </a></li>`;
@@ -274,8 +287,11 @@ const label = (view) => tr(site.lists?.[view]?.name || site.menu?.[MENU[view]]) 
     `root`, a la raíz del sitio. */
 function topBar({ home = '', root = '', path = null, view = null }) {
   const link = (to) => `<a href="${attr(home + viewPath(to))}" data-to="${attr(to)}"${to === view ? ' aria-current="page"' : ''}>${label(to)}</a>`;
-  const langs = path !== null && LANGS.length > 1
-    ? `<div class="idiomas">${LANGS.map((l) => `<a href="${attr(preview ? `?p=/${prefix(l)}${path}` : root + prefix(l) + path)}" hreflang="${l}" lang="${l}"${l === cur ? ' aria-current="true"' : ''}>${l}</a>`).join('')}</div>`
+  /* Abajo a la derecha: los idiomas y, con JavaScript, el botón del modo
+     oscuro (el <head> lo atiende). */
+  const langs = path !== null
+    ? `<div class="idiomas"><button type="button" class="tema" aria-label="modo oscuro" aria-pressed="false">◐</button>${
+      LANGS.length > 1 ? LANGS.map((l) => `<a href="${attr(preview ? `?p=/${prefix(l)}${path}` : root + prefix(l) + path)}" hreflang="${l}" lang="${l}"${l === cur ? ' aria-current="true"' : ''}>${l}</a>`).join('') : ''}</div>`
     : '';
   return `<header class="top">
 <a href="${attr(home)}" class="name">${esc(site.title)}</a>
@@ -301,9 +317,18 @@ const oldHash = () => (preview ? '' : `<script>{ const v = location.hash.slice(1
 const viewRoot = (view) => (preview ? '' : (view === 'mapa' ? '' : '../') + (cur === lang ? '' : '../'));
 const homeOf = (home) => (preview ? `?p=/${prefix(cur)}` : home);
 
+/* Cada proyecto tiene dos colores: «color», para el fondo blanco, y
+   «neon», para el modo oscuro (si no lo tiene, el mismo). Van los dos en
+   el style (--luz y --neon) y el CSS pone --c según el modo. */
+const tone = (p) => `--luz:${attr(p.color)};--neon:${attr(p.neon || p.color)}`;
+
 /* Los colores de los proyectos, para el telar del about y la ola de la
-   transición en las páginas que no tienen ninguno a la vista. */
-const palette = (projects) => JSON.stringify([...new Set(projects.map((p) => p.color))]);
+   transición en las páginas que no tienen ninguno a la vista: los
+   claros en data-colores y los neón en data-neones. */
+const palette = (projects) => {
+  const list = (key) => attr(JSON.stringify([...new Set(projects.map((p) => p[key] || p.color))]));
+  return `data-colores="${list('color')}" data-neones="${list('neon')}"`;
+};
 
 function mapPage(projects) {
   const root = viewRoot('mapa');
@@ -314,9 +339,9 @@ function mapPage(projects) {
   const pins = projects.flatMap((project, p) => mapImages(project).map((image, i) => {
     const long = [170, 120, 145][i % 3];   // de tres tamaños, para que no parezca una rejilla
     const width = Math.round((long * image.w) / Math.max(image.w, image.h));
-    return `<a class="pin" href="${attr(homeOf(''))}${attr(project.dir)}/" tabindex="-1" data-p="${p}" style="--c:${attr(project.color)};width:${width}px">`
+    return `<a class="pin" href="${attr(homeOf(''))}${attr(project.dir)}/" tabindex="-1" data-p="${p}" style="${tone(project)};width:${width}px">`
       + img(mini(image), { base: root })
-      + `<span>${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
+      + `<span class="sr-only">${tr(project.short || project.title) || esc(project.slug)}</span></a>`;
   }));
 
   return page({
@@ -378,13 +403,14 @@ function aboutPage(projects) {
     vista: 'about',
     description: paras(t(about))[0],
     image: aboutPhoto || projects[0].cover,
-    og: aboutPhoto ? null : mosaicOg('og.jpg', projects),
+    og: aboutPhoto ? aboutOg() : mosaicOg('og.jpg', projects),
     head: ld(person()),
     scripts: ['js/telar.js'],
     body: `${topBar({ home: homeOf('../'), root, path: viewPath('about'), view: 'about' })}
 
 <main>
-<section id="about" data-colores="${attr(palette(projects))}">
+<section id="about" ${palette(projects)}>
+<h1 class="sr-only">${esc(t(site.menu?.about) || 'about')}</h1>
 <div>${aboutPhoto ? `<figure>${img({ ...aboutPhoto, alt: site.title }, { base: root, eager: true })}</figure>` : ''}${tr(about, prose)}</div>
 <p class="credito">web: <a href="https://meowrhino.studio" target="_blank" rel="noopener">meowrhino</a></p>
 </section>
@@ -410,7 +436,7 @@ function contactPage(projects) {
     body: `${topBar({ home: homeOf('../'), root, path: viewPath('contacto'), view: 'contacto' })}
 
 <main>
-<section id="contacto" data-colores="${attr(palette(projects))}">
+<section id="contacto" ${palette(projects)}>
 <h1 class="sr-only">${esc(name)}</h1>
 <div>${contactPhoto ? `<figure>${img({ ...contactPhoto, alt: site.title }, { base: root, eager: true })}</figure>` : ''}${contact()}</div>
 </section>
@@ -482,7 +508,7 @@ for (const li of best) { li.style.setProperty('--x', Math.random().toFixed(2)); 
 
 function diarisPage(projects) {
   const root = viewRoot('diaris');
-  const colors = [...new Set(projects.map((p) => p.color))];
+  const tones = [...new Map(projects.map((p) => [p.color, tone(p)])).values()];
   const name = t(site.menu?.diaris) || 'diaris';
   return page({
     title: name,
@@ -497,7 +523,7 @@ function diarisPage(projects) {
 <section id="diaris">
 <h1 class="sr-only">${esc(name)}</h1>
 <ul>
-${diaris.map((image, i) => `<li style="--c:${attr(colors[i % colors.length])};--r:${(image.w / image.h).toFixed(4)}">${img({ ...image, alt: name }, { base: root })}</li>`).join('\n')}
+${diaris.map((image, i) => `<li style="${tones[i % tones.length]};--r:${(image.w / image.h).toFixed(4)}">${img({ ...image, alt: name }, { base: root })}</li>`).join('\n')}
 </ul>
 ${diarisScript}
 </section>
@@ -543,7 +569,11 @@ function projectPage(project) {
   const path = `${project.dir}/`;
 
   const title = t(project.title) || project.slug;
-  const description = t(project.description) || summary(t(project.text));
+  /* Sin «description» ni texto (los editoriales de foto): la lista y los
+     créditos, que es lo que hay. */
+  const roles = (project.credits || []).map((c) => `${typeof c.role === 'string' ? c.role : t(c.role) || ''}: ${c.name}`.replace(/^: /, ''));
+  const description = t(project.description) || summary(t(project.text))
+    || summary([t(site.lists?.[project.category]?.name) || project.category, ...roles].join('. '));
 
   /* La primera foto se carga con prioridad; las demás, según hagan
      falta. Sin `alt` propio, el título del proyecto y el del grupo. */
@@ -574,7 +604,7 @@ function projectPage(project) {
     }),
     root,
     bodyClass: 'project',
-    bodyStyle: `--c:${project.color}`,
+    bodyStyle: tone(project),
     scripts: ['js/hilo.js'],
     body: `${topBar({ home, root, path })}
 
@@ -634,8 +664,9 @@ function notFoundPage() {
  *                         están, y los enlaces, a index.html?p=/ruta/
  *   version(file)         el ?v=<hash> de un archivo de css/ o js/
  *   mini(image)           la foto pequeña del mapa
- *   projectOg(project),   la og:image de 1200×630 de un proyecto o de
- *   mosaicOg(out, list)   una vista, ya en dist/; o null
+ *   projectOg(project),   la og:image de 1200×630 de un proyecto, de
+ *   mosaicOg(out, list),  una vista o de la foto del about, ya en
+ *   aboutOg()             dist/; o null
  *
  * Devuelve las direcciones (`paths`, sin el idioma: '', 'textil/',
  * 'textil/roma/'…; `listed`, las mismas sin los ocultos, para el
@@ -648,6 +679,7 @@ export function sitio(opts) {
   mini = opts.mini || ((image) => image);
   projectOg = opts.projectOg || (() => null);
   mosaicOg = opts.mosaicOg || (() => null);
+  aboutOg = opts.aboutOg || (() => null);
   lang = site.lang || 'es';
   LANGS = site.langs || [lang];
   LISTS = Object.keys(site.lists || {});

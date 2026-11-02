@@ -32,7 +32,7 @@
         "null"
       ],
       "pattern": "^https://[^/]+/?$",
-      "description": "El dominio, cuando lo haya: \"https://almudenagonzalez.com\". Hasta entonces, null, y Google no la indexa. En meowrhino.github.io/almarbra/ no hace falta: lo pone el build."
+      "description": "El dominio: \"https://almarbra.com\". Sin él (null), Google no la indexa. En meowrhino.github.io/almarbra/ no hace falta: lo pone el build."
     },
     "lang": {
       "enum": [

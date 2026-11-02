@@ -14,8 +14,9 @@
   const VISTA = about.id;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* Los colores de los proyectos (data-colores, del build). */
-  const palette = JSON.parse(about.dataset.colores || '[]');
+  /* Los colores de los proyectos (del build): los claros, o los neón en
+     el modo oscuro. Se miran en cada hilo nuevo, por si cambia el modo. */
+  const palette = () => JSON.parse(about.dataset[document.documentElement.dataset.theme === 'dark' ? 'neones' : 'colores'] || '[]');
 
   const STRANDS = 5;   // hilos a la vez
   const GROW = 40;     // s en tejerse, y otros tantos en destejerse
@@ -82,7 +83,8 @@
        por el otro; si tampoco, este turno no sale. */
     const pts = strand(s.weft, W, H) || strand(!s.weft, W, H);
     s.el.setAttribute('d', pts ? hilos.path(pts) : '');
-    s.el.setAttribute('stroke', palette[Math.floor(Math.random() * palette.length)]);
+    const colors = palette();
+    s.el.setAttribute('stroke', colors[Math.floor(Math.random() * colors.length)]);
     s.from = t;
     s.life = 2 * GROW + HOLD + 3 + Math.random() * 12;   // con el respiro del final
   }

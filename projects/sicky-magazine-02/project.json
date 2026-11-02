@@ -1,9 +1,9 @@
 {
   "$schema": "../../schema/project.json",
   "title": {
-    "es": "SICKY MAGAZINE",
-    "en": "SICKY MAGAZINE",
-    "ca": "SICKY MAGAZINE"
+    "es": "SICKY MAGAZINE II",
+    "en": "SICKY MAGAZINE II",
+    "ca": "SICKY MAGAZINE II"
   },
   "text": {},
   "credits": [
@@ -54,6 +54,7 @@
     }
   ],
   "color": "#9CC9A0",
+  "neon": "#33FF45",
   "cover": [
     "8"
   ],

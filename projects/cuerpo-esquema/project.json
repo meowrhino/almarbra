@@ -1,9 +1,9 @@
 {
   "$schema": "../../schema/project.json",
-  "_borrador": "La sinopsis en catalán: traducción provisional, pendiente de que la revise Almudena. El título se queda en castellano hasta que diga cómo lo quiere.",
   "title": {
     "es": "CUERPO ESQUEMA",
-    "en": "THE OUTLINED BODY"
+    "en": "THE OUTLINED BODY",
+    "ca": "COS ESQUEMA"
   },
   "text": {
     "es": [
@@ -21,6 +21,7 @@
   },
   "credits": [],
   "color": "#BEC045",
+  "neon": "#FCFF33",
   "cover": [
     "1"
   ],

@@ -19,7 +19,10 @@
   // bajo el blanco de la transición (js/transicion.js), sin entrada: ya está entero al destaparse
   if (root.classList.contains('tapada')) map.classList.add('listo');
 
-  const colorOf = (el) => el.style.getPropertyValue('--c');
+  /* --c lo pone el CSS según el modo (claro o oscuro) de --luz y --neon;
+     un hilo copia los dos de su foto y su stroke es var(--c). */
+  const colorOf = (el) => getComputedStyle(el).getPropertyValue('--c').trim();
+  const tint = (el, pin) => { for (const p of ['--luz', '--neon']) el.style.setProperty(p, pin.style.getPropertyValue(p)); };
 
   const DENSITY = 0.12;  // cuánto del plano tapan las fotos
   const REACH = 230;     // hasta dónde se apartan las fotos de un proyecto de la primera
@@ -123,7 +126,7 @@
       shape(path);
       path.setAttribute('pathLength', '1');
       path.ends = [from, to];
-      path.setAttribute('stroke', colorOf(s.pin));
+      tint(path, s.pin);
       path.dataset.p = s.p;
       path.style.animationDelay = `${(0.4 + Math.random() * 0.8).toFixed(2)}s`;   // después de los huecos
       svg.append(path);
@@ -143,9 +146,9 @@
     svg.after(pixels);
 
     for (const s of spots) spotOf.set(s.pin, s);
-    halo = layer('halo', null, 'none');
+    halo = layer('halo', null, null);
     for (const path of svg.querySelectorAll('path')) {
-      path.fluff = layer('pelusa', path.dataset.p, path.getAttribute('stroke'));
+      path.fluff = layer('pelusa', path.dataset.p, path);
       path.fluff.style.animationDelay = `${(parseFloat(path.style.animationDelay) + 1.2).toFixed(2)}s`;
       fluff(path);
     }
@@ -163,10 +166,12 @@
   const spotOf = new Map();   // foto -> su caja en el plano
   let halo = null;
 
-  function layer(name, p, color) {
+  /* `from`: el hilo del que toma el color (la pelusa); sin él, sin relleno
+     hasta que se le ponga (el halo). */
+  function layer(name, p, from) {
     const el = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     el.setAttribute('class', name);
-    el.setAttribute('fill', color);
+    if (from) tint(el, from); else el.setAttribute('fill', 'none');
     if (p !== null) el.dataset.p = p;
     pixels.append(el);
     return el;

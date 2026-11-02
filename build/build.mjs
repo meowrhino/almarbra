@@ -239,6 +239,7 @@ const images = {
   mini: (image) => (miniWanted.set(image.src, image), minis(image)),
   projectOg: (project) => ogs(`media/${project.dir}/og.jpg`, [project.cover.src]),
   mosaicOg: (out, list) => ogs(out, list.slice(0, MOSAIC).map((p) => p.cover.src)),
+  aboutOg: () => ogs('media/about/og.jpg', [aboutPhoto.src]),
 };
 
 /* La primera pasada, sin escribir nada: qué imágenes piden las plantillas. */
