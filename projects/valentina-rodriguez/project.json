@@ -17,7 +17,26 @@
       "Documentació de processos per a l’artista Valentina Rodriguez."
     ]
   },
-  "credits": [],
+  "credits": [
+    {
+      "role": {
+        "es": "Fotografía y vídeo",
+        "en": "Photography and video",
+        "ca": "Fotografia i video"
+      },
+      "name": "Almudena González",
+      "url": "https://www.instagram.com/almarbra_/"
+    },
+    {
+      "role": {
+        "es": "artista",
+        "en": "talent",
+        "ca": "talente"
+      },
+      "name": "Valentina Rodríguez",
+      "url": "https://www.instagram.com/valentinarodriguez/"
+    }
+  ],
   "color": "#8C2E3A",
   "neon": "#FF3355",
   "cover": [
