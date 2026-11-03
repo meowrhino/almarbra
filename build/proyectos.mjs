@@ -195,6 +195,8 @@ export function loadProjects(site, { json, size, folders = null }) {
           return { name: n, file: `${n}.poster.webp`, src: poster, video, ...pwh };
         }
         if (!wh) { errors.push(`${folder}: img/${file} no es un WebP de verdad (pásala por imgToWeb)`); return null; }
+        /* con un webm del mismo número, no se sabe si es foto o vídeo: suele ser el fotograma, renombrado */
+        if (size(`${folder}/img/${n}.webm`) !== undefined) { errors.push(`${folder}: hay img/${n}.webp y img/${n}.webm; si es un vídeo, su fotograma se llama img/${n}.poster.webp (renombra img/${n}.webp)`); return null; }
         return { name: n, file, src, ...wh };
       };
       /* Las fotos van en «photos», o por grupos en «groups» (Roma). */

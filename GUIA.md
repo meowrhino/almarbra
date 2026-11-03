@@ -159,6 +159,8 @@ su fotograma (`.poster.webp`), que es lo que se ve mientras llega y lo que sale
 en el mapa y al compartir. Los dos van a `img/` con el mismo número:
 `img/5.webm` y `img/5.poster.webp`, y en el JSON se pone `"5"` como con una
 foto (en `photos`, `cover` o `map`). En la web se ve en bucle y sin sonido.
+El fotograma no se renombra a `5.webp`: con ese nombre sería una foto, y el
+build para y lo dice.
 
 Cuanto más corto, mejor: un vídeo de minutos pesa decenas de MB y tarda en
 llegar; para la web lo mejor es un trozo de unos segundos en bucle. Un
