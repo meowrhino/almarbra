@@ -1,9 +1,9 @@
 {
   "$schema": "../../schema/project.json",
   "title": {
-    "es": "SICKY MAGAZINE II",
-    "en": "SICKY MAGAZINE II",
-    "ca": "SICKY MAGAZINE II"
+    "es": "SICKY MAGAZINE",
+    "en": "SICKY MAGAZINE",
+    "ca": "SICKY MAGAZINE"
   },
   "text": {},
   "credits": [
