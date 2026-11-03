@@ -123,7 +123,7 @@ se hace push y en un par de minutos está publicado.
 |---|---|
 | `projects/<slug>/project.json` | el proyecto: título, texto, créditos, sus colores (`color` y `neon`), fotos, portada y mapa (una foto de `img/` que está en `map` y no en `photos` sale solo en el mapa) |
 | `diaris/` | las fotos de diaris, `1.webp`, `2.webp`…: salen todas, barajadas |
-| `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) |
+| `data/site.json` | título, dominio (`url`, `null` hasta que lo haya), descripción (por idioma), idiomas, **las listas con su nombre y sus proyectos** (`lists`), el menú, email, Instagram (`instagram`, solo el usuario), otras redes (`social`) y la mezcla del mapa (`mix`: 0 por zonas, 100 todo revuelto; ahora 50) y cómo se abre la web (`theme`: `"light"` en blanco, `"dark"` en negro; la visita lo cambia con ◐) |
 | `data/about.json` | el texto del about, en es / en / ca, como lista de párrafos (vacío = sale el español), y `photo`: su foto, un `.webp` de `about/` sin la extensión |
 
 ```bash

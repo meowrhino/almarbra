@@ -116,7 +116,8 @@ function img(image, { base = '', eager = false, cap = false, controls = false } 
 
    Es el de la transición de la casa, igual en todas las webs (salvo .js
    y el modo oscuro, de almarbra: data-theme="dark" si se eligió, guardado
-   en localStorage; el botón .tema lo cambia). En la vista previa la
+   en localStorage, o si no se eligió y «theme» de data/site.json es
+   "dark"; el botón .tema lo cambia). En la vista previa la
    página se pinta cuando el navegador ya ha revelado index.html: no hay
    View Transition que esperar. */
 const headScript = () => `<script>{
@@ -126,7 +127,9 @@ const tema = (dark) => {
   if (dark) html.dataset.theme = 'dark'; else delete html.dataset.theme;
   document.querySelector('.tema')?.setAttribute('aria-pressed', String(dark));
 };
-try { if (localStorage.getItem('tema') === 'dark') { tema(true); addEventListener('DOMContentLoaded', () => tema(true)); } } catch {}   // el botón aún no está: se marca al llegar
+let oscuro = html.dataset.theme === 'dark';   // el de data/site.json («theme»), que pone el build
+try { oscuro = (localStorage.getItem('tema') || html.dataset.theme) === 'dark'; } catch {}   // lo que eligió la visita, si eligió
+tema(oscuro); addEventListener('DOMContentLoaded', () => tema(oscuro));   // el botón aún no está: se marca al llegar
 addEventListener('click', (e) => {
   if (!e.target.closest('.tema')) return;
   const dark = html.dataset.theme !== 'dark';
@@ -228,14 +231,14 @@ ${image ? shareImage(image, og) : ''}<meta property="og:locale" content="${LOCAL
 <meta name="twitter:card" content="summary_large_image">
 `;
   return `<!DOCTYPE html>
-<html lang="${attr(cur)}"${vista ? ` data-vista="${attr(vista)}"` : ''}>
+<html lang="${attr(cur)}"${vista ? ` data-vista="${attr(vista)}"` : ''}${site.theme === 'dark' ? ' data-theme="dark"' : ''}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(full)}</title>
 <meta name="description" content="${attr(desc)}">
 ${share}${site.noindex || noindex || path === null ? '<meta name="robots" content="noindex, nofollow">\n' : ''}<link rel="icon" href="${attr(root)}favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" content="${site.theme === 'dark' ? '#000000' : '#ffffff'}">
 <link rel="stylesheet" href="${attr(root)}css/transicion.css${version('css/transicion.css')}">
 <link rel="stylesheet" href="${attr(root)}css/style.css${version('css/style.css')}">
 ${headScript()}${head}</head>
@@ -310,7 +313,7 @@ function topBar({ home = '', root = '', path = null, view = null }) {
   return `<header class="top">
 <a href="${attr(home)}" class="name">${esc(site.title)}</a>
 ${langs}
-<button type="button" class="tema" aria-label="modo oscuro" aria-pressed="false">◐</button>
+<button type="button" class="tema" aria-label="modo oscuro" aria-pressed="${site.theme === 'dark'}">◐</button>
 <nav>
 ${VIEWS.map(link).join('\n')}
 </nav>

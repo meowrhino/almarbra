@@ -108,6 +108,13 @@
       "minimum": 0,
       "maximum": 100,
       "description": "De 0 a 100. En el mapa, con 0 las fotos de cada proyecto van juntas, por zonas; con 100, todo revuelto."
+    },
+    "theme": {
+      "enum": [
+        "light",
+        "dark"
+      ],
+      "description": "Cómo se abre la web: \"light\" (fondo blanco) o \"dark\" (fondo negro, con los colores neón). Sin él, en blanco. Quien la visita puede cambiarlo con el botón ◐, y se le queda lo que eligió."
     }
   },
   "$defs": {

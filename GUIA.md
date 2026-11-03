@@ -220,6 +220,12 @@ carpetas de sus proyectos (`projects`), en el orden en que salen:
   es `about/about.webp`. Para cambiarla, pásala por imgToWeb, súbela a
   `about/` y pon su nombre en `"photo"`. Sin `"photo"`, sale solo el texto.
 
+### Que la web se abra en negro
+
+En `data/site.json`, `"theme": "dark"` (en negro, con el color neón de cada
+proyecto) o `"theme": "light"` (en blanco). Quien la visita lo puede cambiar
+con el botón ◐ de abajo a la izquierda, y se le queda lo que eligió.
+
 ---
 
 ## 4. Añadir un proyecto nuevo
